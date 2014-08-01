@@ -23,6 +23,12 @@ void bootloader_entry(unsigned long magic, multiboot_info_t* multiboot)
     (void) magic;
     (void) multiboot;
 
+    volatile char *screen = (char *)0xB8000;
+
+    *screen = 'H';
+    screen++;
+    *screen = 0xF;
+
     while (1)
         ;
 }

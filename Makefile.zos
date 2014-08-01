@@ -8,12 +8,15 @@ DEFAULT_LDFLAGS := $(DEFAULT_LDFLAGS) -nostdlib
 
 INSTALL_BIN =
 ALL_BIN =
+EXTRA_FILE =
 
 all: zos-${ZOS_TARGET}-image.img
 
-include ${SRCDIR}/mk/subdirs.mk
+boot: zos-${ZOS_TARGET}-image.img
+	$(call run,QEMU,)
+	@qemu-system-i386 $<
 
-rootfs.img: ${INSTALL_BIN}
+include ${SRCDIR}/mk/subdirs.mk
 
 clean:
 	@echo "CLEAN"
@@ -23,6 +26,7 @@ distclean: clean
 	@echo "DISTCLEAN"
 	@rm -rf $(ALL_BIN)
 	@rm -rf $(DEPS)
+	@rm -rf rootfs.img rootfs
 
 include ${SRCDIR}/mk/rootfsdirs.mk
 include ${SRCDIR}/mk/run.mk

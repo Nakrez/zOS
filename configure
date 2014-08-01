@@ -57,6 +57,14 @@ if [ $? -ne 0 ]; then
 fi
 echo "OK"
 
+echo -n "Checking genext2fs ... "
+genext2fs -V > /dev/null 2> /dev/null
+
+if [ $? -ne 0 ]; then
+    echo "Fail"
+    echo "genext2fs not found, install it and try again"
+fi
+
 AS=${PREFIX}as
 LD=$CC
 
