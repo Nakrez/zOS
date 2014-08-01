@@ -1,20 +1,24 @@
 ZOS_TARGET = ${ZOS_ARCH}-${ZOS_PLAT}
 
-DEPS =
-CURDIR =
-SUBDIRS = bootloader/${ZOS_TARGET}/
+DEPS :=
+CURDIR :=
+SUBDIRS := kernel/ bootloader/${ZOS_TARGET}/
 
 DEFAULT_LDFLAGS := $(DEFAULT_LDFLAGS) -nostdlib
 
-INSTALL_BIN =
-ALL_BIN =
-EXTRA_FILE =
+INSTALL_BIN :=
+ALL_BIN :=
+EXTRA_FILE :=
 
 all: zos-${ZOS_TARGET}-image.img
 
 boot: zos-${ZOS_TARGET}-image.img
 	$(call run,QEMU,)
 	@qemu-system-i386 $<
+
+boot-gdb: zos-${ZOS_TARGET}-image.img
+	$(call run,QEMU-GDB,)
+	@qemu-system-i386 $< -S -s
 
 include ${SRCDIR}/mk/subdirs.mk
 

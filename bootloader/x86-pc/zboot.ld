@@ -3,7 +3,7 @@ ENTRY(zboot_start)
 
 SECTIONS
 {
-    . = 1M;
+    . = 0x10000;
 
     .multiboot :
     {

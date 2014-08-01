@@ -1,6 +1,6 @@
 CURDIR := bootloader/x86-pc/
 
-BIN := zboot
+BIN = zboot
 INSTALL_DIR := boot
 BINSUBDIRS :=
 
@@ -8,13 +8,13 @@ EXTRA_FILE := ${EXTRA_FILE} rootfs/boot/grub/grub.cfg
 
 OBJ := entry.o bootloader.o
 
-zboot_CFLAGS = -I$(SRCDIR)include -std=c99 -nostdinc -fno-builtin -fno-common
+zboot_CFLAGS := -I$(SRCDIR)include -std=c99 -nostdinc -fno-builtin -fno-common
 zboot_CFLAGS += -Wall -Wextra
-zboot_LDFLAGS = $(LDFLAGS) -T $(SRCDIR)$(CURDIR)zboot.ld
+zboot_LDFLAGS := -T $(SRCDIR)$(CURDIR)zboot.ld
 
 include ${SRCDIR}/mk/bin.mk
 
-zos-x86-pc-image.img: ${INSTALL_BIN} ${EXTRA_FILE}
+zos-x86-pc-image.img: $(INSTALL_BIN) ${EXTRA_FILE}
 	$(call run,MKIMG,)
 	@dd if=/dev/zero of=$@ bs=516096c count=40 > /dev/null 2>&1
 	@echo -e "o\nn\np\n\n\n\na\nw\n" | fdisk $@ > /dev/null 2>&1
@@ -33,5 +33,6 @@ rootfs/boot/grub/grub.cfg:
 	@echo "set default=0" >> $@
 	@echo "menuentry "zOS" {" >> $@
 	@echo "multiboot /boot/zboot" >> $@
+	@echo "module /boot/zkernel" >> $@
 	@echo "boot" >> $@
 	@echo "}" >> $@

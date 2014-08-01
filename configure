@@ -35,7 +35,7 @@ for param; do
             ZOS_PLAT=${param##"--plat="}
             ;;
         "--debug")
-            CFLAGS="$CFLAGS -g"
+            CFLAGS="$CFLAGS -g -O0"
             ;;
     esac
 done
@@ -79,9 +79,9 @@ CC = $CC
 AS = $CC
 LD = $LD
 
-DEFAULT_CFLAGS = $CFLAGS
-DEFAULT_ASFLAGS = $ASFLAGS
-DEFAULT_LDFLAGS = $LDFLAGS
+DEFAULT_CFLAGS := $CFLAGS
+DEFAULT_ASFLAGS := $ASFLAGS
+DEFAULT_LDFLAGS := $LDFLAGS
 
 SRCDIR = $SRCDIR
 DESTDIR = $DESTDIR
