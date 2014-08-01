@@ -16,21 +16,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-.set FLAGS,    0x00000003
-.set MAGIC,    0x1BADB002
-.set CHECKSUM, -(MAGIC + FLAGS)
+#include <boot/multiboot.h>
 
-.section .multiboot
-.align 4
-.long MAGIC
-.long FLAGS
-.long CHECKSUM
+void bootloader_entry(unsigned long magic, multiboot_info_t* multiboot)
+{
+    (void) magic;
+    (void) multiboot;
 
-.section .text
-.global zboot_start
-.global bootloader_entry
-zboot_start:
-    pushl %ebx
-    pushl %eax
-
-    call bootloader_entry
+    while (1)
+        ;
+}
