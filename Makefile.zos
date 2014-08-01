@@ -1,0 +1,16 @@
+ZOS_TARGET = ${ZOS_ARCH}-${ZOS_PLAT}
+
+CURDIR =
+SUBDIRS = bootloader/${ZOS_TARGET}/
+
+INSTALL_BIN =
+
+all: zos-${ZOS_TARGET}-image.img
+
+include ${SRCDIR}/mk/subdirs.mk
+
+rootfs.img: ${INSTALL_BIN}
+
+include ${SRCDIR}/mk/rootfsdirs.mk
+include ${SRCDIR}/mk/run.mk
+include ${SRCDIR}/mk/rules.mk

@@ -1,0 +1,87 @@
+#! /bin/sh
+
+SRCDIR=$(dirname `readlink -f $0`)/
+DESTDIR=`pwd`
+
+ZOS_ARCH="x86"
+ZOS_PLAT="pc"
+
+help()
+{
+    echo "configure options:"
+    echo "  --help          : Show this help"
+    echo "  --arch=ARCH     : Specify architecture to build as ARCH"
+    echo "  --plat=PLAT     : Specify platform to build as PLAT"
+    echo "  --debug         : Build with debug flags on"
+    echo ""
+    echo "Environment variable supported:"
+    echo "  CC              : Specify C compiler"
+    echo "  PREFIX          : Prefix to append to the tools"
+    echo "  CFLAGS          : Flags for the C compiler"
+    echo "  ASFLAGS         : Flags for the assembler"
+    echo "  LDFLAGS         : Flags for the linker"
+}
+
+for param; do
+    case $param in
+        "--help")
+            help
+            exit 0
+            ;;
+        "--arch="*)
+            ZOS_ARCH=${param##"--arch="}
+            ;;
+        "--plat="*)
+            ZOS_PLAT=${param##"--plat="}
+            ;;
+        "--debug")
+            CFLAGS="$CFLAGS -g"
+            ;;
+    esac
+done
+
+if [ -z $CC ]; then
+    CC=${PREFIX}gcc
+
+    if [[ "`uname -m`" = "x86_64" && "$ZOS_ARCH" = "x86" ]]; then
+        CC="$CC -m32"
+    fi
+fi
+
+echo -n "Checking CC = $CC ... "
+echo "int _start() { return 0; }" | $CC $CFLAGS -nostdlib -x c -o /dev/null - 2> /dev/null
+
+if [ $? -ne 0 ]; then
+    echo "Fail"
+    echo "C compiler not found or not working. Verify your toolchain and try again"
+fi
+echo "OK"
+
+AS=${PREFIX}as
+LD=$CC
+
+echo ""
+echo "zOS configuration"
+echo "ARCH:" $ZOS_ARCH
+echo "PLAT:" $ZOS_PLAT
+echo ""
+
+cat<<EOF > Makefile
+CC = $CC
+AS = $AS
+LD = $LD
+
+CFLAGS = $LDFLAGS
+ASFLAGS = $ASFLAGS
+LDFLAGS = $LDFLAGS
+
+SRCDIR = $SRCDIR
+DESTDIR = $DESTDIR
+
+ZOS_ARCH = $ZOS_ARCH
+ZOS_PLAT = $ZOS_PLAT
+
+include \${SRCDIR}/Makefile.zos
+EOF
+
+echo "Writing Makefile"
