@@ -1,15 +1,28 @@
 ZOS_TARGET = ${ZOS_ARCH}-${ZOS_PLAT}
 
+DEPS =
 CURDIR =
 SUBDIRS = bootloader/${ZOS_TARGET}/
 
+DEFAULT_LDFLAGS := $(DEFAULT_LDFLAGS) -nostdlib
+
 INSTALL_BIN =
+ALL_BIN =
 
 all: zos-${ZOS_TARGET}-image.img
 
 include ${SRCDIR}/mk/subdirs.mk
 
 rootfs.img: ${INSTALL_BIN}
+
+clean:
+	@echo "CLEAN"
+	@rm -rf $(DEPS:.d=.o)
+
+distclean: clean
+	@echo "DISTCLEAN"
+	@rm -rf $(ALL_BIN)
+	@rm -rf $(DEPS)
 
 include ${SRCDIR}/mk/rootfsdirs.mk
 include ${SRCDIR}/mk/run.mk

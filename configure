@@ -1,7 +1,7 @@
 #! /bin/sh
 
 SRCDIR=$(dirname `readlink -f $0`)/
-DESTDIR=`pwd`
+DESTDIR=`pwd`/
 
 ZOS_ARCH="x86"
 ZOS_PLAT="pc"
@@ -68,12 +68,12 @@ echo ""
 
 cat<<EOF > Makefile
 CC = $CC
-AS = $AS
+AS = $CC
 LD = $LD
 
-CFLAGS = $LDFLAGS
-ASFLAGS = $ASFLAGS
-LDFLAGS = $LDFLAGS
+DEFAULT_CFLAGS = $LDFLAGS
+DEFAULT_ASFLAGS = $ASFLAGS
+DEFAULT_LDFLAGS = $LDFLAGS
 
 SRCDIR = $SRCDIR
 DESTDIR = $DESTDIR

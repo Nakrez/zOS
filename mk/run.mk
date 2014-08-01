@@ -1,4 +1,4 @@
 define run
-	@echo "\t[$1] $@"
+	@printf "\t[%s] %s\n" "$1" "$@"
 	@$2
 endef
