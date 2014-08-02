@@ -23,8 +23,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 struct boot_seg
 {
-    void *addr_start;
-    uint64_t size;
+    uint64_t seg_start;
+    uint64_t seg_size;
 };
 
 struct boot_modules

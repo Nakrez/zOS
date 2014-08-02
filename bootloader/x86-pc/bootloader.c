@@ -37,6 +37,31 @@ static void *boot_alloc(size_t size)
     return addr;
 }
 
+static void setup_mmap(struct boot_info *b_inf, multiboot_info_t *multiboot)
+{
+    struct boot_seg *seg;
+
+    multiboot_memory_map_t *mmap = (void *)multiboot->mmap_addr;
+    multiboot_memory_map_t *mmap_end = (void *)mmap + multiboot->mmap_length;
+
+    b_inf->segs_count = 0;
+
+    while (mmap > mmap_end)
+    {
+        if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE)
+        {
+            seg = boot_alloc(sizeof (struct boot_seg));
+
+            seg->seg_start = mmap->addr;
+            seg->seg_size = mmap->len;
+
+            ++b_inf->segs_count;
+        }
+    }
+
+    b_inf->segs = K_VADDR(seg - b_inf->segs_count + 1);
+}
+
 static void setup_modules(struct boot_info *b_inf, multiboot_info_t *multiboot)
 {
     multiboot_module_t *mods = (multiboot_module_t*)multiboot->mods_addr;
@@ -55,6 +80,8 @@ static void setup_modules(struct boot_info *b_inf, multiboot_info_t *multiboot)
 
         b_inf->mods[i].mod_start = K_VADDR(b_inf->mods[i].mod_start);
     }
+
+    b_inf->mods = K_VADDR(b_inf->mods);
 }
 
 static void *load_kernel(Elf32_Ehdr *khdr)
@@ -98,6 +125,11 @@ void bootloader_entry(unsigned long magic, multiboot_info_t* multiboot)
 
     /* Setup boot info with module infos */
     setup_modules(b_inf, multiboot);
+
+    /* Setup boot info with memory map infos */
+    setup_mmap(b_inf, multiboot);
+
+    b_inf = K_VADDR(b_inf);
 
     while (1)
         ;
