@@ -6,10 +6,10 @@ BINSUBDIRS :=
 
 EXTRA_FILE := ${EXTRA_FILE} rootfs/boot/grub/grub.cfg
 
-OBJ := entry.o bootloader.o
+OBJ := entry.o bootloader.o utils.o
 
-zboot_CFLAGS := -I$(SRCDIR)include -std=c99 -nostdinc -fno-builtin -fno-common
-zboot_CFLAGS += -Wall -Wextra
+zboot_CFLAGS := -I$(SRCDIR)include -I$(SRCDIR)include/kernel/arch/$(ZOS_ARCH)
+zboot_CFLAGS +=  -std=c99 -nostdinc -fno-builtin -fno-common -Wall -Wextra
 zboot_LDFLAGS := -T $(SRCDIR)$(CURDIR)zboot.ld
 
 include ${SRCDIR}/mk/bin.mk
