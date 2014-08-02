@@ -35,10 +35,10 @@ struct boot_modules
 
 struct boot_info
 {
-    uint32_t seg_count;
+    uint32_t segs_count;
     struct boot_segs *segs;
 
-    uint32_t mod_count;
+    uint32_t mods_count;
     struct boot_modules *mods;
 };
 

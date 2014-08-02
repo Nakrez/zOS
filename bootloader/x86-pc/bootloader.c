@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "utils.h"
 
 # define K_PADDR(addr) ((void*)(addr - 0xC0000000))
+# define K_VADDR(addr) ((void*)(addr + 0xC0000000))
 
 static void *boot_brk = 0;
 
@@ -34,6 +35,26 @@ static void *boot_alloc(size_t size)
     boot_brk += size;
 
     return addr;
+}
+
+static void setup_modules(struct boot_info *b_inf, multiboot_info_t *multiboot)
+{
+    multiboot_module_t *mods = (multiboot_module_t*)multiboot->mods_addr;
+
+    b_inf->mods_count = multiboot->mods_count;
+
+    b_inf->mods = boot_alloc(b_inf->mods_count * sizeof (struct boot_modules));
+
+    for (size_t i = 1; i < multiboot->mods_count; ++i)
+    {
+        b_inf->mods[i].mod_size = mods[i].mod_end - mods[i].mod_start;
+        b_inf->mods[i].mod_start = boot_alloc(b_inf->mods[i].mod_size);
+
+        memcpy(b_inf->mods[i].mod_start, (void *)mods[i].mod_start,
+               b_inf->mods[i].mod_size);
+
+        b_inf->mods[i].mod_start = K_VADDR(b_inf->mods[i].mod_start);
+    }
 }
 
 static void *load_kernel(Elf32_Ehdr *khdr)
@@ -70,9 +91,13 @@ void bootloader_entry(unsigned long magic, multiboot_info_t* multiboot)
     multiboot_module_t *mods = (multiboot_module_t*)multiboot->mods_addr;
     struct boot_info *b_inf;
 
+    /* Load kernel */
     kentry = load_kernel((Elf32_Ehdr *)mods[0].mod_start);
 
     b_inf = boot_alloc(sizeof (struct boot_info));
+
+    /* Setup boot info with module infos */
+    setup_modules(b_inf, multiboot);
 
     while (1)
         ;
