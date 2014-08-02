@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # define K_PADDR(addr) ((void*)(addr - 0xC0000000))
 
+static void *boot_brk = 0;
+
 static void *load_kernel(Elf32_Ehdr *khdr)
 {
     Elf32_Phdr *kphdr = (Elf32_Phdr*)khdr->e_phoff;
@@ -41,6 +43,10 @@ static void *load_kernel(Elf32_Ehdr *khdr)
         memcpy(load_addr, data, fsize);
 
         memset(load_addr + fsize, 0, msize - fsize);
+
+        /* Detect higher kernel address to give boot_alloc() a start address */
+        if (boot_brk < load_addr + msize)
+            boot_brk = load_addr + msize;
     }
 
     return (void *)khdr->e_entry;
