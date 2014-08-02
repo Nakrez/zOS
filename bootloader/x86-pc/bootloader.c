@@ -16,6 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
+#include <boot/boot.h>
 #include <boot/multiboot.h>
 
 #include <kernel/elf.h>
@@ -25,6 +26,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # define K_PADDR(addr) ((void*)(addr - 0xC0000000))
 
 static void *boot_brk = 0;
+
+static void *boot_alloc(size_t size)
+{
+    void *addr = boot_brk;
+
+    boot_brk += size;
+
+    return addr;
+}
 
 static void *load_kernel(Elf32_Ehdr *khdr)
 {
@@ -56,9 +66,13 @@ void bootloader_entry(unsigned long magic, multiboot_info_t* multiboot)
 {
     (void) magic;
 
+    void *kentry;
     multiboot_module_t *mods = (multiboot_module_t*)multiboot->mods_addr;
+    struct boot_info *b_inf;
 
-    void *kentry = load_kernel((Elf32_Ehdr *)mods[0].mod_start);
+    kentry = load_kernel((Elf32_Ehdr *)mods[0].mod_start);
+
+    b_inf = boot_alloc(sizeof (struct boot_info));
 
     while (1)
         ;
