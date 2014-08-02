@@ -6,8 +6,8 @@ include ${SRCDIR}mk/binsubdirs.mk
 
 $(_BIN)_LDFLAGS := $(DEFAULT_LDFLAGS) $($(BIN)_LDFLAGS)
 
-$(_BIN): CFLAGS := $($(BIN)_CFLAGS)
-$(_BIN): ASFLAGS := $($(BIN)_CFLAGS)
+$(_BIN): CFLAGS := $(DEFAULT_CFLAGS) $($(BIN)_CFLAGS)
+$(_BIN): ASFLAGS := $(DEFAULT_ASFLAGS) $($(BIN)_ASFLAGS)
 $(_BIN): $($(BIN)_OBJ)
 
 $(_BIN)_OBJ := $($(BIN)_OBJ)
