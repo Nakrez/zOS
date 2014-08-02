@@ -1,5 +1,9 @@
-int kernel_main(void)
+#include <boot/boot.h>
+
+int kernel_main(struct boot_info *boot)
 {
+    (void)boot;
+
     volatile char *screen = (char *)0xC00B8000;
 
     *screen = 'K';

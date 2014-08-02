@@ -21,10 +21,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include <kernel/elf.h>
 
+#include <arch/mmu.h>
+#include <arch/cpu.h>
+
 #include "utils.h"
 
-# define K_PADDR(addr) ((void*)(addr - 0xC0000000))
-# define K_VADDR(addr) ((void*)(addr + 0xC0000000))
+# define K_PADDR(addr) (((void*)addr - 0xC0000000))
+# define K_VADDR(addr) (((void*)addr + 0xC0000000))
 
 static void *boot_brk = 0;
 
@@ -86,7 +89,7 @@ static void setup_modules(struct boot_info *b_inf, multiboot_info_t *multiboot)
 
 static void *load_kernel(Elf32_Ehdr *khdr)
 {
-    Elf32_Phdr *kphdr = (Elf32_Phdr*)khdr->e_phoff;
+    Elf32_Phdr *kphdr = (Elf32_Phdr*)((void*)khdr + khdr->e_phoff);
 
     for (uint32_t i = 0; i < khdr->e_phnum; ++i)
     {
@@ -107,7 +110,27 @@ static void *load_kernel(Elf32_Ehdr *khdr)
             boot_brk = load_addr + msize;
     }
 
-    return (void *)khdr->e_entry;
+    return khdr->e_entry;
+}
+
+static void setup_page(void)
+{
+    /*
+     * Only map 1 big page from 0x0-0x400000 on 0xC0000000-0xC0400000
+     * The page directory is at 0x0 (0xC0000000) and the kernel knows it
+     */
+    uint32_t *pd = (uint32_t)0x0;
+
+    pd[768] = 0;
+    pd[768] |= PD_PRESENT | PD_4MB | PD_WRITE;
+
+    /* Map 0x0-0x400000 on 0x0 as well */
+    pd[0] = pd[768];
+
+    cr3_set((uint32_t)pd);
+
+    cr4_set(cr4_get() | CR4_BIGPAGE);
+    cr0_set(cr0_get() | CR0_PAGE);
 }
 
 void bootloader_entry(unsigned long magic, multiboot_info_t* multiboot)
@@ -131,6 +154,13 @@ void bootloader_entry(unsigned long magic, multiboot_info_t* multiboot)
 
     b_inf = K_VADDR(b_inf);
 
-    while (1)
-        ;
+    setup_page();
+
+    /* Launch kernel */
+    __asm__ __volatile__("mov $0xC03FFFFC, %%esp\n"
+                         "pushl %0\n"
+                         "call *%1"
+                         :
+                         : "r" (b_inf)
+                         , "r" (kentry));
 }
