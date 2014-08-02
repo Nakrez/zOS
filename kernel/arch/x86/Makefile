@@ -1,6 +1,6 @@
-CURDIR := kernel/core/
+CURDIR := kernel/arch/x86/
 
-OBJ := main.o console.o string.o
+OBJ := console.o
 
 DEPS := $(DEPS) $(addprefix $(CURDIR), $(OBJ:.o=.d))
 

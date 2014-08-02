@@ -1,13 +1,14 @@
 #include <boot/boot.h>
 
+#include <kernel/console.h>
+
 int kernel_main(struct boot_info *boot)
 {
     (void)boot;
 
-    volatile char *screen = (char *)0xC00B8000;
+    console_init();
 
-    *screen = 'K';
-    *(screen + 1) = 0xF;
+    console_puts("zKernel is booting ...\n");
 
     while (1)
         ;
