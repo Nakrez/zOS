@@ -7,6 +7,11 @@
 # define YMAX 25
 # define XMAX 80
 
+# define X86_CONSOLE_BLUE 0x1
+# define X86_CONSOLE_GREEN 0x2
+# define X86_CONSOLE_RED 0x4
+# define X86_CONSOLE_GREY 0x7
+
 struct console
 {
     int x;
@@ -49,7 +54,7 @@ void x86_console_init(void)
 {
     x86_console.x = 0;
     x86_console.y = 0;
-    x86_console.color = 0x7;
+    x86_console.color = X86_CONSOLE_GREY;
 }
 
 void x86_console_putc(char c)
@@ -91,9 +96,23 @@ void x86_console_putc(char c)
     x86_update_cursor();
 }
 
-void x86_console_color(char c)
+void x86_console_color(enum console_color c)
 {
-    x86_console.color = c;
+    switch (c)
+    {
+        case COLOR_GREY:
+            x86_console.color = X86_CONSOLE_GREY;
+            break;
+        case COLOR_RED:
+            x86_console.color = X86_CONSOLE_RED;
+            break;
+        case COLOR_BLUE:
+            x86_console.color = X86_CONSOLE_BLUE;
+            break;
+        case COLOR_GREEN:
+            x86_console.color = X86_CONSOLE_GREEN;
+            break;
+    }
 }
 
 void x86_console_clear(void)
