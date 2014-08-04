@@ -1,5 +1,7 @@
-#ifndef STDARG_H
-# define STDARG_H
+#ifndef ZOS_H
+# define ZOS_H
+
+# define NULL ((void *)0)
 
 typedef __builtin_va_list va_list;
 
@@ -7,4 +9,4 @@ typedef __builtin_va_list va_list;
 # define va_end(v) __builtin_va_end(v)
 # define va_arg(v, l) __builtin_va_arg(v, l)
 
-#endif /* !STDARG_H */
+#endif /* !ZOS_H */

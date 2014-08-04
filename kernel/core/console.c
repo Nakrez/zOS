@@ -1,5 +1,4 @@
-#include <stdarg.h>
-
+#include <kernel/zos.h>
 #include <kernel/types.h>
 #include <kernel/console.h>
 
@@ -63,7 +62,7 @@ static void console_vprintf(const char *s, va_list args)
             else if (*s == 'i')
                 console_signed(va_arg(args, int32_t), 10);
             else if (*s == 'x')
-                console_signed(va_arg(args, uint32_t), 16);
+                console_unsigned(va_arg(args, uint32_t), 16);
             else if (*s == '%')
                 __console.putc('%');
         }
@@ -96,14 +95,14 @@ void console_message(enum console_type t, const char *s, ...)
     {
         case T_INF:
             __console.color(COLOR_BLUE);
-            console_puts("INF");
+            console_puts("IF");
             break;
         case T_ERR:
             __console.color(COLOR_RED);
-            console_puts("ERR");
+            console_puts("KO");
             break;
         case T_OK:
-            __console.color(COLOR_BLUE);
+            __console.color(COLOR_GREEN);
             console_puts("OK");
             break;
     }
