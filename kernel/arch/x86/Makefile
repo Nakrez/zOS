@@ -1,6 +1,6 @@
 CURDIR := kernel/arch/x86/
 
-OBJ := console.o
+OBJ := console.o back_trace.o
 
 DEPS := $(DEPS) $(addprefix $(CURDIR), $(OBJ:.o=.d))
 

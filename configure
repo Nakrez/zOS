@@ -35,7 +35,7 @@ for param; do
             ZOS_PLAT=${param##"--plat="}
             ;;
         "--debug")
-            CFLAGS="$CFLAGS -g -O0"
+            CFLAGS="$CFLAGS -g"
             ;;
     esac
 done

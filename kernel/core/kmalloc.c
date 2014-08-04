@@ -2,6 +2,7 @@
 #include <kernel/zos.h>
 #include <kernel/console.h>
 #include <kernel/klist.h>
+#include <kernel/panic.h>
 
 struct kmalloc_blk
 {
@@ -67,7 +68,7 @@ void *kmalloc(size_t size)
             return kmalloc_split(blk, size);
     }
 
-    console_message(T_ERR, "kmalloc no more memory");
+    kernel_panic("kmalloc no more memory");
 
     return NULL;
 }
@@ -112,7 +113,7 @@ void kfree(void *ptr)
     --blk;
 
     if (blk->ptr != ptr)
-        console_message(T_ERR, "kfree 0x%x junk ptr", ptr);
+        kernel_panic("kfree junk ptr");
 
     blk->free = 1;
 
