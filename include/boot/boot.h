@@ -40,6 +40,9 @@ struct boot_info
 
     uint32_t mods_count;
     struct boot_modules *mods;
+
+    void *heap_start;
+    uint64_t heap_size;
 };
 
 #endif /* !BOOT_H */

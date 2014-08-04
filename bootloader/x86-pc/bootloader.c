@@ -110,7 +110,7 @@ static void *load_kernel(Elf32_Ehdr *khdr)
             boot_brk = load_addr + msize;
     }
 
-    return khdr->e_entry;
+    return (void *)khdr->e_entry;
 }
 
 static void setup_page(void)
@@ -151,6 +151,9 @@ void bootloader_entry(unsigned long magic, multiboot_info_t* multiboot)
 
     /* Setup boot info with memory map infos */
     setup_mmap(b_inf, multiboot);
+
+    b_inf->heap_start = K_VADDR(boot_brk);
+    b_inf->heap_size = 0xC0400000 - (uint32_t)K_VADDR(boot_brk);
 
     b_inf = K_VADDR(b_inf);
 
