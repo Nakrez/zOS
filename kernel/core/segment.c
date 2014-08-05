@@ -8,10 +8,9 @@
 #include <arch/spinlock.h>
 #include <arch/mmu.h>
 
-spinlock_t segment_lock;
-struct klist segment_head;
+static spinlock_t segment_lock;
 
-struct segment *segments;
+static struct klist segment_head;
 
 void segment_initialize(struct boot_info *boot)
 {
@@ -211,6 +210,8 @@ void segment_dump(void)
     console_message(T_INF, "segment layout dump (page size : %u Ko)",
                     PAGE_SIZE / 1024);
 
+    spinlock_lock(&segment_lock);
+
     klist_for_each_elem(&segment_head, seg, list)
     {
         console_message(T_INF, "%s: 0x%x-0x%x (%u pages)",
@@ -218,4 +219,6 @@ void segment_dump(void)
                         seg->base, seg->base + seg->page_size * PAGE_SIZE,
                         seg->page_size);
     }
+
+    spinlock_unlock(&segment_lock);
 }

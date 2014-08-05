@@ -15,12 +15,15 @@ struct kmalloc_blk
     struct klist list;
 };
 
-struct klist kmalloc_head;
+static spinlock_t kmalloc_lock;
 
-struct kmalloc_blk *first_blk;
+static struct klist kmalloc_head;
 
 void kmalloc_initialize(struct boot_info *boot)
 {
+    static struct kmalloc_blk *first_blk;
+
+    spinlock_init(&kmalloc_lock);
     klist_head_init(&kmalloc_head);
 
     first_blk = (void *)boot->heap_start;
@@ -64,11 +67,21 @@ void *kmalloc(size_t size)
 {
     struct kmalloc_blk *blk;
 
+    spinlock_lock(&kmalloc_lock);
+
     klist_for_each_elem(&kmalloc_head, blk, list)
     {
         if (blk->size >= size && blk->free)
-            return kmalloc_split(blk, size);
+        {
+            void *addr = kmalloc_split(blk, size);
+
+            spinlock_unlock(&kmalloc_lock);
+
+            return addr;
+        }
     }
+
+    spinlock_unlock(&kmalloc_lock);
 
     kernel_panic("kmalloc no more memory");
 
@@ -117,9 +130,13 @@ void kfree(void *ptr)
     if (blk->ptr != ptr)
         kernel_panic("kfree junk ptr");
 
+    spinlock_lock(&kmalloc_lock);
+
     blk->free = 1;
 
     kmerge(blk);
+
+    spinlock_unlock(&kmalloc_lock);
 }
 
 void kmalloc_dump(void)
@@ -128,10 +145,14 @@ void kmalloc_dump(void)
 
     console_message(T_INF, "kmalloc dump");
 
+    spinlock_lock(&kmalloc_lock);
+
     klist_for_each_elem(&kmalloc_head, blk, list)
     {
         console_message(T_INF, "%s: 0x%x-0x%x (%u o)",
                         blk->free ? "FREE" : "USED",
                         blk->ptr, blk->ptr + blk->size, blk->size);
     }
+
+    spinlock_unlock(&kmalloc_lock);
 }
