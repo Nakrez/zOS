@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include "utils.h"
 
-# define K_PADDR(addr) ((void *)((char*)addr - 0xC0000000))
-# define K_VADDR(addr) ((void *)((char*)addr + 0xC0000000))
+# define K_PADDR(addr) ((void *)((char*)(addr) - 0xC0000000))
+# define K_VADDR(addr) ((void *)((char*)(addr) + 0xC0000000))
 
 static void *boot_brk = 0;
 
@@ -52,7 +52,7 @@ static void setup_mmap(struct boot_info *b_inf, multiboot_info_t *multiboot)
 
     b_inf->segs_count = 0;
 
-    while (mmap > mmap_end)
+    while (mmap < mmap_end)
     {
         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE)
         {
@@ -69,6 +69,8 @@ static void setup_mmap(struct boot_info *b_inf, multiboot_info_t *multiboot)
 
             ++b_inf->segs_count;
         }
+
+        ++mmap;
     }
 
     b_inf->segs = K_VADDR(seg - b_inf->segs_count + 1);
