@@ -42,38 +42,34 @@ static void *boot_alloc(size_t size)
 
 static void setup_mmap(struct boot_info *b_inf, multiboot_info_t *multiboot)
 {
-    struct boot_seg *seg = (void *)0;
-
     multiboot_memory_map_t *mmap = (void *)multiboot->mmap_addr;
     multiboot_memory_map_t *mmap_end = (void *)mmap + multiboot->mmap_length;
 
-    b_inf->seg_low = 0xFFFFFFFF;
-    b_inf->seg_high = 0x0;
+    uint32_t seg_low = 0xFFFFFFFF;
+    uint32_t seg_high = 0x0;
 
-    b_inf->segs_count = 0;
+    b_inf->segs_count = 1;
 
     while (mmap < mmap_end)
     {
         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE)
         {
-            seg = boot_alloc(sizeof (struct boot_seg));
+            if (mmap->addr < seg_low)
+                seg_low = mmap->addr;
 
-            seg->seg_start = mmap->addr;
-            seg->seg_size = mmap->len;
-
-            if (seg->seg_start < b_inf->seg_low)
-                b_inf->seg_low = seg->seg_start;
-
-            if (seg->seg_start + seg->seg_size > b_inf->seg_high)
-                b_inf->seg_high = seg->seg_start + seg->seg_size;
-
-            ++b_inf->segs_count;
+            if (mmap->addr + mmap->len > seg_high)
+                seg_high = mmap->addr + mmap->len;
         }
 
         ++mmap;
     }
 
-    b_inf->segs = K_VADDR(seg - b_inf->segs_count + 1);
+    b_inf->segs = boot_alloc(sizeof (struct boot_seg));
+
+    b_inf->segs->seg_start = seg_low;
+    b_inf->segs->seg_size = seg_high - seg_low;
+
+    b_inf->segs = K_VADDR(b_inf->segs);
 }
 
 static void setup_modules(struct boot_info *b_inf, multiboot_info_t *multiboot)

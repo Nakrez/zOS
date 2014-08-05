@@ -45,7 +45,7 @@ void segment_dump(void)
 
     klist_for_each_elem(&segment_head, seg, list)
     {
-        console_message(T_INF, "%s: 0x%x-0x%x (%L pages)",
+        console_message(T_INF, "%s: 0x%x-0x%x (%u pages)",
                         seg->free ? "FREE" : "USED",
                         seg->base, seg->base + seg->page_size * PAGE_SIZE,
                         seg->page_size);

@@ -15,7 +15,7 @@ struct segment
     paddr_t base;
 
     /* Size in page (for real size multiply by PAGE_SIZE) */
-    uint64_t page_size;
+    uint32_t page_size;
 
     /* Can be used ? */
     int free;
