@@ -26,8 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include "utils.h"
 
-# define K_PADDR(addr) (((void*)addr - 0xC0000000))
-# define K_VADDR(addr) (((void*)addr + 0xC0000000))
+# define K_PADDR(addr) ((void *)((char*)addr - 0xC0000000))
+# define K_VADDR(addr) ((void *)((char*)addr + 0xC0000000))
 
 static void *boot_brk = 0;
 
@@ -42,7 +42,7 @@ static void *boot_alloc(size_t size)
 
 static void setup_mmap(struct boot_info *b_inf, multiboot_info_t *multiboot)
 {
-    struct boot_seg *seg;
+    struct boot_seg *seg = (void *)0;
 
     multiboot_memory_map_t *mmap = (void *)multiboot->mmap_addr;
     multiboot_memory_map_t *mmap_end = (void *)mmap + multiboot->mmap_length;
@@ -89,15 +89,15 @@ static void setup_modules(struct boot_info *b_inf, multiboot_info_t *multiboot)
 
 static void *load_kernel(Elf32_Ehdr *khdr)
 {
-    Elf32_Phdr *kphdr = (Elf32_Phdr*)((void*)khdr + khdr->e_phoff);
+    Elf32_Phdr *kphdr = (Elf32_Phdr*)((char *)khdr + khdr->e_phoff);
 
     for (uint32_t i = 0; i < khdr->e_phnum; ++i)
     {
         if (kphdr[i].p_type != PT_LOAD)
             continue;
 
-        void *load_addr = K_PADDR(kphdr[i].p_vaddr);
-        void *data = (void *)khdr + kphdr[i].p_offset;
+        char *load_addr = K_PADDR(kphdr[i].p_vaddr);
+        char *data = ((char *)khdr) + kphdr[i].p_offset;
         uint32_t fsize = kphdr[i].p_filesz;
         uint32_t msize = kphdr[i].p_memsz;
 
@@ -106,8 +106,10 @@ static void *load_kernel(Elf32_Ehdr *khdr)
         memset(load_addr + fsize, 0, msize - fsize);
 
         /* Detect higher kernel address to give boot_alloc() a start address */
-        if (boot_brk < load_addr + msize)
+        if (boot_brk < (void *)(load_addr + msize))
+        {
             boot_brk = load_addr + msize;
+        }
     }
 
     return (void *)khdr->e_entry;
@@ -119,7 +121,7 @@ static void setup_page(void)
      * Only map 1 big page from 0x0-0x400000 on 0xC0000000-0xC0400000
      * The page directory is at 0x0 (0xC0000000) and the kernel knows it
      */
-    uint32_t *pd = (uint32_t)0x0;
+    volatile uint32_t *pd = (uint32_t)0x0;
 
     pd[768] = 0;
     pd[768] |= PD_PRESENT | PD_4MB | PD_WRITE;

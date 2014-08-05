@@ -23,11 +23,9 @@ boot-gdb: zos-${ZOS_TARGET}-image.img
 include ${SRCDIR}/mk/subdirs.mk
 
 clean:
-	@echo "CLEAN"
 	@rm -rf $(DEPS:.d=.o)
 
 distclean: clean
-	@echo "DISTCLEAN"
 	@rm -rf $(ALL_BIN)
 	@rm -rf $(DEPS)
 	@rm -rf rootfs.img rootfs
