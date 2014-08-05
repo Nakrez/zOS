@@ -4,6 +4,8 @@
 #include <kernel/klist.h>
 #include <kernel/panic.h>
 
+#include <arch/spinlock.h>
+
 struct kmalloc_blk
 {
     void *ptr;

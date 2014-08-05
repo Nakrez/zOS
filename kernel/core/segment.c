@@ -5,6 +5,7 @@
 #include <kernel/kmalloc.h>
 #include <kernel/console.h>
 
+#include <arch/spinlock.h>
 #include <arch/mmu.h>
 
 struct klist segment_head;
