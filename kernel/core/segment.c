@@ -8,6 +8,7 @@
 #include <arch/spinlock.h>
 #include <arch/mmu.h>
 
+spinlock_t segment_lock;
 struct klist segment_head;
 
 struct segment *segments;
@@ -34,6 +35,8 @@ void segment_initialize(struct boot_info *boot)
 
         klist_add(&segment_head, &segment->list);
     }
+
+    spinlock_init(&segment_lock);
 
     /* Reserve initial kernel memory */
     segment_reserve(0x0, 1024);
@@ -79,6 +82,8 @@ paddr_t segment_alloc(uint32_t page_size)
     if (!page_size)
         return 0;
 
+    spinlock_lock(&segment_lock);
+
     klist_for_each_elem(&segment_head, seg, list)
     {
         if (!seg->free)
@@ -88,9 +93,12 @@ paddr_t segment_alloc(uint32_t page_size)
         {
             segment_split(seg, seg->base, page_size);
 
+            spinlock_unlock(&segment_lock);
             return seg->base;
         }
     }
+
+    spinlock_unlock(&segment_lock);
 
     return 0;
 }
@@ -101,6 +109,8 @@ int segment_reserve(paddr_t addr, uint32_t page_size)
 
     if (!page_size)
         return 0;
+
+    spinlock_lock(&segment_lock);
 
     klist_for_each_elem(&segment_head, seg, list)
     {
@@ -113,13 +123,19 @@ int segment_reserve(paddr_t addr, uint32_t page_size)
         {
             if (addr + page_size * PAGE_SIZE >
                 seg->base + seg_size)
+            {
+                spinlock_unlock(&segment_lock);
                 return 0;
+            }
 
             segment_split(seg, addr, page_size);
 
+            spinlock_unlock(&segment_lock);
             return 1;
         }
     }
+
+    spinlock_unlock(&segment_lock);
 
     return 0;
 }
@@ -166,6 +182,8 @@ void segment_free(paddr_t addr)
 {
     struct segment *seg;
 
+    spinlock_lock(&segment_lock);
+
     klist_for_each_elem(&segment_head, seg, list)
     {
         if (seg->base == addr)
@@ -176,8 +194,14 @@ void segment_free(paddr_t addr)
             seg->free = 1;
 
             segment_merge(seg);
+
+            spinlock_unlock(&segment_lock);
+
+            return;
         }
     }
+
+    spinlock_unlock(&segment_lock);
 }
 
 void segment_dump(void)
