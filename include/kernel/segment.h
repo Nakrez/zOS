@@ -33,6 +33,14 @@ extern struct segment_glue __segment;
 
 void segment_initialize(struct boot_info *boot);
 
+/*
+ * Reserve physical memory starting at addr and with size (* PAGE_SIZE)
+ * page_size
+ *
+ * Return 1 if it worked, 0 otherwise
+ */
+int segment_reserve(paddr_t addr, uint32_t page_size);
+
 void segment_dump(void);
 
 #endif /* !SEGMENT_H */

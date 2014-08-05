@@ -34,14 +34,75 @@ void segment_initialize(struct boot_info *boot)
         klist_add(&segment_head, &segment->list);
     }
 
+    /* Reserve initial kernel memory */
+    segment_reserve(0x0, 1024);
+
     segment_dump();
+}
+
+static void segment_split(struct segment *seg, paddr_t addr,
+                          uint32_t page_size)
+{
+    if (addr > seg->base)
+    {
+        struct segment *before = kmalloc(sizeof (struct segment));
+
+        before->free = 1;
+        before->base = seg->base;
+        before->page_size = (addr - seg->base) / PAGE_SIZE;
+
+        klist_add(seg->list.prev, &before->list);
+    }
+
+    if (addr + page_size * PAGE_SIZE < seg->base + seg->page_size * PAGE_SIZE)
+    {
+        struct segment *after = kmalloc(sizeof (struct segment));
+
+        after->free = 1;
+        after->base = addr + page_size * PAGE_SIZE;
+        after->page_size = seg->page_size -
+                           (((addr - seg->base) / PAGE_SIZE) + page_size);
+
+        klist_add(&seg->list, &after->list);
+    }
+
+    seg->page_size = page_size;
+    seg->base = addr;
+    seg->free = 0;
+}
+
+int segment_reserve(paddr_t addr, uint32_t page_size)
+{
+    struct segment *seg;
+
+    klist_for_each_elem(&segment_head, seg, list)
+    {
+        if (!seg->free)
+            continue;
+
+        uint32_t seg_size = seg->page_size * PAGE_SIZE;
+
+        if (addr >= seg->base && addr <= seg->base + seg_size)
+        {
+            if (addr + page_size * PAGE_SIZE >
+                seg->base + seg_size)
+                return 0;
+
+            segment_split(seg, addr, page_size);
+
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 void segment_dump(void)
 {
     struct segment *seg;
 
-    console_message(T_INF, "segment layout dump (page size : %uo)", PAGE_SIZE);
+    console_message(T_INF, "segment layout dump (page size : %u Ko)",
+                    PAGE_SIZE / 1024);
 
     klist_for_each_elem(&segment_head, seg, list)
     {
