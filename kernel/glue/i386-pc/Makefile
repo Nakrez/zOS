@@ -1,4 +1,4 @@
-CURDIR := kernel/glue/x86-pc/
+CURDIR := kernel/glue/i386-pc/
 
 OBJ := console.o segment.o
 

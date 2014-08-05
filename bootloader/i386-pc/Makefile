@@ -1,4 +1,4 @@
-CURDIR := bootloader/x86-pc/
+CURDIR := bootloader/i386-pc/
 
 BIN = zboot
 INSTALL_DIR := boot
@@ -14,7 +14,7 @@ zboot_LDFLAGS := -T $(SRCDIR)$(CURDIR)zboot.ld
 
 include ${SRCDIR}/mk/bin.mk
 
-zos-x86-pc-image.img: $(INSTALL_BIN) ${EXTRA_FILE}
+zos-i386-pc-image.img: $(INSTALL_BIN) ${EXTRA_FILE}
 	$(call run,MKIMG,)
 	@dd if=/dev/zero of=$@ bs=516096c count=40 > /dev/null 2>&1
 	@echo -e "o\nn\np\n\n\n\na\nw\n" | fdisk $@ > /dev/null 2>&1

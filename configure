@@ -3,7 +3,7 @@
 SRCDIR=$(dirname `readlink -f $0`)/
 DESTDIR=`pwd`/
 
-ZOS_ARCH="x86"
+ZOS_ARCH="i386"
 ZOS_PLAT="pc"
 
 help()
@@ -43,7 +43,7 @@ done
 if [ -z $CC ]; then
     CC=${PREFIX}gcc
 
-    if [[ "`uname -m`" = "x86_64" && "$ZOS_ARCH" = "x86" ]]; then
+    if [[ "`uname -m`" = "x86_64" && "$ZOS_ARCH" = "i386" ]]; then
         CC="$CC -m32"
     fi
 fi

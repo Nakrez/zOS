@@ -1,4 +1,4 @@
-CURDIR := kernel/arch/x86/
+CURDIR := kernel/arch/i386/
 
 OBJ := console.o back_trace.o gdt.o pm.o
 
