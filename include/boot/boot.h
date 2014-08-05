@@ -35,6 +35,9 @@ struct boot_modules
 
 struct boot_info
 {
+    uintptr_t seg_low;
+    uintptr_t seg_high;
+
     uint32_t segs_count;
     struct boot_segs *segs;
 

@@ -47,6 +47,9 @@ static void setup_mmap(struct boot_info *b_inf, multiboot_info_t *multiboot)
     multiboot_memory_map_t *mmap = (void *)multiboot->mmap_addr;
     multiboot_memory_map_t *mmap_end = (void *)mmap + multiboot->mmap_length;
 
+    b_inf->seg_low = 0xFFFFFFFF;
+    b_inf->seg_high = 0x0;
+
     b_inf->segs_count = 0;
 
     while (mmap > mmap_end)
@@ -57,6 +60,12 @@ static void setup_mmap(struct boot_info *b_inf, multiboot_info_t *multiboot)
 
             seg->seg_start = mmap->addr;
             seg->seg_size = mmap->len;
+
+            if (seg->seg_start < b_inf->seg_low)
+                b_inf->seg_low = seg->seg_start;
+
+            if (seg->seg_start + seg->seg_size > b_inf->seg_high)
+                b_inf->seg_high = seg->seg_start + seg->seg_size;
 
             ++b_inf->segs_count;
         }

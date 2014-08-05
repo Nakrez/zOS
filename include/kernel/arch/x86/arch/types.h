@@ -13,4 +13,6 @@ typedef unsigned int __u32;
 typedef signed long long __i64;
 typedef unsigned long long __u64;
 
+typedef __u32 __uptr;
+
 #endif /* !X86_TYPES_H */

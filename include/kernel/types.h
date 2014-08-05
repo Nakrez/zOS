@@ -35,4 +35,6 @@ typedef __u64 uint64_t;
 
 typedef uint32_t size_t;
 
+typedef __uptr uintptr_t;
+
 #endif /* !TYPES_H */
