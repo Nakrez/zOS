@@ -34,6 +34,13 @@ extern struct segment_glue __segment;
 void segment_initialize(struct boot_info *boot);
 
 /*
+ * Allocate page_size pages of physical memory
+ *
+ * Return the physical address of the segment or 0 if it fails
+ */
+paddr_t segment_alloc(uint32_t page_size);
+
+/*
  * Reserve physical memory starting at addr and with size (* PAGE_SIZE)
  * page_size
  *
@@ -41,6 +48,14 @@ void segment_initialize(struct boot_info *boot);
  */
 int segment_reserve(paddr_t addr, uint32_t page_size);
 
+/*
+ * Free the segment starting at addr
+ */
+void segment_free(paddr_t addr);
+
+/*
+ * Dump segment free and used
+ */
 void segment_dump(void);
 
 #endif /* !SEGMENT_H */

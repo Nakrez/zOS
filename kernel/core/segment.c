@@ -71,9 +71,35 @@ static void segment_split(struct segment *seg, paddr_t addr,
     seg->free = 0;
 }
 
+paddr_t segment_alloc(uint32_t page_size)
+{
+    struct segment *seg;
+
+    if (!page_size)
+        return 0;
+
+    klist_for_each_elem(&segment_head, seg, list)
+    {
+        if (!seg->free)
+            continue;
+
+        if (seg->page_size >= page_size)
+        {
+            segment_split(seg, seg->base, page_size);
+
+            return seg->base;
+        }
+    }
+
+    return 0;
+}
+
 int segment_reserve(paddr_t addr, uint32_t page_size)
 {
     struct segment *seg;
+
+    if (!page_size)
+        return 0;
 
     klist_for_each_elem(&segment_head, seg, list)
     {
@@ -95,6 +121,62 @@ int segment_reserve(paddr_t addr, uint32_t page_size)
     }
 
     return 0;
+}
+
+static void segment_merge(struct segment *seg)
+{
+    if (seg->list.prev != &segment_head)
+    {
+        struct segment *prev;
+
+        prev = klist_elem(seg->list.prev, struct segment, list);
+
+        if (prev->free &&
+            prev->base + prev->page_size * PAGE_SIZE == seg->base)
+        {
+            seg->base = prev->base;
+            seg->page_size += prev->page_size;
+
+            klist_del(&prev->list);
+
+            kfree(prev);
+        }
+    }
+
+    if (seg->list.next != &segment_head)
+    {
+        struct segment *next;
+
+        next = klist_elem(seg->list.next, struct segment, list);
+
+        if (next->free &&
+            seg->base + seg->page_size * PAGE_SIZE == next->base)
+        {
+            seg->page_size += next->page_size;
+
+            klist_del(&next->list);
+
+            kfree(next);
+        }
+    }
+}
+
+void segment_free(paddr_t addr)
+{
+    struct segment *seg;
+
+    klist_for_each_elem(&segment_head, seg, list)
+    {
+        if (seg->base == addr)
+        {
+            if (seg->free)
+                return;
+
+            seg->free = 1;
+
+            segment_merge(seg);
+        }
+    }
 }
 
 void segment_dump(void)
