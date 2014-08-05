@@ -1,6 +1,6 @@
 CURDIR := kernel/glue/x86-pc/
 
-OBJ := console.o
+OBJ := console.o segment.o
 
 DEPS := $(DEPS) $(addprefix $(CURDIR), $(OBJ:.o=.d))
 

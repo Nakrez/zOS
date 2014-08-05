@@ -2,6 +2,7 @@
 # define X86_CRX_H
 
 # define CR0_PAGE 0x80000000
+# define CR0_PM 0x1
 
 # define CR4_BIGPAGE 0x00000010
 
