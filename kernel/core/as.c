@@ -79,7 +79,7 @@ int as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
     map->phy = paddr;
     map->size = size;
 
-    if (!__as.map(vaddr, paddr, size, flags))
+    if (!__as.map(as, vaddr, paddr, size, flags))
         goto arch_map_error;
 
     spinlock_lock(&as->map_lock);
@@ -94,7 +94,7 @@ region_error:
     return 0;
 }
 
-void as_unmap(struct as *as, vaddr_t vaddr)
+void as_unmap(struct as *as, vaddr_t vaddr, int flags)
 {
     struct as_mapping *map;
 
@@ -106,9 +106,10 @@ void as_unmap(struct as *as, vaddr_t vaddr)
         {
             region_release(as, map->virt);
 
-            segment_free(map->phy);
+            if (flags & AS_UNMAP_RELEASE)
+                segment_free(map->phy);
 
-            __as.unmap(map->virt, map->size);
+            __as.unmap(as, map->virt, map->size);
 
             klist_del(&map->list);
 

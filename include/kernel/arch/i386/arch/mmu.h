@@ -18,9 +18,32 @@
 # define KERNEL_BEGIN 0xC0000000
 # define KERNEL_END 0xFFFFFFFF
 
+/*
+ * Kernel will always be able to work between 0xC0000000 and 0xC0400000
+ * Extendable heap is extra allocatable memory for the kernel
+ */
+# define KERNEL_EXHEAP_START 0xC0400000
+/*
+ * Kernel will use memory (physical) available between 0x2000 and 0xA0000
+ * as extra page tables for the kernel heap
+ */
+# define KERNEL_PT_START 0x2000
+# define KERNEL_PT_END 0xA0000
+
+# define KERNEL_PT_START_INDEX 0x2
+# define KERNEL_PT_END_INDEX 0xA0
+
+# define KERNEL_EXHEAP_SIZE ((KERNEL_PT_END_INDEX - KERNEL_PT_START_INDEX) * \
+                            PAGE_SIZE * 1024)
+
+# define KERNEL_EXHEAP_END KERNEL_EXHEAP_START + KERNEL_EXHEAP_SIZE
+
 struct as;
 
 int mmu_init_kernel(struct as *as);
 int mmu_init_user(struct as *as);
+int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
+            int flags);
+void mmu_unmap(struct as *as, vaddr_t vaddr, size_t size);
 
 #endif /* !I386_MMU_H */

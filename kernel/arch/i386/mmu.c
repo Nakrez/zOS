@@ -27,6 +27,10 @@ int mmu_init_kernel(struct as *as)
 
     kpd[768] = kpt_phy | PD_PRESENT | PD_WRITE;
 
+    /* Map extended kernel heap page table */
+    for (size_t i = KERNEL_PT_START_INDEX; i < KERNEL_PT_END_INDEX; ++i)
+        kpd[767 + i] = i * PAGE_SIZE | PD_PRESENT | PD_WRITE;
+
     /* Mirroring setup */
     kpd[1023] = as->arch.cr3 | PD_PRESENT | PD_WRITE;
 
@@ -40,4 +44,15 @@ int mmu_init_user(struct as *as)
     (void) as;
 
     return 1;
+}
+
+int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
+            int flags)
+{
+
+}
+
+void mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
+{
+
 }

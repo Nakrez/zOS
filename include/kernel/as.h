@@ -11,6 +11,9 @@
 # define AS_MAP_WRITE (1 << 2)
 # define AS_MAP_EXEC (1 << 3)
 
+# define AS_UNMAP_RELEASE 1
+# define AS_UNMAP_NORELEASE 0
+
 struct as_mapping
 {
     vaddr_t virt;
@@ -34,8 +37,8 @@ struct as
 struct as_glue
 {
     int (*init)(struct as *);
-    int (*map)(vaddr_t, paddr_t, size_t, int);
-    void (*unmap)(vaddr_t, size_t);
+    int (*map)(struct as *, vaddr_t, paddr_t, size_t, int);
+    void (*unmap)(struct as *, vaddr_t, size_t);
 };
 
 extern struct as kernel_as;
@@ -65,6 +68,6 @@ int as_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
 /*
  * Unmap vaddr
  */
-void as_unmap(struct as *as, vaddr_t vaddr);
+void as_unmap(struct as *as, vaddr_t vaddr, int flags);
 
 #endif /* !AS_H */

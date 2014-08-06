@@ -14,7 +14,7 @@ void region_initialize(struct as *as)
     if (as == &kernel_as)
     {
         reg->base = KERNEL_BEGIN;
-        reg->page_size = (KERNEL_END - KERNEL_BEGIN) / PAGE_SIZE;
+        reg->page_size = 1024 + KERNEL_EXHEAP_SIZE / PAGE_SIZE;
         reg->mapped = 0;
 
         klist_add(&as->regions, &reg->list);
