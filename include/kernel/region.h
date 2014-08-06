@@ -25,6 +25,8 @@ void region_initialize(struct as *as);
  * Reserve a region inside an address space
  *
  * if addr == 0 it just try to locate a region with size = page_size
+ *
+ * Return the address at the beginning of the region, 0 if it fails
  */
 vaddr_t region_reserve(struct as *as, vaddr_t addr, size_t page_size);
 
