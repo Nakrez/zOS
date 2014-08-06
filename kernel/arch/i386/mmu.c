@@ -66,7 +66,24 @@ static int as_to_mmu_flags(int flags)
     return mmu_flags;
 }
 
-int install_pt_if_needed(uint32_t *pd, uint32_t pd_index, int flags)
+paddr_t mmu_virt_to_phy(vaddr_t vaddr)
+{
+    uint32_t pd_index = (vaddr >> 22) & 0x3FF;
+    uint32_t pt_index = (vaddr >> 12) & 0x3FF;
+
+    uint32_t *pd = (uint32_t *)0xFFFFF000;
+    uint32_t *pt = (uint32_t *)(0xFFC00000 + 0x1000 * pd_index);
+
+    if (!(pd[pd_index] & PD_PRESENT))
+        return 0;
+
+    if (!(pt[pt_index] & PT_PRESENT))
+        return 0;
+
+    return pt[pt_index] & 0x7FF;
+}
+
+static int install_pt_if_needed(uint32_t *pd, uint32_t pd_index, int flags)
 {
     if (!(pd[pd_index] & PD_PRESENT))
     {
@@ -120,9 +137,12 @@ int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
             ++pd_index;
             pt_index = 0;
 
-            /* FIXME: unmap what has already been mapped */
             if (!install_pt_if_needed(pd, pd_index, flags))
+            {
+                mmu_unmap(as, vaddr, size - number_of_page * PAGE_SIZE);
+
                 return 0;
+            }
 
             pt = (uint32_t *)(0xFFC00000 + 0x1000 * pd_index);
         }
@@ -131,9 +151,59 @@ int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
     return 1;
 }
 
+void clean_if_needed(uint32_t *pt, uint32_t *pd, uint32_t pd_index)
+{
+    for (size_t i = 0; i < PAGE_SIZE; ++i)
+        if (pt[i])
+            return;
+
+    paddr_t addr = as_virt_to_phy((vaddr_t)pt);
+
+    if (addr)
+    {
+        segment_free(addr);
+
+        pd[pd_index] = 0;
+    }
+}
+
 void mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
 {
-    (void) as;
-    (void) vaddr;
-    (void) size;
+    uint32_t pd_index = (vaddr >> 22) & 0x3FF;
+    uint32_t pt_index = (vaddr >> 12) & 0x3FF;
+
+    uint32_t number_of_page = size / PAGE_SIZE;
+
+    uint32_t *pd = (uint32_t *)0xFFFFF000;
+    uint32_t *pt = (uint32_t *)(0xFFC00000 + 0x1000 * pd_index);
+
+    while (1)
+    {
+        pt[pt_index] = 0;
+
+        --number_of_page;
+
+        if (!number_of_page)
+            break;
+
+        ++pt_index;
+
+        if (pt_index > 1023)
+        {
+            ++pd_index;
+            pt_index = 0;
+
+            /*
+             * Remove page table if needed. Clean not needed if it is in kernel
+             * as because all page table a pre-allocated
+             */
+            if (as != &kernel_as)
+                clean_if_needed(pt, pd, pd_index - 1);
+
+            pt = (uint32_t *)(0xFFC00000 + 0x1000 * pd_index);
+        }
+    }
+
+    if (as != &kernel_as)
+        clean_if_needed(pt, pd, pd_index);
 }

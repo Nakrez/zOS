@@ -42,6 +42,7 @@ struct as;
 
 int mmu_init_kernel(struct as *as);
 int mmu_init_user(struct as *as);
+paddr_t mmu_virt_to_phy(vaddr_t vaddr);
 int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
             int flags);
 void mmu_unmap(struct as *as, vaddr_t vaddr, size_t size);

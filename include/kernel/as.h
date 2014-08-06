@@ -11,7 +11,10 @@
 # define AS_MAP_WRITE (1 << 2)
 # define AS_MAP_EXEC (1 << 3)
 
+/* Release the physical page when unmap */
 # define AS_UNMAP_RELEASE 1
+
+/* Don't release physical page when unmap */
 # define AS_UNMAP_NORELEASE 0
 
 struct as_mapping
@@ -39,6 +42,7 @@ struct as_glue
     int (*init)(struct as *);
     int (*map)(struct as *, vaddr_t, paddr_t, size_t, int);
     void (*unmap)(struct as *, vaddr_t, size_t);
+    paddr_t (*virt_to_phy)(vaddr_t);
 };
 
 extern struct as kernel_as;
@@ -53,6 +57,14 @@ struct as *as_create(void);
  * Initializes a new address space
  */
 int as_initialize(struct as* as);
+
+/*
+ * Get physical address mapped on virtual address
+ */
+static inline paddr_t as_virt_to_phy(vaddr_t vaddr)
+{
+    return __as.virt_to_phy(vaddr);
+}
 
 /*
  * Map paddr to vaddr for a size size

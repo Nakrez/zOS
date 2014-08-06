@@ -9,6 +9,7 @@ struct as_glue __as =
     i386_pc_as_initialize,
     mmu_map,
     mmu_unmap,
+    mmu_virt_to_phy,
 };
 
 int i386_pc_as_initialize(struct as *as)
