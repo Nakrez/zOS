@@ -63,8 +63,12 @@ int as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
         vaddr = region_reserve(as, 0, size / PAGE_SIZE);
 
         if (!vaddr)
-            goto region_error;
+            goto error;
     }
+    /* Try to map in kernel a user region */
+    else if (vaddr >= KERNEL_BEGIN &&
+             (as != &kernel_as || flags & AS_MAP_USER))
+        goto error;
 
     if (!paddr)
     {
@@ -73,6 +77,9 @@ int as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
         if (!paddr)
             goto segment_error;
     }
+    /* Try to allocate user memory in kernel as */
+    else if (vaddr < KERNEL_BEGIN && as == &kernel_as)
+        goto error;
 
     map = kmalloc(sizeof (struct as_mapping));
     map->virt = vaddr;
@@ -90,7 +97,7 @@ arch_map_error:
     kfree(map);
 segment_error:
     region_release(as, vaddr);
-region_error:
+error:
     return 0;
 }
 
