@@ -5,8 +5,11 @@
 
 # include <glue/as.h>
 
+# include <arch/spinlock.h>
+
 struct as
 {
+    spinlock_t region_lock;
     struct klist regions;
 
     struct glue_as arch;

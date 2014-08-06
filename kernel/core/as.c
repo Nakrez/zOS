@@ -24,6 +24,8 @@ int as_initialize(struct as* as)
     if (!__as.init(as))
         return 0;
 
+    spinlock_init(&as->region_lock);
+
     region_initialize(as);
 
     return 1;

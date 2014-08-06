@@ -69,6 +69,8 @@ vaddr_t region_reserve(struct as *as, vaddr_t addr, size_t page_size)
 
     vaddr_t max_range = addr + page_size * PAGE_SIZE;
 
+    spinlock_lock(&as->region_lock);
+
     klist_for_each_elem(&as->regions, reg, list)
     {
         if (reg->mapped)
@@ -84,6 +86,8 @@ vaddr_t region_reserve(struct as *as, vaddr_t addr, size_t page_size)
 
                 region_split(reg, reg->base, page_size);
 
+                spinlock_unlock(&as->region_lock);
+
                 return reg->base;
             }
         }
@@ -91,15 +95,22 @@ vaddr_t region_reserve(struct as *as, vaddr_t addr, size_t page_size)
         {
             /* Address was found but area is too small */
             if (max_range >= regmax_range)
+            {
+                spinlock_unlock(&as->region_lock);
                 return 0;
+            }
 
             reg->mapped = 1;
 
             region_split(reg, addr, page_size);
 
+            spinlock_unlock(&as->region_lock);
+
             return reg->base;
         }
     }
+
+    spinlock_unlock(&as->region_lock);
 
     return 0;
 }
@@ -142,6 +153,8 @@ void region_release(struct as *as, vaddr_t addr)
 {
     struct region *reg;
 
+    spinlock_lock(&as->region_lock);
+
     klist_for_each_elem(&as->regions, reg, list)
     {
         if (reg->base == addr)
@@ -150,9 +163,13 @@ void region_release(struct as *as, vaddr_t addr)
 
             region_merge(as, reg);
 
+            spinlock_unlock(&as->region_lock);
+
             return;
         }
     }
+
+    spinlock_unlock(&as->region_lock);
 }
 
 void region_dump(struct as *as)
