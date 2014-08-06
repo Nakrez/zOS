@@ -1,6 +1,7 @@
 #include <kernel/as.h>
 #include <kernel/zos.h>
 #include <kernel/kmalloc.h>
+#include <kernel/region.h>
 
 struct as kernel_as;
 
@@ -20,5 +21,10 @@ struct as *as_create(void)
 
 int as_initialize(struct as* as)
 {
-    return __as.init(as);
+    if (!__as.init(as))
+        return 0;
+
+    region_initialize(as);
+
+    return 1;
 }

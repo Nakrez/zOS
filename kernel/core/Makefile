@@ -1,6 +1,6 @@
 CURDIR := kernel/core/
 
-OBJ := main.o string.o console.o kmalloc.o segment.o panic.o as.o
+OBJ := main.o string.o console.o kmalloc.o segment.o panic.o as.o region.o
 
 DEPS := $(DEPS) $(addprefix $(CURDIR), $(OBJ:.o=.d))
 

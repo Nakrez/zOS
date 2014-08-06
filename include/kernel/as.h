@@ -1,10 +1,14 @@
 #ifndef AS_H
 # define AS_H
 
+# include <kernel/klist.h>
+
 # include <glue/as.h>
 
 struct as
 {
+    struct klist regions;
+
     struct glue_as arch;
 };
 

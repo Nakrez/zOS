@@ -12,6 +12,12 @@
 
 # define PAGE_SIZE 0x1000
 
+/* USER BEGIN IS 0x1000 so 0x0 is never mapped */
+# define USER_BEGIN 0x1000
+
+# define KERNEL_BEGIN 0xC0000000
+# define KERNEL_END 0xFFFFFFFF
+
 struct as;
 
 int mmu_init_kernel(struct as *as);
