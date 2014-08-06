@@ -3,6 +3,8 @@
 #include <kernel/console.h>
 #include <kernel/kmalloc.h>
 #include <kernel/segment.h>
+#include <kernel/as.h>
+#include <kernel/panic.h>
 
 int kernel_main(struct boot_info *boot)
 {
@@ -15,6 +17,11 @@ int kernel_main(struct boot_info *boot)
     kmalloc_initialize(boot);
 
     segment_initialize(boot);
+
+    console_message(T_OK, "Initialization of kernel address space");
+
+    if (!as_initialize(&kernel_as))
+        kernel_panic("Fail to initialize kernel address space");
 
     while (1)
         ;

@@ -1,6 +1,8 @@
 #ifndef SEGMENT_H
 # define SEGMENT_H
 
+# include <boot/boot.h>
+
 # include <kernel/types.h>
 # include <kernel/klist.h>
 

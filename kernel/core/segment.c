@@ -1,5 +1,3 @@
-#include <boot/boot.h>
-
 #include <kernel/segment.h>
 #include <kernel/panic.h>
 #include <kernel/kmalloc.h>
