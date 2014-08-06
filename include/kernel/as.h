@@ -60,10 +60,10 @@ int as_initialize(struct as* as);
  * If vaddr == 0 the function will try to locate a region of size size
  * if paddr == 0 the function will try to locate a segment of size size
  *
- * Return 1 if everything went well 0 otherwise
+ * Return vaddr if everything went well 0 otherwise
  */
-int as_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
-           int flags);
+vaddr_t as_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
+               int flags);
 
 /*
  * Unmap vaddr

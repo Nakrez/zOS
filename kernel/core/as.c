@@ -52,10 +52,13 @@ int as_initialize(struct as* as)
     return 1;
 }
 
-int as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
-            int flags)
+vaddr_t as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
+               int flags)
 {
     struct as_mapping *map;
+
+    if (!size)
+        return 0;
 
     /* Locate a region */
     if (!vaddr)
@@ -92,6 +95,8 @@ int as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
     spinlock_lock(&as->map_lock);
     klist_add(&as->mapping, &map->list);
     spinlock_unlock(&as->map_lock);
+
+    return vaddr;
 
 arch_map_error:
     kfree(map);
