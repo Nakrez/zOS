@@ -1,6 +1,8 @@
 #ifndef X86_CRX_H
 # define X86_CRX_H
 
+# include <kernel/types.h>
+
 # define CR0_PAGE 0x80000000
 # define CR0_PM 0x1
 
