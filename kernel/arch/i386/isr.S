@@ -26,6 +26,7 @@ isr_main:
 
     push    %esp
     call    event_dispatch
+    add     $4, %esp
 
     pop     %gs
     pop     %fs
