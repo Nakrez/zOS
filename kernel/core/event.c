@@ -14,5 +14,11 @@ void event_dispatch(struct irq_regs *regs)
      */
     console_message(T_INF, "Unhandled IRQ %i fired with data = 0x%x",
                     regs->irq_num, regs->irq_data);
-    while (1);
+
+    event_acnowledge(regs->irq_num);
+}
+
+void event_acnowledge(int irq)
+{
+    __event.acnowledge(irq);
 }
