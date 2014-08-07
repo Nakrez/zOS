@@ -25,7 +25,7 @@ int mmu_init_kernel(struct as *as)
         kpt[i] = (i * PAGE_SIZE) | PT_PRESENT | PT_WRITE;
 
     /* Clean page directory */
-    memset(kpd, 0, PAGE_SIZE);
+    kpd[0] = 0;
 
     kpd[768] = kpt_phy | PD_PRESENT | PD_WRITE;
 
