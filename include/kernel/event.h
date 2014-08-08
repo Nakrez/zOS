@@ -3,12 +3,22 @@
 
 # include <arch/cpu.h>
 
+# define EVENT_NONE 0
+# define EVENT_CALLBACK 1
+# define EVENT_MESSAGE 2
+
 struct event_glue
 {
     void (*init)(void);
     void (*enable)(void);
     void (*disable)(void);
     void (*acnowledge)(int);
+};
+
+struct event_entry
+{
+    int type;
+    void (*callback)(int, int);
 };
 
 extern struct event_glue __event;
@@ -39,6 +49,14 @@ static inline void event_disable(void)
  */
 void event_dispatch(struct irq_regs *regs);
 
+/*
+ * Acnowledge the irq
+ */
 void event_acnowledge(int irq);
+
+/*
+ * Register a new callback / message for the irq
+ */
+int event_register(int irq, int type, void (*callback)(int, int));
 
 #endif /* !EVENT_H */
