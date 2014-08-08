@@ -12,5 +12,6 @@ struct timer_glue
 extern struct timer_glue __timer;
 
 void timer_initialize(void);
+void timer_handler(int irq, int data);
 
 #endif /* !TIMER_H */

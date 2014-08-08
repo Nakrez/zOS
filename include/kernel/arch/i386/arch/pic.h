@@ -12,6 +12,8 @@
 
 # define PIC_EOI 0x20
 
+# define PIC_IRQ_PIT 0x20
+
 void pic_initialize(void);
 void pic_acnowledge(int irq);
 
