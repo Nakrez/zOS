@@ -1,0 +1,6 @@
+#ifndef GLUE_I386_PC_TIMER_H
+# define GLUE_I386_PC_TIMER_H
+
+void i386_pc_timer_initialize(void);
+
+#endif /* !GLUE_I386_PC_TIMER_H */

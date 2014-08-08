@@ -5,6 +5,7 @@
 #include <kernel/segment.h>
 #include <kernel/as.h>
 #include <kernel/event.h>
+#include <kernel/timer.h>
 #include <kernel/panic.h>
 
 int kernel_main(struct boot_info *boot)
@@ -27,6 +28,10 @@ int kernel_main(struct boot_info *boot)
     event_initialize();
 
     console_message(T_OK, "Event initialized");
+
+    timer_initialize();
+
+    console_message(T_OK, "Timer initialized");
 
     while (1)
         ;
