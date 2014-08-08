@@ -205,7 +205,7 @@ void segment_dump(void)
 {
     struct segment *seg;
 
-    console_message(T_INF, "segment layout dump (page size : %u Ko)",
+    console_message(T_INF, "Segment layout dump (page size : %u Ko)",
                     PAGE_SIZE / 1024);
 
     spinlock_lock(&segment_lock);

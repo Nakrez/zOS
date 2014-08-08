@@ -14,5 +14,5 @@ void pm_setup(void)
     gs_set(KERNEL_DS);
     ss_set(KERNEL_DS);
 
-    console_message(T_INF, "Kernel now running in protected-mode");
+    console_message(T_OK, "Kernel now running in protected-mode");
 }

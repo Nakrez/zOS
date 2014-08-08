@@ -42,5 +42,5 @@ void gdt_init(void)
                           : "m" (gptr)
                           : "memory");
 
-    console_message(T_INF, "GDT initialized");
+    console_message(T_OK, "GDT initialized");
 }
