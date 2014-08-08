@@ -16,5 +16,7 @@
 
 void pic_initialize(void);
 void pic_acnowledge(int irq);
+void pic_mask(int irq);
+void pic_unmask(int irq);
 
 #endif /* !I386_PIC_H */

@@ -34,3 +34,41 @@ void pic_acnowledge(int irq)
 
     outb(PIC_MASTER_CMD, PIC_EOI);
 }
+
+void pic_mask(int irq)
+{
+    uint16_t port;
+    uint8_t value;
+
+    if (irq < 8)
+        port = PIC_MASTER_DATA;
+    else
+    {
+        port = PIC_SLAVE_DATA;
+        irq -= 8;
+    }
+
+    value = inb(port);
+    value |= (1 << irq);
+
+    outb(port, value);
+}
+
+void pic_unmask(int irq)
+{
+    uint16_t port;
+    uint8_t value;
+
+    if (irq < 8)
+        port = PIC_MASTER_DATA;
+    else
+    {
+        port = PIC_SLAVE_DATA;
+        irq -= 8;
+    }
+
+    value = inb(port);
+    value &= ~(1 << irq);
+
+    outb(port, value);
+}
