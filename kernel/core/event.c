@@ -58,5 +58,7 @@ int event_register(int irq, int type, void (*callback)(int, int))
     event_entries[irq].type = type;
     event_entries[irq].callback = callback;
 
+    event_unmask(irq);
+
     return 1;
 }
