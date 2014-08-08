@@ -6,6 +6,7 @@
 #include <kernel/as.h>
 #include <kernel/event.h>
 #include <kernel/timer.h>
+#include <kernel/process.h>
 #include <kernel/panic.h>
 
 int kernel_main(struct boot_info *boot)
@@ -32,6 +33,10 @@ int kernel_main(struct boot_info *boot)
     timer_initialize();
 
     console_message(T_OK, "Timer initialized");
+
+    process_initialize();
+
+    console_message(T_OK, "Process initialized");
 
     while (1)
         ;
