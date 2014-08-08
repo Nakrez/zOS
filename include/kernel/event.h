@@ -13,6 +13,8 @@ struct event_glue
     void (*enable)(void);
     void (*disable)(void);
     void (*acnowledge)(int);
+    void (*mask)(int);
+    void (*unmask)(int);
 };
 
 struct event_entry
@@ -58,5 +60,21 @@ void event_acnowledge(int irq);
  * Register a new callback / message for the irq
  */
 int event_register(int irq, int type, void (*callback)(int, int));
+
+/*
+ * Mask an IRQ
+ */
+static inline void event_mask(int irq)
+{
+    __event.mask(irq);
+}
+
+/*
+ * Unmask an IRQ
+ */
+static inline void event_unmask(int irq)
+{
+    __event.unmask(irq);
+}
 
 #endif /* !EVENT_H */
