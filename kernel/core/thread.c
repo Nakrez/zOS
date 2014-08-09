@@ -1,6 +1,7 @@
 #include <kernel/thread.h>
 #include <kernel/kmalloc.h>
 #include <kernel/console.h>
+#include <kernel/cpu.h>
 
 #include <arch/mmu.h>
 
@@ -32,7 +33,7 @@ int thread_create(struct process *process, uintptr_t code)
 
     klist_add(&process->threads, &thread->list);
 
-    /* FIXME: Add thread to scheduler */
+    cpu_add_thread(thread);
 
     return 1;
 }

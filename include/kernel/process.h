@@ -32,6 +32,6 @@ struct process
 
 void process_initialize(void);
 
-int process_create(int type, uintptr_t code, int flags);
+struct process *process_create(int type, uintptr_t code, int flags);
 
 #endif /* !PROCESS_H */

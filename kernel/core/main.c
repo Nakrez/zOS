@@ -7,6 +7,7 @@
 #include <kernel/event.h>
 #include <kernel/timer.h>
 #include <kernel/process.h>
+#include <kernel/cpu.h>
 #include <kernel/panic.h>
 
 int kernel_main(struct boot_info *boot)
@@ -16,6 +17,7 @@ int kernel_main(struct boot_info *boot)
     console_init();
 
     console_message(T_INF, "zKernel is booting");
+
 
     kmalloc_initialize(boot);
 
@@ -38,7 +40,7 @@ int kernel_main(struct boot_info *boot)
 
     console_message(T_OK, "Process initialized");
 
-    process_create(PROCESS_TYPE_KERNEL, 0x11432, 0);
+    cpu_initialize();
 
     while (1)
         ;

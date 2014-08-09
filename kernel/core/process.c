@@ -33,7 +33,7 @@ static int process_new_pid(void)
     return -1;
 }
 
-int process_create(int type, uintptr_t code, int flags)
+struct process *process_create(int type, uintptr_t code, int flags)
 {
     struct process *process;
     int pid;
@@ -41,12 +41,12 @@ int process_create(int type, uintptr_t code, int flags)
     pid = process_new_pid();
 
     if (pid < 0)
-        return 0;
+        return NULL;
 
     process = kmalloc(sizeof (struct process));
 
     if (!process)
-        return 0;
+        return NULL;
 
     if (type & PROCESS_TYPE_USER)
     {
@@ -72,11 +72,11 @@ int process_create(int type, uintptr_t code, int flags)
 
     klist_add(&processes, &process->list);
 
-    return 1;
+    return process;
 
 error:
     if (process->as != &kernel_as)
         kfree(process->as);
 
-    return 0;
+    return NULL;
 }

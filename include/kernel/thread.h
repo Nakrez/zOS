@@ -14,11 +14,17 @@ struct thread
     size_t uid;
     size_t gid;
 
+    int cpu;
+
     uintptr_t kstack;
 
     struct thread_regs regs;
 
+    /* List of thread in process */
     struct klist list;
+
+    /* List for the scheduler */
+    struct klist sched;
 };
 
 struct thread_glue
