@@ -24,6 +24,7 @@ int thread_create(struct process *process, uintptr_t code)
 
     thread->uid = 0;
     thread->gid = 0;
+    thread->kstack = (uintptr_t)thread - 4;
 
     if (!_thread.create(process, thread, code))
     {
