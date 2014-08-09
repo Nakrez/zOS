@@ -14,6 +14,8 @@ struct thread
     size_t uid;
     size_t gid;
 
+    uintptr_t kstack;
+
     struct thread_regs regs;
 
     struct klist list;

@@ -61,6 +61,9 @@ int process_create(int type, uintptr_t code, int flags)
     process->thread_count = 0;
     process->type = type;
 
+    /* Init thread list */
+    klist_head_init(&process->threads);
+
     if (flags & PROCESS_FLAG_LOAD)
         kernel_panic("Loading binary not implemented");
 

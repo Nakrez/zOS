@@ -1,5 +1,8 @@
 #include <kernel/thread.h>
 #include <kernel/kmalloc.h>
+#include <kernel/console.h>
+
+#include <arch/mmu.h>
 
 int thread_create(struct process *process, uintptr_t code)
 {
@@ -8,7 +11,12 @@ int thread_create(struct process *process, uintptr_t code)
     if (!code)
         return 0;
 
-    thread = kmalloc(sizeof (struct thread));
+    /*
+     * Allocate one entire page because thread structure is located on the
+     * kernel stack
+     */
+    thread = (void *)(as_map(&kernel_as, 0, 0, PAGE_SIZE, AS_MAP_WRITE) +
+             PAGE_SIZE - sizeof (struct thread));
 
     if (!thread)
         return 0;
@@ -18,7 +26,7 @@ int thread_create(struct process *process, uintptr_t code)
 
     if (!_thread.create(process, thread, code))
     {
-        kfree(thread);
+        as_unmap(&kernel_as, (vaddr_t)thread, AS_UNMAP_RELEASE);
         return 0;
     }
 

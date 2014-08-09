@@ -38,6 +38,8 @@ int kernel_main(struct boot_info *boot)
 
     console_message(T_OK, "Process initialized");
 
+    process_create(PROCESS_TYPE_KERNEL, 0x11432, 0);
+
     while (1)
         ;
 }
