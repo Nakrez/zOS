@@ -51,3 +51,24 @@ void cpu_add_thread(struct thread *thread)
 
     scheduler_add_thread(&cpu->scheduler, thread);
 }
+
+void cpu_start(void)
+{
+    struct cpu *cpu = NULL;
+
+    for (int i = 0; i < CPU_COUNT; ++i)
+    {
+        if (cpus[i].id == cpu_id_get())
+        {
+            cpu = &cpus[i];
+            break;
+        }
+    }
+
+    if (!cpu)
+        kernel_panic("Unable to start CPU");
+
+    console_message(T_OK, "Cpu %i started", cpu->id);
+
+    scheduler_start(&cpu->scheduler);
+}

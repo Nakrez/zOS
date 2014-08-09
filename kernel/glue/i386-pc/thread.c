@@ -3,4 +3,5 @@
 struct thread_glue _thread =
 {
     i386_thread_create,
+    i386_thread_current,
 };

@@ -49,3 +49,16 @@ int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip)
 
     return 1;
 }
+
+struct thread *i386_thread_current(void)
+{
+    uint32_t esp;
+
+    __asm__ __volatile__("mov %%esp, %0"
+                         : "=r" (esp)
+                         :);
+
+    esp = ((esp + PAGE_SIZE) & PAGE_SIZE) - sizeof (struct thread);
+
+    return (struct thread *)esp;
+}

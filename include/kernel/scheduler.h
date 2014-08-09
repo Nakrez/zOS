@@ -35,6 +35,11 @@ void scheduler_initialize(struct scheduler *sched);
 void scheduler_add_thread(struct scheduler *sched, struct thread *thread);
 
 /*
+ * Start a scheduler
+ */
+void scheduler_start(struct scheduler *sched);
+
+/*
  * This is the core of the scheduling process
  * The function is called by the timer on regular basis to update scheduler
  * state

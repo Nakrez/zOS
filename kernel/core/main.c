@@ -42,6 +42,7 @@ int kernel_main(struct boot_info *boot)
 
     cpu_initialize();
 
-    while (1)
-        ;
+    cpu_start();
+
+    kernel_panic("Unreachable code reached");
 }

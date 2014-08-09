@@ -30,10 +30,22 @@ struct thread
 struct thread_glue
 {
     int (*create)(struct process *, struct thread *, uintptr_t);
+    struct thread *(*current)(void);
 };
 
 extern struct thread_glue _thread;
 
+/*
+ * Create a new thread inside a process
+ */
 int thread_create(struct process *process, uintptr_t code);
+
+/*
+ * Get the running thread
+ */
+static inline struct thread *thread_current(void)
+{
+    return _thread.current();
+}
 
 #endif /* !THREAD_H */
