@@ -15,6 +15,11 @@ static inline void klist_head_init(struct klist *name)
     name->next = name;
 }
 
+static inline int klist_empty(struct klist *head)
+{
+    return head->prev == head;
+}
+
 static inline void klist_add(struct klist *insert_pt, struct klist *new)
 {
     new->prev = insert_pt;
@@ -22,6 +27,15 @@ static inline void klist_add(struct klist *insert_pt, struct klist *new)
 
     insert_pt->next->prev = new;
     insert_pt->next = new;
+}
+
+static inline void klist_add_back(struct klist *insert_pt, struct klist *new)
+{
+    new->prev = insert_pt->prev;
+    new->next = insert_pt;
+
+    insert_pt->prev->next = new;
+    insert_pt->prev = new;
 }
 
 static inline void klist_del(struct klist *elem)
