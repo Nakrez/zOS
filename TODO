@@ -1,0 +1,34 @@
+[MISC]
+
+- Rename all glue dispatcher variable as XXX_glue_dispatcher
+- Rename all glue dispatcher structure as XXX_glue
+- Rename all glue specific data structure as XXX_glue_data
+
+[CORE]
+
+- Review CPU to be sure it could support SMP (which I doubt)
+- Add IPC mechanism
+- Add ELF loader
+- Review locks (Some might be missing)
+
+[SYSCALL]
+
+- Add irq specific syscall
+- Add memory specific syscalls (mmap, munmap)
+- Add IPC syscalls
+- exit
+
+[X86]
+
+- TSS
+- Add APIC support
+- Add SMP support
+- Add context save on scheduler
+
+[USERLAND]
+
+- Makefile mechanism
+- Add libc
+- Add libzos
+- Add vfs binary
+- Add init binary
