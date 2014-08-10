@@ -9,8 +9,13 @@
 
 # define THREAD_MAX_PER_PROCESS 10
 
+# define THREAD_STATE_RUNNING 1
+# define THREAD_STATE_BLOCKED 2
+
 struct thread
 {
+    int state;
+
     size_t uid;
     size_t gid;
 
