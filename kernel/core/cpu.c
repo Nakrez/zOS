@@ -33,6 +33,8 @@ void cpu_initialize(void)
     cpus[0].scheduler.idle = klist_elem(idle->threads.next, struct thread,
                                         list);
 
+    klist_del(&cpus[0].scheduler.idle->sched);
+
     /* FIXME: Add idle thread to cpu scheduler */
     for (int i = 1; i < CPU_COUNT; ++i)
         thread_create(idle, (uintptr_t)idle_thread);

@@ -28,6 +28,14 @@ struct scheduler
     struct klist threads;
 };
 
+struct scheduler_glue
+{
+    void (*sswitch)(struct irq_regs *r, struct thread *new,
+                    struct thread *old);
+};
+
+extern struct scheduler_glue _scheduler;
+
 /*
  * Initialize a scheduler
  */
@@ -62,6 +70,7 @@ struct thread *scheduler_elect(struct scheduler *sched);
 /*
  * Switch to new_thread
  */
-void scheduler_switch(struct scheduler *sched, struct thread *new_thread);
+void scheduler_switch(struct scheduler *sched, struct thread *new_thread,
+                      struct irq_regs *regs);
 
 #endif /* !SCHEDULER_H */

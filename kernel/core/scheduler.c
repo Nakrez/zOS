@@ -31,8 +31,9 @@ void scheduler_add_thread(struct scheduler *sched, struct thread *thread)
 
 void scheduler_start(struct scheduler *sched)
 {
-    sched->time = SCHEDULER_TIME;
-    sched->running = klist_elem(sched->threads.next, struct thread, sched);
+    sched->time = 1;
+
+    scheduler_update(NULL);
 }
 
 void scheduler_update(struct irq_regs *regs)
@@ -41,12 +42,12 @@ void scheduler_update(struct irq_regs *regs)
 
     --cpu->scheduler.time;
 
-    if (!cpu->scheduler.time)
+    if (cpu->scheduler.time <= 0)
     {
         struct thread *new_thread = scheduler_elect(&cpu->scheduler);
 
         if (new_thread != cpu->scheduler.running)
-            scheduler_switch(&cpu->scheduler, new_thread);
+            scheduler_switch(&cpu->scheduler, new_thread, regs);
         else
             cpu->scheduler.time = SCHEDULER_TIME;
     }
@@ -56,7 +57,8 @@ struct thread *scheduler_elect(struct scheduler *sched)
 {
     if (klist_empty(&sched->threads))
     {
-        if (sched->running->state != THREAD_STATE_BLOCKED)
+        if (sched->running != NULL &&
+            sched->running->state != THREAD_STATE_BLOCKED)
             return sched->running;
         else
             return sched->idle;
@@ -71,12 +73,16 @@ struct thread *scheduler_elect(struct scheduler *sched)
     return thread;
 }
 
-void scheduler_switch(struct scheduler *sched, struct thread *new_thread)
+void scheduler_switch(struct scheduler *sched, struct thread *new_thread,
+                      struct irq_regs *regs)
 {
     struct thread *old = sched->running;
 
     sched->running = new_thread;
     sched->time = SCHEDULER_TIME;
 
-    klist_add_back(&sched->threads, &old->sched);
+    if (old != NULL)
+        klist_add_back(&sched->threads, &old->sched);
+
+    _scheduler.sswitch(regs, new_thread, old);
 }
