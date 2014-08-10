@@ -10,7 +10,7 @@
 #include <kernel/cpu.h>
 #include <kernel/panic.h>
 
-int kernel_main(struct boot_info *boot)
+void kernel_main(struct boot_info *boot)
 {
     (void)boot;
 

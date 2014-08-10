@@ -1,6 +1,7 @@
 #include <kernel/scheduler.h>
 #include <kernel/zos.h>
 #include <kernel/console.h>
+#include <kernel/cpu.h>
 
 void scheduler_initialize(struct scheduler *sched)
 {
@@ -23,7 +24,7 @@ void scheduler_add_thread(struct scheduler *sched, struct thread *thread)
 
     ++sched->thread_num;
 
-    klist_add(&sched->threads, &thread->sched);
+    klist_add_back(&sched->threads, &thread->sched);
 
     spinlock_unlock(&sched->sched_lock);
 }
@@ -36,5 +37,46 @@ void scheduler_start(struct scheduler *sched)
 
 void scheduler_update(struct irq_regs *regs)
 {
-    (void) regs;
+    struct cpu *cpu = cpu_get(cpu_id_get());
+
+    --cpu->scheduler.time;
+
+    if (!cpu->scheduler.time)
+    {
+        struct thread *new_thread = scheduler_elect(&cpu->scheduler);
+
+        if (new_thread != cpu->scheduler.running)
+            scheduler_switch(&cpu->scheduler, new_thread);
+        else
+            cpu->scheduler.time = SCHEDULER_TIME;
+    }
+}
+
+struct thread *scheduler_elect(struct scheduler *sched)
+{
+    if (klist_empty(&sched->threads))
+    {
+        if (sched->running->state != THREAD_STATE_BLOCKED)
+            return sched->running;
+        else
+            return sched->idle;
+    }
+
+    /* Get first element in the thread list */
+    struct thread *thread = klist_elem(sched->threads.next, struct thread,
+                                       sched);
+
+    klist_del(&thread->sched);
+
+    return thread;
+}
+
+void scheduler_switch(struct scheduler *sched, struct thread *new_thread)
+{
+    struct thread *old = sched->running;
+
+    sched->running = new_thread;
+    sched->time = SCHEDULER_TIME;
+
+    klist_add_back(&sched->threads, &old->sched);
 }

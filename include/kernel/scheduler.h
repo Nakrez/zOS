@@ -17,6 +17,10 @@ struct scheduler
 
     struct thread *running;
 
+    /* Idle thread to elect when nothing runs */
+    struct thread *idle;
+
+    /* Number of thread in the scheduler list */
     size_t thread_num;
 
     spinlock_t sched_lock;
@@ -29,6 +33,10 @@ struct scheduler
  */
 void scheduler_initialize(struct scheduler *sched);
 
+/*
+ * Add an idle thread to a scheduler
+ */
+void scheduler_add_idle(struct scheduler *sched, struct thread *idle);
 /*
  * Add a thread to a specific scheduler
  */
@@ -45,5 +53,15 @@ void scheduler_start(struct scheduler *sched);
  * state
  */
 void scheduler_update(struct irq_regs *regs);
+
+/*
+ * Elect a new thread
+ */
+struct thread *scheduler_elect(struct scheduler *sched);
+
+/*
+ * Switch to new_thread
+ */
+void scheduler_switch(struct scheduler *sched, struct thread *new_thread);
 
 #endif /* !SCHEDULER_H */

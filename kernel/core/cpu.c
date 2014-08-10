@@ -30,6 +30,10 @@ void cpu_initialize(void)
 
     idle = process_create(PROCESS_TYPE_KERNEL, (uintptr_t)idle_thread, 0);
 
+    cpus[0].scheduler.idle = klist_elem(idle->threads.next, struct thread,
+                                        list);
+
+    /* FIXME: Add idle thread to cpu scheduler */
     for (int i = 1; i < CPU_COUNT; ++i)
         thread_create(idle, (uintptr_t)idle_thread);
 
@@ -71,4 +75,17 @@ void cpu_start(void)
     console_message(T_OK, "Cpu %i started", cpu->id);
 
     scheduler_start(&cpu->scheduler);
+}
+
+struct cpu *cpu_get(int id)
+{
+    struct cpu *cpu = NULL;
+
+    for (int i = 0; i < CPU_COUNT; ++i)
+    {
+        if (cpus[i].id == id)
+            return &cpus[i];
+    }
+
+    return cpu;
 }
