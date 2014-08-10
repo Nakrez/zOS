@@ -22,6 +22,10 @@ int thread_create(struct process *process, uintptr_t code)
     if (!thread)
         return 0;
 
+    thread->parent = process;
+
+    thread->state = THREAD_STATE_RUNNING;
+
     thread->uid = 0;
     thread->gid = 0;
     thread->kstack = (uintptr_t)thread - 4;

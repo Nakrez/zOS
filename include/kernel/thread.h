@@ -16,6 +16,8 @@ struct thread
 {
     int state;
 
+    struct process *parent;
+
     size_t uid;
     size_t gid;
 

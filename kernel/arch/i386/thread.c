@@ -46,6 +46,7 @@ int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip)
     t->regs.ecx = 0;
     t->regs.eax = 0;
     t->regs.eip = eip;
+    t->regs.eflags = 0x200;
 
     return 1;
 }

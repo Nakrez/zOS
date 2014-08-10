@@ -10,7 +10,12 @@ static struct process *idle;
 static void idle_thread(void)
 {
     while (1)
-        ;
+    {
+        for (volatile int i = 0; i < 0x100000; ++i)
+            ;
+
+        console_message(T_INF, "IDLE");
+    }
 }
 
 void cpu_initialize(void)
@@ -33,7 +38,7 @@ void cpu_initialize(void)
     cpus[0].scheduler.idle = klist_elem(idle->threads.next, struct thread,
                                         list);
 
-    klist_del(&cpus[0].scheduler.idle->sched);
+    klist_del(cpus[0].scheduler.threads.next);
 
     /* FIXME: Add idle thread to cpu scheduler */
     for (int i = 1; i < CPU_COUNT; ++i)
