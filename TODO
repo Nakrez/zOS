@@ -20,7 +20,6 @@
 
 [X86]
 
-- TSS
 - Add APIC support
 - Add SMP support
 - Add context save on scheduler

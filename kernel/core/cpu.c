@@ -91,6 +91,12 @@ void cpu_start(void)
     if (!cpu)
         kernel_panic("Unable to start CPU");
 
+    /*
+     * Init is called here because cpu_start is called by each processor
+     * to initialize it specifically
+     */
+    cpu_glue_dispatcher.init(cpu);
+
     console_message(T_OK, "Cpu %i started", cpu->id);
 
     scheduler_start(&cpu->scheduler);

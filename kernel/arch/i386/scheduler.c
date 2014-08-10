@@ -1,4 +1,5 @@
 #include <kernel/panic.h>
+#include <kernel/cpu.h>
 
 #include <arch/scheduler.h>
 #include <arch/pm.h>
@@ -15,6 +16,7 @@ void i386_switch(struct irq_regs *regs, struct thread *new,
                  struct thread *old)
 {
     struct process *parent = new->parent;
+    struct cpu *cpu = cpu_get(cpu_id_get());
 
     save_thread(regs, old);
 
@@ -22,6 +24,9 @@ void i386_switch(struct irq_regs *regs, struct thread *new,
         __asm__ __volatile__("mov %0, %%esp\n"
                              :
                              : "r" (new->regs.esp));
+
+    /* Set kernel stack as esp0 */
+    cpu->arch.tss.esp0 = new->kstack;
 
     cr3_set(parent->as->arch.cr3);
 

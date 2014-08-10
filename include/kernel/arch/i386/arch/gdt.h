@@ -3,21 +3,24 @@
 
 # include <kernel/types.h>
 
-# define GDT_MAX_SIZE 5
+# define GDT_MAX_SIZE 10
 
 # define GDT_KERNEL_CS 1
 # define GDT_KERNEL_DS 2
 # define GDT_USER_CS 3
 # define GDT_USER_DS 4
+# define GDT_TSS_BASE 5
 
 # define SELECTOR(entry, dpl) ((entry << 3) + dpl)
 # define KERNEL_SELECTOR(entry) SELECTOR(entry, 0)
 # define USER_SELECTOR(entry) SELECTOR(entry, 3)
+# define TSS_SELECTOR(entry) SELECTOR(((entry) + GDT_TSS_BASE), 0)
 
 # define SEGMENT_PRESENT 0x80
 
 # define CS(dpl) (SEGMENT_PRESENT | (dpl << 5) | (1 << 4) | 0xA)
 # define DS(dpl) (SEGMENT_PRESENT | (dpl << 5) | (1 << 4) | 0x2)
+# define TSS(dpl) (SEGMENT_PRESENT | (dpl << 5) | 0x9)
 
 struct gdt_ptr
 {
