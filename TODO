@@ -23,6 +23,7 @@
 - Add APIC support
 - Add SMP support
 - Add context save on scheduler
+- Add GPF/PF handler
 
 [USERLAND]
 
