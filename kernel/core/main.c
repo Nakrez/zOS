@@ -7,6 +7,7 @@
 #include <kernel/event.h>
 #include <kernel/timer.h>
 #include <kernel/process.h>
+#include <kernel/syscall.h>
 #include <kernel/cpu.h>
 #include <kernel/panic.h>
 
@@ -39,6 +40,10 @@ void kernel_main(struct boot_info *boot)
     process_initialize();
 
     console_message(T_OK, "Process initialized");
+
+    syscall_initialize();
+
+    console_message(T_OK, "System call initialized");
 
     cpu_initialize();
 

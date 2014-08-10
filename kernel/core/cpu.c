@@ -9,12 +9,24 @@ static struct process *idle;
 
 static void idle_thread(void)
 {
+    char message[5];
+
+    message[0] = 'I';
+    message[1] = 'D';
+    message[2] = 'L';
+    message[3] = 'E';
+    message[4] = 0;
+
     while (1)
     {
-        for (volatile int i = 0; i < 0x100000; ++i)
+        for (volatile int i = 0; i < 0x1000000; ++i)
             ;
 
-        console_message(T_INF, "IDLE");
+        __asm__ __volatile__("mov %0, %%ebx\n"
+                             "mov $1, %%eax\n"
+                             "int $0x80\n"
+                             :
+                             : "r" (message));
     }
 }
 
