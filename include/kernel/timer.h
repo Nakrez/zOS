@@ -4,6 +4,8 @@
 # include <kernel/types.h>
 # include <kernel/klist.h>
 
+# include <arch/cpu.h>
+
 /* 1 ms */
 # define TIMER_GRANULARITY 1
 
@@ -32,7 +34,7 @@ struct timer_entry
 extern struct timer_glue __timer;
 
 void timer_initialize(void);
-void timer_handler(int irq, int data);
+void timer_handler(struct irq_regs *regs);
 int timer_register(int type, int data, size_t time, void (*callback)(int));
 
 #endif /* !TIMER_H */

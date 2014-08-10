@@ -27,7 +27,7 @@ void event_dispatch(struct irq_regs *regs)
         kernel_panic("Invalid IRQ number");
 
     if (event_entries[regs->irq_num].type == EVENT_CALLBACK)
-        event_entries[regs->irq_num].callback(regs->irq_num, regs->irq_data);
+        event_entries[regs->irq_num].callback(regs);
     else if (event_entries[regs->irq_num].type == EVENT_MESSAGE)
         kernel_panic("IRQ message not implemented yet");
     else
@@ -41,7 +41,7 @@ void event_acnowledge(int irq)
     __event.acnowledge(irq);
 }
 
-int event_register(int irq, int type, void (*callback)(int, int))
+int event_register(int irq, int type, void (*callback)(struct irq_regs *))
 {
     if (type == EVENT_NONE)
         return 0;

@@ -1,6 +1,7 @@
 #include <kernel/timer.h>
 #include <kernel/panic.h>
 #include <kernel/kmalloc.h>
+#include <kernel/scheduler.h>
 
 static struct klist timers;
 
@@ -11,11 +12,8 @@ void timer_initialize(void)
     klist_head_init(&timers);
 }
 
-void timer_handler(int irq, int data)
+void timer_handler(struct irq_regs *regs)
 {
-    (void) irq;
-    (void) data;
-
     struct timer_entry *timer;
 
     klist_for_each_elem(&timers, timer, list)
@@ -38,6 +36,8 @@ void timer_handler(int irq, int data)
             }
         }
     }
+
+    scheduler_update(regs);
 }
 
 int timer_register(int type, int data, size_t time, void (*callback)(int))

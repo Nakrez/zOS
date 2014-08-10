@@ -20,7 +20,7 @@ struct event_glue
 struct event_entry
 {
     int type;
-    void (*callback)(int, int);
+    void (*callback)(struct irq_regs *);
 };
 
 extern struct event_glue __event;
@@ -59,7 +59,7 @@ void event_acnowledge(int irq);
 /*
  * Register a new callback / message for the irq
  */
-int event_register(int irq, int type, void (*callback)(int, int));
+int event_register(int irq, int type, void (*callback)(struct irq_regs *));
 
 /*
  * Mask an IRQ
