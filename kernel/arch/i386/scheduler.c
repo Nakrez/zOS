@@ -34,7 +34,6 @@ void i386_switch(struct irq_regs *regs, struct thread *new,
     es_set(new->regs.es);
     fs_set(new->regs.fs);
     gs_set(new->regs.gs);
-    ss_set(new->regs.ss);
 
     __asm__ __volatile__("push %0\n"
                          "push %1\n"

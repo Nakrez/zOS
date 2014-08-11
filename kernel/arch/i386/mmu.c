@@ -92,10 +92,10 @@ static int as_to_mmu_flags(int flags)
     int mmu_flags = PT_PRESENT;
 
     if (flags & AS_MAP_USER)
-        flags |= PT_USER;
+        mmu_flags |= PT_USER;
 
     if (flags & AS_MAP_WRITE)
-        flags |= PT_WRITE;
+        mmu_flags |= PT_WRITE;
 
     /*
      * FIXME: AS_MAP_EXEC is discard because no software exec solution is
@@ -214,7 +214,10 @@ static int map_non_mirror(struct as *as, vaddr_t vaddr, paddr_t paddr,
     if (!pt_region)
         goto error;
 
-    pt = (void *)as_map(&kernel_as, pt_region, pd[pt_index] & ~0xFFF,
+    if (!install_pt_if_needed(pd, pd_index, flags))
+        goto error;
+
+    pt = (void *)as_map(&kernel_as, pt_region, pd[pd_index] & ~0xFFF,
                         PAGE_SIZE, AS_MAP_WRITE);
 
     if (!pt)
