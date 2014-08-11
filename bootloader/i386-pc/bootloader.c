@@ -76,19 +76,19 @@ static void setup_modules(struct boot_info *b_inf, multiboot_info_t *multiboot)
 {
     multiboot_module_t *mods = (multiboot_module_t*)multiboot->mods_addr;
 
-    b_inf->mods_count = multiboot->mods_count;
+    b_inf->mods_count = multiboot->mods_count - 1;
 
     b_inf->mods = boot_alloc(b_inf->mods_count * sizeof (struct boot_modules));
 
     for (size_t i = 1; i < multiboot->mods_count; ++i)
     {
-        b_inf->mods[i].mod_size = mods[i].mod_end - mods[i].mod_start;
-        b_inf->mods[i].mod_start = boot_alloc(b_inf->mods[i].mod_size);
+        b_inf->mods[i - 1].mod_size = mods[i].mod_end - mods[i].mod_start;
+        b_inf->mods[i - 1].mod_start = boot_alloc(b_inf->mods[i - 1].mod_size);
 
-        memcpy(b_inf->mods[i].mod_start, (void *)mods[i].mod_start,
-               b_inf->mods[i].mod_size);
+        memcpy(b_inf->mods[i - 1].mod_start, (void *)mods[i].mod_start,
+               b_inf->mods[i - 1].mod_size);
 
-        b_inf->mods[i].mod_start = K_VADDR(b_inf->mods[i].mod_start);
+        b_inf->mods[i - 1].mod_start = K_VADDR(b_inf->mods[i - 1].mod_start);
     }
 
     b_inf->mods = K_VADDR(b_inf->mods);
