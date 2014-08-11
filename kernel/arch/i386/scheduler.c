@@ -35,14 +35,14 @@ void i386_switch(struct irq_regs *regs, struct thread *new,
     fs_set(new->regs.fs);
     gs_set(new->regs.gs);
 
-    __asm__ __volatile__("push %0\n"
+    __asm__ __volatile__("cmp %5, %1\n"
+                         "jz 1f\n"
+                         "push %4\n"
+                         "push %3\n"
+                         "1:\n"
+                         "push %0\n"
                          "push %1\n"
                          "push %2\n"
-                         "cmp %5, %1\n"
-                         "jz 1f\n"
-                         "push %3\n"
-                         "push %4\n"
-                         "1:\n"
                          "push %6\n"
                          "push %7\n"
                          "push %8\n"
