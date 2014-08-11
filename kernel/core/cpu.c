@@ -63,16 +63,7 @@ void cpu_add_thread(struct thread *thread)
 
 void cpu_start(void)
 {
-    struct cpu *cpu = NULL;
-
-    for (int i = 0; i < CPU_COUNT; ++i)
-    {
-        if (cpus[i].id == cpu_id_get())
-        {
-            cpu = &cpus[i];
-            break;
-        }
-    }
+    struct cpu *cpu = cpu_get(cpu_id_get());
 
     if (!cpu)
         kernel_panic("Unable to start CPU");
