@@ -43,9 +43,43 @@ int mmu_init_kernel(struct as *as)
 
 int mmu_init_user(struct as *as)
 {
-    (void) as;
+    uint32_t *vpd;
+    uint32_t *kpd = (void *)0xC0000000;
+
+    /* Allocate a page for the page directory */
+    as->arch.cr3 = segment_alloc(1);
+
+    if (!as->arch.cr3)
+        return 0;
+
+    /*
+     * We map this new cr3 on the kernel address space because we cannot access
+     * it just yet
+     */
+    vpd = (void *)as_map(&kernel_as, 0, as->arch.cr3, PAGE_SIZE, AS_MAP_WRITE);
+
+    if (!vpd)
+        goto error;
+
+    /* We map the kernel address space */
+    for (int i = 768; i < 1023; ++i)
+        vpd[i] = kpd[i] | PD_PRESENT | PD_WRITE;
+
+    /* Setup mirroring */
+    vpd[1023] = as->arch.cr3 | PD_PRESENT | PD_WRITE;
+
+    /*
+     * The initialization is done we can unmap the cr3 but without releasing
+     * the physical page
+     */
+    as_unmap(&kernel_as, (vaddr_t)vpd, AS_UNMAP_NORELEASE);
 
     return 1;
+
+error:
+    segment_free(as->arch.cr3);
+
+    return 0;
 }
 
 static int as_to_mmu_flags(int flags)
