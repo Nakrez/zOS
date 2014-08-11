@@ -55,6 +55,8 @@ void x86_console_init(void)
     x86_console.x = 0;
     x86_console.y = 0;
     x86_console.color = X86_CONSOLE_GREY;
+
+    x86_update_cursor();
 }
 
 void x86_console_putc(char c)
@@ -122,4 +124,6 @@ void x86_console_clear(void)
 
     for (int y = 0; y < YMAX; ++y)
         x86_console_clear_line(y);
+
+    x86_update_cursor();
 }

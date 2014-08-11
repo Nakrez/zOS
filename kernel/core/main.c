@@ -20,7 +20,6 @@ void kernel_main(struct boot_info *boot)
 
     console_message(T_INF, "zKernel is booting");
 
-
     kmalloc_initialize(boot);
 
     segment_initialize(boot);
