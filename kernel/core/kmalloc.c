@@ -48,7 +48,7 @@ static void *kmalloc_split(struct kmalloc_blk *blk, size_t size)
     blk->free = 0;
 
     /* Split needed */
-    if (blk->size + sizeof (struct kmalloc_blk) > size)
+    if (blk->size > size + sizeof (struct kmalloc_blk))
     {
         new_blk = ((void *)(blk + 1)) + size;
         new_blk->size = blk->size - size - sizeof (struct kmalloc_blk);

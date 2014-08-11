@@ -11,6 +11,11 @@
 - Add ELF loader
 - Review locks (Some might be missing)
 
+[MEM]
+
+- Change page_size argument by size (in byte) and compute page_size inside
+  the function
+
 [SYSCALL]
 
 - Add irq specific syscall
