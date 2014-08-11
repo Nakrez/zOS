@@ -6,6 +6,8 @@ SUBDIRS := kernel/ userland/ bootloader/${ZOS_TARGET}/
 
 DEFAULT_LDFLAGS := $(DEFAULT_LDFLAGS) -nostdlib
 
+USERLAND_LDFLAGS := -T $(SRCDIR)userland/lib/libc/src/arch/$(ZOS_ARCH)/bin.ld
+
 INSTALL_BIN :=
 ALL_BIN :=
 EXTRA_FILE :=
