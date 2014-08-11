@@ -2,7 +2,7 @@ ZOS_TARGET = ${ZOS_ARCH}-${ZOS_PLAT}
 
 DEPS :=
 CURDIR :=
-SUBDIRS := kernel/ bootloader/${ZOS_TARGET}/
+SUBDIRS := kernel/ userland/ bootloader/${ZOS_TARGET}/
 
 DEFAULT_LDFLAGS := $(DEFAULT_LDFLAGS) -nostdlib
 
@@ -27,6 +27,7 @@ clean:
 
 distclean: clean
 	@rm -rf $(ALL_BIN)
+	@rm -rf $(ALL_LIB)
 	@rm -rf $(DEPS)
 	@rm -rf rootfs.img rootfs
 

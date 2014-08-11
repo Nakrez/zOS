@@ -4,4 +4,4 @@ DEPS := $(DEPS) $(addprefix $(CURDIR), $(OBJ:.o=.d))
 
 SUBDIRS := $(BINSUBDIRS)
 
-include $(SRCDIR)/mk/subdirs.mk
+include $(SRCDIR)mk/subdirs.mk
