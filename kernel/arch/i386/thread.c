@@ -59,6 +59,10 @@ struct thread *i386_thread_current(void)
                          : "=r" (esp)
                          :);
 
+    /* Special case for not yet initialized kernel. It is used by as_map */
+    if (esp < 0xC0400000)
+        return NULL;
+
     esp = ((esp + PAGE_SIZE) & PAGE_SIZE) - sizeof (struct thread);
 
     return (struct thread *)esp;

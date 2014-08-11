@@ -3,9 +3,14 @@
 #include <kernel/as.h>
 #include <kernel/segment.h>
 #include <kernel/panic.h>
+#include <kernel/thread.h>
+#include <kernel/region.h>
 
 #include <arch/mmu.h>
 #include <arch/cpu.h>
+
+
+# include <kernel/console.h>
 
 int mmu_init_kernel(struct as *as)
 {
@@ -134,11 +139,9 @@ static int install_pt_if_needed(uint32_t *pd, uint32_t pd_index, int flags)
     return 1;
 }
 
-int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
-            int flags)
+static int map_mirror(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
+                int flags)
 {
-    (void) as;
-
     uint32_t pd_index = (vaddr >> 22) & 0x3FF;
     uint32_t pt_index = (vaddr >> 12) & 0x3FF;
 
@@ -183,6 +186,104 @@ int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
     }
 
     return 1;
+}
+
+static int map_non_mirror(struct as *as, vaddr_t vaddr, paddr_t paddr,
+                          size_t size, int flags)
+{
+    int mmu_flags = as_to_mmu_flags(flags);
+
+    uint32_t pd_index = (vaddr >> 22) & 0x3FF;
+    uint32_t pt_index = (vaddr >> 12) & 0x3FF;
+
+    uint32_t number_of_page = size / PAGE_SIZE;
+
+    uint32_t *pd = NULL;
+    uint32_t *pt = NULL;
+    vaddr_t pt_region;
+
+    /* We map the page directory in the kernel address space */
+    pd = (void *)as_map(&kernel_as, 0, as->arch.cr3, PAGE_SIZE, AS_MAP_WRITE);
+
+    if (!pd)
+        goto error;
+
+    /* Reserve a region to map pt as needed */
+    pt_region = region_reserve(&kernel_as, 0, 1);
+
+    if (!pt_region)
+        goto error;
+
+    pt = (void *)as_map(&kernel_as, pt_region, pd[pt_index] & ~0xFFF,
+                        PAGE_SIZE, AS_MAP_WRITE);
+
+    if (!pt)
+    {
+        region_release(&kernel_as, pt_region);
+        goto error;
+    }
+
+    while (1)
+    {
+        pt[pt_index] = paddr | mmu_flags;
+
+        paddr += PAGE_SIZE;
+
+        --number_of_page;
+
+        if (!number_of_page)
+            break;
+
+        ++pt_index;
+
+        /* Mapping overlap between 2 pts */
+        if (pt_index > 1023)
+        {
+            ++pd_index;
+            pt_index = 0;
+
+            if (!install_pt_if_needed(pd, pd_index, flags))
+            {
+                mmu_unmap(as, vaddr, size - number_of_page * PAGE_SIZE);
+
+                return 0;
+            }
+
+            /*
+             * We don't need to unmap the previous one because this mapping
+             * is going to override it
+             */
+            as_map(&kernel_as, pt_region, pd[pt_index] & ~0xFFF, PAGE_SIZE,
+                   AS_MAP_WRITE);
+        }
+    }
+
+    as_unmap(&kernel_as, (vaddr_t)pd, AS_UNMAP_NORELEASE);
+    as_unmap(&kernel_as, (vaddr_t)pt, AS_UNMAP_NORELEASE);
+
+    return 1;
+
+error:
+    if (pd)
+        as_unmap(&kernel_as, (vaddr_t)pd, AS_UNMAP_NORELEASE);
+    if (pt)
+        as_unmap(&kernel_as, (vaddr_t)pt, AS_UNMAP_NORELEASE);
+
+    return 0;
+}
+
+int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
+            int flags)
+{
+    if (&kernel_as == as)
+        return map_mirror(as, vaddr, paddr, size, flags);
+
+    struct thread *thread = thread_current();
+
+    if (!thread || thread->parent->as != as)
+        return map_non_mirror(as, vaddr, paddr, size, flags);
+    else
+        return map_mirror(as, vaddr, paddr, size, flags);
 }
 
 void clean_if_needed(uint32_t *pt, uint32_t *pd, uint32_t pd_index)

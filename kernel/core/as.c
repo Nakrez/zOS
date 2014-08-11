@@ -60,6 +60,11 @@ vaddr_t as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
     if (!size)
         return 0;
 
+    /* Align size and addresses */
+    vaddr = ((vaddr + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1));
+    paddr = ((paddr + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1));
+    size = ((size + PAGE_SIZE  - 1) & ~(PAGE_SIZE - 1));
+
     /* Locate a region */
     if (!vaddr)
     {
