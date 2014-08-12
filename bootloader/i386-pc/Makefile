@@ -35,6 +35,6 @@ rootfs/boot/grub/grub.cfg:
 	@echo "multiboot /boot/zboot" >> $@
 	@echo "module /boot/zkernel" >> $@
 	@echo "module /bin/vfs" >> $@
-# @echo "module /bin/init" >> $@
+	@echo "module /bin/init" >> $@
 	@echo "boot" >> $@
 	@echo "}" >> $@
