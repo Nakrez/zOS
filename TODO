@@ -8,7 +8,7 @@
 
 - Review CPU to be sure it could support SMP (which I doubt)
 - Add IPC mechanism
-- Add ELF loader
+- Review ELF loader (Move it to its own files & map memory with correct rights)
 - Review locks (Some might be missing)
 
 [MEM]
@@ -27,7 +27,6 @@
 
 - Add APIC support
 - Add SMP support
-- Add context save on scheduler
 - Add GPF/PF handler
 
 [USERLAND]
