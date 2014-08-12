@@ -2,21 +2,19 @@
 #include <kernel/panic.h>
 #include <kernel/kmalloc.h>
 #include <kernel/scheduler.h>
-
-static struct klist timers;
+#include <kernel/cpu.h>
 
 void timer_initialize(void)
 {
     __timer.init();
-
-    klist_head_init(&timers);
 }
 
 void timer_handler(struct irq_regs *regs)
 {
     struct timer_entry *timer;
+    struct cpu *cpu = cpu_get(cpu_id_get());
 
-    klist_for_each_elem(&timers, timer, list)
+    klist_for_each_elem(&cpu->timers, timer, list)
     {
         --timer->count;
 
@@ -40,9 +38,14 @@ void timer_handler(struct irq_regs *regs)
     scheduler_update(regs);
 }
 
-int timer_register(int type, int data, size_t time, void (*callback)(int))
+int timer_register(int cpu_id, int type, int data, size_t time,
+                   void (*callback)(int))
 {
+    struct cpu *cpu = cpu_get(cpu_id);
     struct timer_entry *timer;
+
+    if (!cpu)
+        return 0;
 
     if (!(type & TIMER_CALLBACK) && !(type & TIMER_MESSAGE))
         return 0;
@@ -64,7 +67,7 @@ int timer_register(int type, int data, size_t time, void (*callback)(int))
     timer->count = time / TIMER_GRANULARITY;
     timer->callback = callback;
 
-    klist_add(&timers, &timer->list);
+    klist_add(&cpu->timers, &timer->list);
 
     return 1;
 }

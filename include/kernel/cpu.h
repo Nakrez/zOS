@@ -1,6 +1,7 @@
 #ifndef CPU_H
 # define CPU_H
 
+# include <kernel/klist.h>
 # include <kernel/scheduler.h>
 
 # include <glue/cpu.h>
@@ -13,6 +14,8 @@ struct cpu
     int id;
 
     struct scheduler scheduler;
+
+    struct klist timers;
 
     struct cpu_glue_data arch;
 };

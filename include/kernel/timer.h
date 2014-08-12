@@ -35,6 +35,7 @@ extern struct timer_glue __timer;
 
 void timer_initialize(void);
 void timer_handler(struct irq_regs *regs);
-int timer_register(int type, int data, size_t time, void (*callback)(int));
+int timer_register(int cpu_id, int type, int data, size_t time,
+                   void (*callback)(int));
 
 #endif /* !TIMER_H */

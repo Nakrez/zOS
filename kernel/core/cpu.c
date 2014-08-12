@@ -27,6 +27,8 @@ void cpu_initialize(void)
     {
         cpus[i].id = i;
         scheduler_initialize(&cpus[i].scheduler);
+
+        klist_head_init(&cpus[i].timers);
     }
 
     console_message(T_OK, "%u CPU initialized", CPU_COUNT);
