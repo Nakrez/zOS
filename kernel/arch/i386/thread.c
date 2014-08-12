@@ -1,3 +1,4 @@
+#include <kernel/zos.h>
 #include <kernel/region.h>
 
 #include <arch/thread.h>
@@ -70,7 +71,7 @@ struct thread *i386_thread_current(void)
     if (esp < 0xC0400000)
         return NULL;
 
-    esp = ((esp + PAGE_SIZE) & PAGE_SIZE) - sizeof (struct thread);
+    esp = align(esp, PAGE_SIZE) - sizeof (struct thread);
 
     return (struct thread *)esp;
 }
