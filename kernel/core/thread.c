@@ -42,3 +42,23 @@ int thread_create(struct process *process, uintptr_t code)
 
     return 1;
 }
+
+static void timer_callback_sleep(int data)
+{
+    struct thread *thread = (void *)data;
+    struct cpu *cpu = cpu_get(thread->cpu);
+
+    scheduler_add_thread(&cpu->scheduler, thread);
+}
+
+void thread_sleep(struct thread *thread, size_t ms)
+{
+    struct cpu *cpu = cpu_get(thread->cpu);
+
+    thread->state = THREAD_STATE_BLOCKED;
+
+    timer_register(thread->cpu, TIMER_CALLBACK | TIMER_ONE_SHOT,
+                   (int)thread, ms, timer_callback_sleep);
+
+    scheduler_remove_thread(thread, &cpu->scheduler);
+}

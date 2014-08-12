@@ -55,4 +55,6 @@ static inline struct thread *thread_current(void)
     return _thread.current();
 }
 
+void thread_sleep(struct thread *thread, size_t ms);
+
 #endif /* !THREAD_H */
