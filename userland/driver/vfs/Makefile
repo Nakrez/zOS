@@ -5,7 +5,7 @@ INSTALL_DIR := bin
 BINSUBDIRS := src/
 
 vfs_CFLAGS := -I${SRCDIR}userland/lib/libc/include
-vfs_CFLAGS := -std=c99 -nostdinc -fno-builtin -fno-common -Wall -Wextra
+vfs_CFLAGS += -std=c99 -nostdinc -fno-builtin -fno-common -Wall -Wextra
 
 vfs_LDFLAGS := $(USERLAND_LDFLAGS)
 
