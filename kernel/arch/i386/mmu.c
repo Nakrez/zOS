@@ -119,7 +119,7 @@ paddr_t mmu_virt_to_phy(vaddr_t vaddr)
     if (!(pt[pt_index] & PT_PRESENT))
         return 0;
 
-    return pt[pt_index] & 0x7FF;
+    return pt[pt_index] & ~0xFFF;
 }
 
 static int install_pt_if_needed(uint32_t *pd, uint32_t pd_index, int flags)
