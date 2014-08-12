@@ -3,6 +3,7 @@
 #include <kernel/syscall.h>
 #include <kernel/panic.h>
 #include <kernel/console.h>
+#include <kernel/thread.h>
 
 static int sys_print(struct syscall *interface)
 {
@@ -10,9 +11,18 @@ static int sys_print(struct syscall *interface)
 
     return 0;
 }
+
+static int sys_usleep(struct syscall *interface)
+{
+    thread_sleep(thread_current(), interface->arg1);
+
+    return 0;
+}
+
 static syscall_callback syscalls[] =
 {
-    &sys_print
+    &sys_print,
+    &sys_usleep,
 };
 
 void syscall_handler(struct irq_regs *regs)
