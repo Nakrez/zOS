@@ -1,3 +1,5 @@
+#include <kernel/region.h>
+
 #include <arch/thread.h>
 #include <arch/pm.h>
 #include <arch/mmu.h>
@@ -24,8 +26,13 @@ int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip)
         t->regs.gs = USER_DS;
         t->regs.ss = USER_DS;
 
+        t->regs.esp = region_reserve(p->as, 0xC0000000 - 2 * PAGE_SIZE, 1);
+
+        if (!t->regs.esp)
+            return 0;
+
         /* Reserve user stack */
-        t->regs.esp = as_map(p->as, 0xC0000000 - PAGE_SIZE, 0, PAGE_SIZE,
+        t->regs.esp = as_map(p->as, t->regs.esp, 0, PAGE_SIZE,
                              AS_MAP_WRITE | AS_MAP_USER);
 
         if (!t->regs.esp)

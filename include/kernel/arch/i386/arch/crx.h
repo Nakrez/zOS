@@ -28,6 +28,18 @@ static inline void cr0_set(uint32_t cr0)
                          : "r" (cr0));
 }
 
+static inline uint32_t cr3_get(void)
+{
+    uint32_t cr3;
+
+    __asm__ __volatile__("mov %%cr3, %%eax\n"
+                         "mov %%eax, %0"
+                         : "=r" (cr3)
+                         :);
+
+    return cr3;
+}
+
 static inline void cr3_set(uint32_t cr3)
 {
     __asm__ __volatile__("mov %0, %%eax\n"
