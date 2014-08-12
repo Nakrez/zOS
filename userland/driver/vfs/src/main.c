@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 int main(void)
 {
     char message[4];
@@ -9,15 +11,14 @@ int main(void)
 
     while (1)
     {
-        for (volatile int i = 0; i < 10000000; ++i)
-            ;
+        __asm__ __volatile__("mov %0, %%ebx\n"
+                             "mov $1, %%eax\n"
+                             "int $0x80\n"
+                             :
+                             : "r" (message)
+                             : "memory");
 
-            __asm__ __volatile__("mov %0, %%ebx\n"
-                                 "mov $1, %%eax\n"
-                                 "int $0x80\n"
-                                 :
-                                 : "r" (message)
-                                 : "memory");
+        sleep(1);
     }
 
     return 0;
