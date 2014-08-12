@@ -52,6 +52,11 @@ static inline void klist_del(struct klist *elem)
 # define klist_elem(elem, type, field)                                  \
     (type *)((char *)elem - (char *)&((type *)0)->field)
 
+# define klist_for_each(head, name, field)                              \
+    for (struct klist *name = (head)->next, *next = name->next;          \
+         name != head;                                                  \
+         name = next, next = next->next)
+
 # define klist_for_each_elem(head, elem, field)                         \
     for (elem = klist_elem((head)->next, __typeof__(*elem), field);     \
          &elem->field != head;                                          \
