@@ -1,6 +1,6 @@
 CURDIR := userland/lib/libc/src/
 
-LIBSUBDIRS := string/ arch/$(ZOS_ARCH)/
+LIBSUBDIRS := string/ sys/ arch/$(ZOS_ARCH)/
 
 OBJ :=
 
