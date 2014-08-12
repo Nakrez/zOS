@@ -73,4 +73,6 @@ struct thread *scheduler_elect(struct scheduler *sched);
 void scheduler_switch(struct scheduler *sched, struct thread *new_thread,
                       struct irq_regs *regs);
 
+void scheduler_remove_thread(struct thread *t, struct scheduler *sched);
+
 #endif /* !SCHEDULER_H */

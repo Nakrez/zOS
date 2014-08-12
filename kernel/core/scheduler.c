@@ -86,3 +86,16 @@ void scheduler_switch(struct scheduler *sched, struct thread *new_thread,
 
     _scheduler.sswitch(regs, new_thread, old);
 }
+
+void scheduler_remove_thread(struct thread *t, struct scheduler *sched)
+{
+    if (t == sched->running)
+    {
+        sched->running = NULL;
+        sched->time = 1;
+
+        scheduler_update(NULL);
+    }
+    else
+        klist_del(&t->sched);
+}
