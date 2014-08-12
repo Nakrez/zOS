@@ -9,7 +9,37 @@ static void save_thread(struct irq_regs *regs, struct thread *thread)
     if (!thread || !regs)
         return;
 
-    kernel_panic("save_thread: Implementation needed");
+    thread->regs.gs = regs->gs;
+    thread->regs.fs = regs->fs;
+    thread->regs.es = regs->es;
+    thread->regs.ds = regs->ds;
+
+    thread->regs.edi = regs->edi;
+    thread->regs.esi = regs->esi;
+    thread->regs.ebp = regs->ebp;
+    thread->regs.ebx = regs->ebx;
+    thread->regs.edx = regs->edx;
+    thread->regs.ecx = regs->ecx;
+    thread->regs.eax = regs->eax;
+
+    thread->regs.eip = regs->eip;
+    thread->regs.cs = regs->cs;
+    thread->regs.eflags = regs->eflags;
+
+    if (thread->regs.cs != KERNEL_CS)
+    {
+        thread->regs.esp = regs->user_esp;
+        thread->regs.ss = regs->user_ss;
+    }
+    else
+    {
+        /*
+         * We want esp to point before irq_regs since the user process was in
+         * ring0, probably for a syscall, ss and esp were not pushed
+         */
+        thread->regs.esp = (uintptr_t)regs + sizeof (struct irq_regs) - 8;
+        thread->regs.ss = KERNEL_DS;
+    }
 }
 
 void i386_switch(struct irq_regs *regs, struct thread *new,
