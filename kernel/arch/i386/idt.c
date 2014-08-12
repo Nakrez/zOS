@@ -32,10 +32,11 @@ void idt_initialize(void)
 #define ISR_NO_ERROR(num) \
     idt_add_entry(num, (uint32_t)isr_ ## num, INTERRUPT_GATE);
 
+#include "isr.def"
+
     /* "Re-add" syscall isr to change it type to TRAP_GATE */
     idt_add_entry(IRQ_SYSCALL, (uint32_t)isr_128, TRAP_GATE);
 
-#include "isr.def"
 
     iptr.size = sizeof (idt_entries) - 1;
     iptr.ptr = (uint32_t)idt_entries;
