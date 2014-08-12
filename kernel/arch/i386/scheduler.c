@@ -46,8 +46,8 @@ void i386_switch(struct irq_regs *regs, struct thread *new,
                          "push %6\n"
                          "push %7\n"
                          "push %8\n"
-                         "pushl $0\n"
                          "push %9\n"
+                         "pushl $0\n"
                          "push %10\n"
                          "push %11\n"
                          "push %12\n"
@@ -60,12 +60,12 @@ void i386_switch(struct irq_regs *regs, struct thread *new,
                            "g" (new->regs.esp),
                            "g" (new->regs.ss),
                            "i" (KERNEL_CS),
-                           "g" (new->regs.edi),
-                           "g" (new->regs.edi),
-                           "g" (new->regs.ebp),
-                           "g" (new->regs.ebx),
-                           "g" (new->regs.edx),
+                           "g" (new->regs.eax),
                            "g" (new->regs.ecx),
-                           "g" (new->regs.eax)
+                           "g" (new->regs.edx),
+                           "g" (new->regs.ebx),
+                           "g" (new->regs.ebp),
+                           "g" (new->regs.esi),
+                           "g" (new->regs.edi)
                         : "memory");
 }
