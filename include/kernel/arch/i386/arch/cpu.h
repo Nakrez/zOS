@@ -55,6 +55,14 @@ struct irq_regs
     uint32_t user_ss;
 };
 
+static inline void cpu_invalid_page(void *address)
+{
+    __asm__ __volatile__("invlpg %0\n"
+                         :
+                         : "m" (*(char *)address)
+                         : "memory");
+}
+
 static inline void cpu_flush_tlb(void)
 {
     __asm__ __volatile__ ("mov %%cr3, %%eax\n"

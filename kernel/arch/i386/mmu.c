@@ -159,6 +159,9 @@ static int map_mirror(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
     {
         pt[pt_index] = paddr | mmu_flags;
 
+        cpu_invalid_page((void *)vaddr);
+
+        vaddr += PAGE_SIZE;
         paddr += PAGE_SIZE;
 
         --number_of_page;
@@ -243,6 +246,10 @@ void mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
     while (1)
     {
         pt[pt_index] = 0;
+
+        cpu_invalid_page((void *)vaddr);
+
+        vaddr += PAGE_SIZE;
 
         --number_of_page;
 
