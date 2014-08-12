@@ -14,8 +14,10 @@ void timer_handler(struct irq_regs *regs)
     struct timer_entry *timer;
     struct cpu *cpu = cpu_get(cpu_id_get());
 
-    klist_for_each_elem(&cpu->timers, timer, list)
+    klist_for_each(&cpu->timers, tlist, list)
     {
+        timer = klist_elem(tlist, struct timer_entry, list);
+
         --timer->count;
 
         if (!timer->count)
