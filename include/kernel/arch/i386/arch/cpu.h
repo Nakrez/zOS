@@ -57,9 +57,9 @@ struct irq_regs
 
 static inline void cpu_invalid_page(void *address)
 {
-    __asm__ __volatile__("invlpg %0\n"
+    __asm__ __volatile__("invlpg (%0)\n"
                          :
-                         : "m" (*(char *)address)
+                         : "r" (address)
                          : "memory");
 }
 

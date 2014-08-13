@@ -247,7 +247,7 @@ int mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
     {
         pt[pt_index] = 0;
 
-        cpu_invalid_page((void *)vaddr);
+        cpu_flush_tlb();
 
         vaddr += PAGE_SIZE;
 
