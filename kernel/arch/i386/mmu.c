@@ -282,5 +282,23 @@ int mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
 
 void mmu_remove_cr3(struct as *as)
 {
+    uint32_t *pd;
+
+    pd = (uint32_t *)as_map(&kernel_as, 0, as->arch.cr3, PAGE_SIZE,
+                            AS_MAP_WRITE);
+
+    if (!pd)
+        goto end;
+
+    /* We release physical memory used for page tables */
+    for (int i = 0; i < 768; ++i)
+    {
+        if (pd[i] & PD_PRESENT)
+            segment_free(pd[i] & ~0xFFF);
+    }
+
+    as_unmap(&kernel_as, (vaddr_t)pd, AS_UNMAP_NORELEASE);
+
+end:
     segment_free(as->arch.cr3);
 }
