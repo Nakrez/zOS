@@ -123,6 +123,7 @@ struct process *process_create(int type, uintptr_t code, int flags)
     else
         process->as = &kernel_as;
 
+    process->state = PROCESS_STATE_ALIVE;
     process->thread_count = 0;
     process->type = type;
 
@@ -150,4 +151,29 @@ error:
         kfree(process->as);
 
     return NULL;
+}
+
+void process_exit(struct process *p, int code)
+{
+    struct thread *thread;
+
+    p->exit_state = code;
+    p->state = PROCESS_STATE_ZOMBIE;
+
+    /*
+     * Exit all threads. When a process have no thread anymore it will be
+     * destroyed
+     */
+
+    klist_for_each(&p->threads, tlist, list)
+    {
+        thread = klist_elem(tlist, struct thread, list);
+
+        thread_exit(thread);
+    }
+}
+
+void process_destroy(struct process *p)
+{
+    (void) p;
 }

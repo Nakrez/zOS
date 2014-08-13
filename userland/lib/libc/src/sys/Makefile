@@ -1,6 +1,6 @@
 CURDIR := userland/lib/libc/src/sys/
 
-OBJ := usleep.o sleep.o
+OBJ := usleep.o sleep.o exit.o
 
 LIBSUBDIRS :=
 

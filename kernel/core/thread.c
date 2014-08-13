@@ -2,6 +2,7 @@
 #include <kernel/kmalloc.h>
 #include <kernel/console.h>
 #include <kernel/cpu.h>
+#include <kernel/panic.h>
 
 #include <arch/mmu.h>
 
@@ -61,4 +62,24 @@ void thread_sleep(struct thread *thread, size_t ms)
                    (int)thread, ms, timer_callback_sleep);
 
     scheduler_remove_thread(thread, &cpu->scheduler);
+}
+
+void thread_exit(struct thread *thread)
+{
+    /* The thread will be destroy when it is elected by the scheduler */
+    thread->state = THREAD_STATE_ZOMBIE;
+}
+
+void thread_destory(struct thread *thread)
+{
+    thread->kstack = align(thread->kstack, PAGE_SIZE);
+
+    klist_del(&thread->list);
+
+    --(thread->parent->thread_count);
+
+    if (thread->parent->thread_count)
+        process_destroy(thread->parent);
+
+    as_unmap(&kernel_as, thread->kstack, AS_UNMAP_RELEASE);
 }

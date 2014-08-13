@@ -12,6 +12,7 @@
 
 # define THREAD_STATE_RUNNING 1
 # define THREAD_STATE_BLOCKED 2
+# define THREAD_STATE_ZOMBIE 3
 
 struct thread
 {
@@ -57,5 +58,9 @@ static inline struct thread *thread_current(void)
 }
 
 void thread_sleep(struct thread *thread, size_t ms);
+
+void thread_exit(struct thread *thread);
+
+void thread_destory(struct thread *thread);
 
 #endif /* !THREAD_H */

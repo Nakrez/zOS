@@ -2,6 +2,7 @@
 # define LIBC_I386_SYSCALL_H
 
 # define SYS_USLEEP 2
+# define SYS_EXIT 3
 
 # define SYSCALL1(num, arg1, ret)           \
     __asm__ __volatile__("mov %2, %%ebx\n"  \

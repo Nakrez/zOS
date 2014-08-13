@@ -3,7 +3,7 @@
 
 # include <kernel/event.h>
 
-# define SYSCALL_MAX 0x2
+# define SYSCALL_MAX 0x3
 
 struct syscall
 {

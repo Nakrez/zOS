@@ -20,10 +20,18 @@ static int sys_usleep(struct syscall *interface)
     return 0;
 }
 
+static int sys_exit(struct syscall *interface)
+{
+    process_exit(thread_current()->parent, interface->arg1);
+
+    return 0;
+}
+
 static syscall_callback syscalls[] =
 {
     &sys_print,
     &sys_usleep,
+    &sys_exit,
 };
 
 void syscall_handler(struct irq_regs *regs)
