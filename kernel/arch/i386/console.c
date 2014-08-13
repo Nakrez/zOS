@@ -50,16 +50,18 @@ static void x86_console_scroll(void)
     x86_update_cursor();
 }
 
-void x86_console_init(void)
+int x86_console_init(void)
 {
     x86_console.x = 0;
     x86_console.y = 0;
     x86_console.color = X86_CONSOLE_GREY;
 
     x86_update_cursor();
+
+    return 1;
 }
 
-void x86_console_putc(char c)
+int x86_console_putc(char c)
 {
     if (x86_console.x == XMAX)
     {
@@ -96,9 +98,11 @@ void x86_console_putc(char c)
     }
 
     x86_update_cursor();
+
+    return 1;
 }
 
-void x86_console_color(enum console_color c)
+int x86_console_color(enum console_color c)
 {
     switch (c)
     {
@@ -115,9 +119,11 @@ void x86_console_color(enum console_color c)
             x86_console.color = X86_CONSOLE_GREEN;
             break;
     }
+
+    return 1;
 }
 
-void x86_console_clear(void)
+int x86_console_clear(void)
 {
     x86_console.x = 0;
     x86_console.y = 0;
@@ -126,4 +132,6 @@ void x86_console_clear(void)
         x86_console_clear_line(y);
 
     x86_update_cursor();
+
+    return 1;
 }

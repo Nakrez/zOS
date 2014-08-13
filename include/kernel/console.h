@@ -1,8 +1,6 @@
 #ifndef CONSOLE_H
 # define CONSOLE_H
 
-extern struct console_glue __console;
-
 enum console_color
 {
     COLOR_GREY,
@@ -20,11 +18,13 @@ enum console_type
 
 struct console_glue
 {
-    void (*init)(void);
-    void (*putc)(char c);
-    void (*color)(enum console_color);
-    void (*clear)(void);
+    int (*init)(void);
+    int (*putc)(char c);
+    int (*color)(enum console_color);
+    int (*clear)(void);
 };
+
+extern struct console_glue console_glue_dispatcher;
 
 void console_init(void);
 void console_clear(void);

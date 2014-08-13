@@ -2,7 +2,7 @@
 
 #include <arch/console.h>
 
-struct console_glue __console =
+struct console_glue console_glue_dispatcher =
 {
     x86_console_init,
     x86_console_putc,
