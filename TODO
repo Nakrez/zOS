@@ -19,7 +19,6 @@
 - Add irq specific syscall
 - Add memory specific syscalls (mmap, munmap)
 - Add IPC syscalls
-- exit
 
 [X86]
 
