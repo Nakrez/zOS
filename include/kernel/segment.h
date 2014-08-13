@@ -8,7 +8,7 @@
 
 struct segment_glue
 {
-    void (*init)(void);
+    int (*init)(void);
 };
 
 struct segment
@@ -25,7 +25,7 @@ struct segment
     struct klist list;
 };
 
-extern struct segment_glue __segment;
+extern struct segment_glue segment_glue_dispatcher;
 
 /*
  * Initialize segments (physical memory) layout

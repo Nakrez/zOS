@@ -1,3 +1,4 @@
+#include <kernel/zos.h>
 #include <kernel/segment.h>
 #include <kernel/panic.h>
 #include <kernel/kmalloc.h>
@@ -14,7 +15,7 @@ void segment_initialize(struct boot_info *boot)
 {
     struct segment *segment = NULL;
 
-    __segment.init();
+    glue_call(segment, init);
 
     klist_head_init(&segment_head);
 

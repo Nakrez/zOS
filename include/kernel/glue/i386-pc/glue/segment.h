@@ -3,6 +3,6 @@
 
 # include <kernel/segment.h>
 
-void segment_x86_pc_initialize(void);
+int segment_x86_pc_initialize(void);
 
 #endif /* !X86_PC_GLUE_SEGMENT_H */
