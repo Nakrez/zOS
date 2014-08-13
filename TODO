@@ -1,7 +1,5 @@
 [MISC]
 
-- Rename all glue dispatcher variable as XXX_glue_dispatcher
-- Rename all glue dispatcher structure as XXX_glue
 - Rename all glue specific data structure as XXX_glue_data
 
 [CORE]

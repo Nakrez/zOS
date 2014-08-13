@@ -59,7 +59,7 @@ int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip)
     return 1;
 }
 
-struct thread *i386_thread_current(void)
+int i386_thread_current(void)
 {
     uint32_t esp;
 
@@ -69,9 +69,9 @@ struct thread *i386_thread_current(void)
 
     /* Special case for not yet initialized kernel. It is used by as_map */
     if (esp < 0xC0400000)
-        return NULL;
+        return 0;
 
     esp = align(esp, PAGE_SIZE) - sizeof (struct thread);
 
-    return (struct thread *)esp;
+    return esp;
 }

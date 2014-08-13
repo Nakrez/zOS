@@ -30,7 +30,7 @@ int thread_create(struct process *process, uintptr_t code)
     thread->gid = 0;
     thread->kstack = (uintptr_t)thread - 4;
 
-    if (!_thread.create(process, thread, code))
+    if (!glue_call(thread, create, process, thread, code))
     {
         as_unmap(&kernel_as, (vaddr_t)thread, AS_UNMAP_RELEASE);
         return 0;

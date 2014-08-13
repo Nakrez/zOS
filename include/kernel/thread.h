@@ -4,6 +4,7 @@
 # include <kernel/types.h>
 # include <kernel/klist.h>
 # include <kernel/process.h>
+# include <kernel/zos.h>
 
 # include <arch/cpu.h>
 
@@ -37,10 +38,10 @@ struct thread
 struct thread_glue
 {
     int (*create)(struct process *, struct thread *, uintptr_t);
-    struct thread *(*current)(void);
+    int (*current)(void);
 };
 
-extern struct thread_glue _thread;
+extern struct thread_glue thread_glue_dispatcher;
 
 /*
  * Create a new thread inside a process
@@ -52,7 +53,7 @@ int thread_create(struct process *process, uintptr_t code);
  */
 static inline struct thread *thread_current(void)
 {
-    return _thread.current();
+    return (struct thread *)glue_call(thread, current);
 }
 
 void thread_sleep(struct thread *thread, size_t ms);
