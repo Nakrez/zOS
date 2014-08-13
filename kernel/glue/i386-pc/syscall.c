@@ -4,27 +4,31 @@
 
 #include <arch/idt.h>
 
-struct glue_syscall _syscall =
+struct syscall_glue syscall_glue_dispatcher =
 {
     i386_pc_syscall_initialize,
     i386_pc_syscall_convert,
 };
 
-void i386_pc_syscall_initialize(void)
+int i386_pc_syscall_initialize(void)
 {
     if (!event_register(IRQ_SYSCALL, EVENT_CALLBACK, syscall_handler))
         kernel_panic("Unable to register syscall event");
+
+    return 1;
 }
 
-void i386_pc_syscall_convert(struct irq_regs *regs, struct syscall *call)
+int i386_pc_syscall_convert(struct irq_regs *regs, struct syscall *call)
 {
     call->num = regs->eax;
 
-    call->ret = (int *)&regs->eax;
+    call->ret = (void *)&regs->eax;
 
     call->arg1 = regs->ebx;
     call->arg2 = regs->ecx;
     call->arg3 = regs->edx;
     call->arg4 = regs->esi;
     call->arg5 = regs->edi;
+
+    return 1;
 }

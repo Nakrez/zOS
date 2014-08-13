@@ -21,13 +21,13 @@ struct syscall
 
 typedef int (*syscall_callback)(struct syscall *interface);
 
-struct glue_syscall
+struct syscall_glue
 {
-    void (*init)(void);
-    void (*convert)(struct irq_regs *, struct syscall *);
+    int (*init)(void);
+    int (*convert)(struct irq_regs *, struct syscall *);
 };
 
-extern struct glue_syscall _syscall;
+extern struct syscall_glue syscall_glue_dispatcher;
 
 void syscall_initialize(void);
 

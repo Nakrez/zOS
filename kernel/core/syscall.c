@@ -4,6 +4,7 @@
 #include <kernel/panic.h>
 #include <kernel/console.h>
 #include <kernel/thread.h>
+#include <kernel/zos.h>
 
 static int sys_print(struct syscall *interface)
 {
@@ -33,7 +34,8 @@ void syscall_handler(struct irq_regs *regs)
      * Convert irq registers (arch dependent) to independent syscall
      * interface
      */
-    _syscall.convert(regs, &call);
+
+    glue_call(syscall, convert, regs, &call);
 
     if (call.num <= 0 || call.num > SYSCALL_MAX)
     {
@@ -46,5 +48,5 @@ void syscall_handler(struct irq_regs *regs)
 
 void syscall_initialize(void)
 {
-    _syscall.init();
+    glue_call(syscall, init);
 }
