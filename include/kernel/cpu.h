@@ -22,7 +22,7 @@ struct cpu
 
 struct cpu_glue
 {
-    void (*init)(struct cpu *);
+    int (*init)(struct cpu *);
 };
 
 extern struct cpu_glue cpu_glue_dispatcher;

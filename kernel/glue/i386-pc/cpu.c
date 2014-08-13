@@ -9,7 +9,9 @@ struct cpu_glue cpu_glue_dispatcher =
     i386_pc_cpu_initialize,
 };
 
-void i386_pc_cpu_initialize(struct cpu *cpu)
+int i386_pc_cpu_initialize(struct cpu *cpu)
 {
     tss_initialize(cpu);
+
+    return 1;
 }

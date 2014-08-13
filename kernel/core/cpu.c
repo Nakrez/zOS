@@ -3,6 +3,7 @@
 #include <kernel/panic.h>
 #include <kernel/console.h>
 #include <kernel/process.h>
+#include <kernel/zos.h>
 
 static struct cpu *cpus;
 static struct process *idle;
@@ -74,7 +75,7 @@ void cpu_start(void)
      * Init is called here because cpu_start is called by each processor
      * to initialize it specifically
      */
-    cpu_glue_dispatcher.init(cpu);
+    glue_call(cpu, init, cpu);
 
     console_message(T_OK, "Cpu %i started", cpu->id);
 

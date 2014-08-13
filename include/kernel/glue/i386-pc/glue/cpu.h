@@ -10,6 +10,6 @@ struct cpu_glue_data
     struct tss tss;
 };
 
-void i386_pc_cpu_initialize(struct cpu *cpu);
+int i386_pc_cpu_initialize(struct cpu *cpu);
 
 #endif /* !GLUE_I386_PC_CPU_H */
