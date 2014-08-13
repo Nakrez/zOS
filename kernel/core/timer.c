@@ -1,3 +1,4 @@
+#include <kernel/zos.h>
 #include <kernel/timer.h>
 #include <kernel/panic.h>
 #include <kernel/kmalloc.h>
@@ -6,7 +7,7 @@
 
 void timer_initialize(void)
 {
-    __timer.init();
+    glue_call(timer, init);
 }
 
 void timer_handler(struct irq_regs *regs)

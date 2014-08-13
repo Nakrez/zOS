@@ -17,7 +17,7 @@
 
 struct timer_glue
 {
-    void (*init)(void);
+    int (*init)(void);
 };
 
 struct timer_entry
@@ -31,7 +31,7 @@ struct timer_entry
     struct klist list;
 };
 
-extern struct timer_glue __timer;
+extern struct timer_glue timer_glue_dispatcher;
 
 void timer_initialize(void);
 void timer_handler(struct irq_regs *regs);
