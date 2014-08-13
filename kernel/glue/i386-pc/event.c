@@ -5,7 +5,7 @@
 #include <arch/cpu.h>
 #include <arch/pic.h>
 
-struct event_glue __event =
+struct event_glue event_glue_dispatcher =
 {
     i386_event_initialize,
     i386_event_enable,
@@ -15,40 +15,52 @@ struct event_glue __event =
     i386_event_unmask,
 };
 
-void i386_event_initialize(void)
+int i386_event_initialize(void)
 {
     idt_initialize();
     pic_initialize();
+
+    return 1;
 }
 
-void i386_event_enable(void)
+int i386_event_enable(void)
 {
     cpu_irq_enable();
+
+    return 1;
 }
 
-void i386_event_disable(void)
+int i386_event_disable(void)
 {
     cpu_irq_disable();
+
+    return 1;
 }
 
-void i386_event_acknowledge(int irq)
+int i386_event_acknowledge(int irq)
 {
     if (irq >= PIC_START_IRQ && irq <= PIC_END_IRQ)
         pic_acnowledge(irq);
+
+    return 1;
 }
 
-void i386_event_mask(int irq)
+int i386_event_mask(int irq)
 {
     if (irq < PIC_START_IRQ || irq > PIC_END_IRQ)
-        return;
+        return 1;
 
     pic_mask(irq - PIC_START_IRQ);
+
+    return 1;
 }
 
-void i386_event_unmask(int irq)
+int i386_event_unmask(int irq)
 {
     if (irq < PIC_START_IRQ || irq > PIC_END_IRQ)
-        return;
+        return 1;
 
     pic_unmask(irq - PIC_START_IRQ);
+
+    return 1;
 }

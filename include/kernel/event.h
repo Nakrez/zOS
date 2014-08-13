@@ -1,6 +1,7 @@
 #ifndef EVENT_H
 # define EVENT_H
 
+# include <kernel/zos.h>
 # include <arch/cpu.h>
 
 # define EVENT_NONE 0
@@ -9,12 +10,12 @@
 
 struct event_glue
 {
-    void (*init)(void);
-    void (*enable)(void);
-    void (*disable)(void);
-    void (*acnowledge)(int);
-    void (*mask)(int);
-    void (*unmask)(int);
+    int (*init)(void);
+    int (*enable)(void);
+    int (*disable)(void);
+    int (*acnowledge)(int);
+    int (*mask)(int);
+    int (*unmask)(int);
 };
 
 struct event_entry
@@ -23,7 +24,7 @@ struct event_entry
     void (*callback)(struct irq_regs *);
 };
 
-extern struct event_glue __event;
+extern struct event_glue event_glue_dispatcher;
 
 /*
  * Initialize event mechanism
@@ -35,7 +36,7 @@ void event_initialize(void);
  */
 static inline void event_enable(void)
 {
-    __event.enable();
+    glue_call(event, enable);
 }
 
 /*
@@ -43,7 +44,7 @@ static inline void event_enable(void)
  */
 static inline void event_disable(void)
 {
-    __event.disable();
+    glue_call(event, disable);
 }
 
 /*
@@ -66,7 +67,7 @@ int event_register(int irq, int type, void (*callback)(struct irq_regs *));
  */
 static inline void event_mask(int irq)
 {
-    __event.mask(irq);
+    glue_call(event, mask, irq);
 }
 
 /*
@@ -74,7 +75,7 @@ static inline void event_mask(int irq)
  */
 static inline void event_unmask(int irq)
 {
-    __event.unmask(irq);
+    glue_call(event, unmask, irq);
 }
 
 #endif /* !EVENT_H */

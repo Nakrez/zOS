@@ -10,7 +10,7 @@ static struct event_entry event_entries[MAX_IRQ_NUMBER];
 
 void event_initialize(void)
 {
-    __event.init();
+    glue_call(event, init);
 
     memset(event_entries, 0, sizeof (event_entries));
 }
@@ -38,7 +38,7 @@ void event_dispatch(struct irq_regs *regs)
 
 void event_acnowledge(int irq)
 {
-    __event.acnowledge(irq);
+    glue_call(event, acnowledge, irq);
 }
 
 int event_register(int irq, int type, void (*callback)(struct irq_regs *))
