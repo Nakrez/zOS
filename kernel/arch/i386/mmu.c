@@ -279,3 +279,8 @@ int mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
 
     return 1;
 }
+
+void mmu_remove_cr3(struct as *as)
+{
+    segment_free(as->arch.cr3);
+}

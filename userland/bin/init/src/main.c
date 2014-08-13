@@ -20,7 +20,8 @@ int main(void)
                              : "r" (message)
                              : "memory");
 
-        sleep(1);
+        exit(0);
+        /* sleep(1); */
     }
 
     return 0;

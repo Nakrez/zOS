@@ -140,3 +140,28 @@ void as_unmap(struct as *as, vaddr_t vaddr, int flags)
 
     spinlock_unlock(&as->map_lock);
 }
+
+void as_destroy(struct as *as)
+{
+    glue_call(as, destroy, as);
+
+    klist_for_each(&as->mapping, mlist, list)
+    {
+        struct as_mapping *map = klist_elem(mlist, struct as_mapping, list);
+
+        segment_free(map->phy);
+
+        klist_del(&map->list);
+
+        kfree(map);
+    }
+
+    klist_for_each(&as->regions, rlist, list)
+    {
+        struct region *reg = klist_elem(rlist, struct region, list);
+
+        klist_del(&reg->list);
+
+        kfree(reg);
+    }
+}

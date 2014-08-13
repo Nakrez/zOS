@@ -46,5 +46,6 @@ paddr_t mmu_virt_to_phy(vaddr_t vaddr);
 int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
             int flags);
 int mmu_unmap(struct as *as, vaddr_t vaddr, size_t size);
+void mmu_remove_cr3(struct as *as);
 
 #endif /* !I386_MMU_H */

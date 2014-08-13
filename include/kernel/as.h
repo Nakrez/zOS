@@ -43,6 +43,7 @@ struct as_glue
     int (*map)(struct as *, vaddr_t, paddr_t, size_t, int);
     int (*unmap)(struct as *, vaddr_t, size_t);
     paddr_t (*virt_to_phy)(vaddr_t);
+    int (*destroy)(struct as *);
 };
 
 extern struct as_glue as_glue_dispatcher;
@@ -82,5 +83,7 @@ vaddr_t as_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
  * Unmap vaddr
  */
 void as_unmap(struct as *as, vaddr_t vaddr, int flags);
+
+void as_destroy(struct as *as);
 
 #endif /* !AS_H */

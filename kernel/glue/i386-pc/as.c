@@ -1,4 +1,5 @@
 #include <kernel/as.h>
+#include <kernel/panic.h>
 
 #include <glue/as.h>
 
@@ -10,6 +11,7 @@ struct as_glue as_glue_dispatcher =
     mmu_map,
     mmu_unmap,
     mmu_virt_to_phy,
+    i386_pc_as_destroy,
 };
 
 int i386_pc_as_initialize(struct as *as)
@@ -18,4 +20,15 @@ int i386_pc_as_initialize(struct as *as)
         return mmu_init_kernel(as);
 
     return mmu_init_user(as);
+}
+
+int i386_pc_as_destroy(struct as *as)
+{
+    if (as == &kernel_as)
+        kernel_panic("Attempting to destroy kernel address space are you mad "
+                     "?");
+
+    mmu_remove_cr3(as);
+
+    return 1;
 }

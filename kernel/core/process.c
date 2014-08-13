@@ -8,6 +8,7 @@
 #include <kernel/elf.h>
 #include <kernel/region.h>
 #include <kernel/segment.h>
+#include <kernel/as.h>
 
 #include <arch/mmu.h>
 
@@ -176,4 +177,8 @@ void process_exit(struct process *p, int code)
 void process_destroy(struct process *p)
 {
     (void) p;
+
+    as_destroy(p->as);
+
+    kfree(p->as);
 }
