@@ -24,7 +24,7 @@ struct as *as_create(void)
 
 int as_initialize(struct as* as)
 {
-    if (!__as.init(as))
+    if (!glue_call(as, init, as))
         return 0;
 
     spinlock_init(&as->region_lock);
@@ -94,7 +94,7 @@ vaddr_t as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
     map->phy = paddr;
     map->size = size;
 
-    if (!__as.map(as, vaddr, paddr, size, flags))
+    if (!glue_call(as, map, as, vaddr, paddr, size, flags))
         goto arch_map_error;
 
     spinlock_lock(&as->map_lock);
@@ -126,7 +126,7 @@ void as_unmap(struct as *as, vaddr_t vaddr, int flags)
             if (flags & AS_UNMAP_RELEASE)
                 segment_free(map->phy);
 
-            __as.unmap(as, map->virt, map->size);
+            glue_call(as, unmap, as, map->virt, map->size);
 
             klist_del(&map->list);
 

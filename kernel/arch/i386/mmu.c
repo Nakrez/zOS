@@ -233,7 +233,7 @@ void clean_if_needed(uint32_t *pt, uint32_t *pd, uint32_t pd_index)
     }
 }
 
-void mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
+int mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
 {
     uint32_t pd_index = (vaddr >> 22) & 0x3FF;
     uint32_t pt_index = (vaddr >> 12) & 0x3FF;
@@ -276,4 +276,6 @@ void mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
 
     if (as != &kernel_as)
         clean_if_needed(pt, pd, pd_index);
+
+    return 1;
 }

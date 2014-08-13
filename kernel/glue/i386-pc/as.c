@@ -4,7 +4,7 @@
 
 #include <arch/mmu.h>
 
-struct as_glue __as =
+struct as_glue as_glue_dispatcher =
 {
     i386_pc_as_initialize,
     mmu_map,

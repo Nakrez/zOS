@@ -41,12 +41,13 @@ struct as_glue
 {
     int (*init)(struct as *);
     int (*map)(struct as *, vaddr_t, paddr_t, size_t, int);
-    void (*unmap)(struct as *, vaddr_t, size_t);
+    int (*unmap)(struct as *, vaddr_t, size_t);
     paddr_t (*virt_to_phy)(vaddr_t);
 };
 
+extern struct as_glue as_glue_dispatcher;
+
 extern struct as kernel_as;
-extern struct as_glue __as;
 
 /*
  * Creates a new address space and returns it
@@ -63,7 +64,7 @@ int as_initialize(struct as* as);
  */
 static inline paddr_t as_virt_to_phy(vaddr_t vaddr)
 {
-    return __as.virt_to_phy(vaddr);
+    return (paddr_t)glue_call(as, virt_to_phy, vaddr);
 }
 
 /*
