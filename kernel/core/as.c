@@ -52,6 +52,23 @@ int as_initialize(struct as* as)
     return 1;
 }
 
+struct as_mapping *as_mapping_locate(struct as *as, vaddr_t vaddr)
+{
+    struct as_mapping *mapping = NULL;
+
+    spinlock_lock(&as->map_lock);
+
+    klist_for_each_elem(&as->mapping, mapping, list)
+    {
+        if (mapping->virt >= vaddr && mapping->virt + mapping->size > vaddr)
+            break;
+    }
+
+    spinlock_unlock(&as->map_lock);
+
+    return mapping;
+}
+
 vaddr_t as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
                int flags)
 {

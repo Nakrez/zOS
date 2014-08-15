@@ -68,6 +68,8 @@ static inline paddr_t as_virt_to_phy(vaddr_t vaddr)
     return (paddr_t)glue_call(as, virt_to_phy, vaddr);
 }
 
+struct as_mapping *as_mapping_locate(struct as *as, vaddr_t vaddr);
+
 /*
  * Map paddr to vaddr for a size size
  *
