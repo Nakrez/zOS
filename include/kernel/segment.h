@@ -22,10 +22,9 @@ struct segment
     /* Size in page (for real size multiply by PAGE_SIZE) */
     uint32_t page_size;
 
-    /* Can be used ? */
-    uint8_t free : 1;
+    uint8_t flags;
 
-    uint8_t flags : 1;
+    uint16_t ref_count;
 
     struct klist list;
 };

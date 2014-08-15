@@ -29,7 +29,7 @@ void segment_initialize(struct boot_info *boot)
         segment->base = boot->segs[i].seg_start;
         segment->page_size = boot->segs[i].seg_size / PAGE_SIZE;
 
-        segment->free = 1;
+        segment->ref_count = 0;
         segment->flags = SEGMENT_FLAGS_NONE;
 
         klist_add(&segment_head, &segment->list);
@@ -50,7 +50,7 @@ static void segment_split(struct segment *seg, paddr_t addr,
     {
         struct segment *before = kmalloc(sizeof (struct segment));
 
-        before->free = 1;
+        before->ref_count = 0;
         before->flags = SEGMENT_FLAGS_NONE;
         before->base = seg->base;
         before->page_size = (addr - seg->base) / PAGE_SIZE;
@@ -62,7 +62,7 @@ static void segment_split(struct segment *seg, paddr_t addr,
     {
         struct segment *after = kmalloc(sizeof (struct segment));
 
-        after->free = 1;
+        after->ref_count = 0;
         after->flags = SEGMENT_FLAGS_NONE;
         after->base = addr + page_size * PAGE_SIZE;
         after->page_size = seg->page_size -
@@ -73,7 +73,7 @@ static void segment_split(struct segment *seg, paddr_t addr,
 
     seg->page_size = page_size;
     seg->base = addr;
-    seg->free = 0;
+    seg->ref_count = 1;
 }
 
 struct segment *segment_alloc(uint32_t page_size)
@@ -87,7 +87,7 @@ struct segment *segment_alloc(uint32_t page_size)
 
     klist_for_each_elem(&segment_head, seg, list)
     {
-        if (!seg->free)
+        if (seg->ref_count)
             continue;
 
         if (seg->page_size >= page_size)
@@ -115,7 +115,7 @@ int segment_reserve(paddr_t addr, uint32_t page_size)
 
     klist_for_each_elem(&segment_head, seg, list)
     {
-        if (!seg->free)
+        if (seg->ref_count)
             continue;
 
         uint32_t seg_size = seg->page_size * PAGE_SIZE;
@@ -183,7 +183,7 @@ static void segment_merge(struct segment *seg)
 
         prev = klist_elem(seg->list.prev, struct segment, list);
 
-        if (prev->free &&
+        if (!prev->ref_count &&
             prev->base + prev->page_size * PAGE_SIZE == seg->base)
         {
             seg->base = prev->base;
@@ -201,7 +201,7 @@ static void segment_merge(struct segment *seg)
 
         next = klist_elem(seg->list.next, struct segment, list);
 
-        if (next->free &&
+        if (!next->ref_count &&
             seg->base + seg->page_size * PAGE_SIZE == next->base)
         {
             seg->page_size += next->page_size;
@@ -220,9 +220,10 @@ void segment_release(struct segment *seg)
 
     spinlock_lock(&segment_lock);
 
-    seg->free = 1;
+    --seg->ref_count;
 
-    segment_merge(seg);
+    if (!seg->ref_count)
+        segment_merge(seg);
 
     spinlock_unlock(&segment_lock);
 }
@@ -237,12 +238,13 @@ void segment_free(paddr_t addr)
     {
         if (seg->base == addr)
         {
-            if (seg->free)
+            if (!seg->ref_count)
                 return;
 
-            seg->free = 1;
+            --seg->ref_count;
 
-            segment_merge(seg);
+            if (!seg->ref_count)
+                segment_merge(seg);
 
             spinlock_unlock(&segment_lock);
 
@@ -264,8 +266,8 @@ void segment_dump(void)
 
     klist_for_each_elem(&segment_head, seg, list)
     {
-        console_message(T_INF, "%s: 0x%x-0x%x (%u pages)",
-                        seg->free ? "FREE" : "USED",
+        console_message(T_INF, "%s time referenced: 0x%x-0x%x (%u pages)",
+                        seg->ref_count,
                         seg->base, seg->base + seg->page_size * PAGE_SIZE,
                         seg->page_size);
     }
