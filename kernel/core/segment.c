@@ -30,6 +30,7 @@ void segment_initialize(struct boot_info *boot)
         segment->page_size = boot->segs[i].seg_size / PAGE_SIZE;
 
         segment->free = 1;
+        segment->flags = SEGMENT_FLAGS_NONE;
 
         klist_add(&segment_head, &segment->list);
     }
@@ -50,6 +51,7 @@ static void segment_split(struct segment *seg, paddr_t addr,
         struct segment *before = kmalloc(sizeof (struct segment));
 
         before->free = 1;
+        before->flags = SEGMENT_FLAGS_NONE;
         before->base = seg->base;
         before->page_size = (addr - seg->base) / PAGE_SIZE;
 
@@ -61,6 +63,7 @@ static void segment_split(struct segment *seg, paddr_t addr,
         struct segment *after = kmalloc(sizeof (struct segment));
 
         after->free = 1;
+        after->flags = SEGMENT_FLAGS_NONE;
         after->base = addr + page_size * PAGE_SIZE;
         after->page_size = seg->page_size -
                            (((addr - seg->base) / PAGE_SIZE) + page_size);

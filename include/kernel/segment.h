@@ -6,6 +6,9 @@
 # include <kernel/types.h>
 # include <kernel/klist.h>
 
+# define SEGMENT_FLAGS_NONE 0
+# define SEGMENT_FLAGS_COW 1
+
 struct segment_glue
 {
     int (*init)(void);
@@ -20,7 +23,9 @@ struct segment
     uint32_t page_size;
 
     /* Can be used ? */
-    int free;
+    uint8_t free : 1;
+
+    uint8_t flags : 1;
 
     struct klist list;
 };
