@@ -73,12 +73,12 @@ static void segment_split(struct segment *seg, paddr_t addr,
     seg->free = 0;
 }
 
-paddr_t segment_alloc(uint32_t page_size)
+struct segment *segment_alloc(uint32_t page_size)
 {
     struct segment *seg;
 
     if (!page_size)
-        return 0;
+        return NULL;
 
     spinlock_lock(&segment_lock);
 
@@ -92,13 +92,13 @@ paddr_t segment_alloc(uint32_t page_size)
             segment_split(seg, seg->base, page_size);
 
             spinlock_unlock(&segment_lock);
-            return seg->base;
+            return seg;
         }
     }
 
     spinlock_unlock(&segment_lock);
 
-    return 0;
+    return NULL;
 }
 
 int segment_reserve(paddr_t addr, uint32_t page_size)
@@ -138,20 +138,36 @@ int segment_reserve(paddr_t addr, uint32_t page_size)
     return 0;
 }
 
+paddr_t segment_alloc_address(uint32_t page_size)
+{
+    struct segment *seg;
+
+    seg = segment_alloc(page_size);
+
+    if (!seg)
+        return 0;
+
+    return seg->base;
+}
+
 struct segment *segment_locate(paddr_t addr)
 {
     struct segment *seg;
 
-    spinlock_unlock(&segment_lock);
+    spinlock_lock(&segment_lock);
 
     klist_for_each_elem(&segment_head, seg, list)
     {
         if (seg->base >= addr
-            && seg->base + seg->page_size * PAGE_SIZE <= addr)
+            && seg->base + seg->page_size * PAGE_SIZE > addr)
+        {
+            spinlock_unlock(&segment_lock);
+
             return seg;
+        }
     }
 
-    spinlock_lock(&segment_lock);
+    spinlock_unlock(&segment_lock);
 
     return NULL;
 }
@@ -192,6 +208,20 @@ static void segment_merge(struct segment *seg)
             kfree(next);
         }
     }
+}
+
+void segment_release(struct segment *seg)
+{
+    if (!seg)
+        return;
+
+    spinlock_lock(&segment_lock);
+
+    seg->free = 1;
+
+    segment_merge(seg);
+
+    spinlock_unlock(&segment_lock);
 }
 
 void segment_free(paddr_t addr)

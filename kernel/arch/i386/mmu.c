@@ -52,7 +52,7 @@ int mmu_init_user(struct as *as)
     uint32_t *kpd = (void *)0xC0000000;
 
     /* Allocate a page for the page directory */
-    as->arch.cr3 = segment_alloc(1);
+    as->arch.cr3 = segment_alloc_address(1);
 
     if (!as->arch.cr3)
         return 0;
@@ -127,7 +127,7 @@ static int install_pt_if_needed(uint32_t *pd, uint32_t pd_index, int flags)
     if (!(pd[pd_index] & PD_PRESENT))
     {
         /* Allocate 1 physical page for the new page table */
-        paddr_t phy_pt = segment_alloc(1);
+        paddr_t phy_pt = segment_alloc_address(1);
 
         if (!phy_pt)
             return 0;

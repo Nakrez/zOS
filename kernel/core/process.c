@@ -75,7 +75,7 @@ static uintptr_t process_load_elf(struct process *p, uintptr_t elf)
         vaddr = region_reserve(p->as, phdr[i].p_vaddr, page_size);
 
         /* TODO: Error handling */
-        paddr = segment_alloc(page_size);
+        paddr = segment_alloc_address(page_size);
 
         /* TODO: Error handling */
         vaddr = as_map(p->as, vaddr, paddr, phdr[i].p_memsz,

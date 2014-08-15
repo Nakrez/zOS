@@ -40,7 +40,9 @@ void segment_initialize(struct boot_info *boot);
  *
  * Return the physical address of the segment or 0 if it fails
  */
-paddr_t segment_alloc(uint32_t page_size);
+struct segment *segment_alloc(uint32_t page_size);
+
+paddr_t segment_alloc_address(uint32_t page_size);
 
 /*
  * Reserve physical memory starting at addr and with size (* PAGE_SIZE)
@@ -51,6 +53,8 @@ paddr_t segment_alloc(uint32_t page_size);
 int segment_reserve(paddr_t addr, uint32_t page_size);
 
 struct segment *segment_locate(paddr_t addr);
+
+void segment_release(struct segment *seg);
 
 /*
  * Free the segment starting at addr

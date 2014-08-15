@@ -43,7 +43,7 @@ int as_initialize(struct as* as)
 
         map->virt = KERNEL_BEGIN;
         /* FIXME: Arch define or move initial mapping alloc to arch code */
-        map->phy = 0;
+        map->phy = segment_locate(0);
         map->size = 1024 * PAGE_SIZE;
 
         klist_add(&as->mapping, &map->list);
@@ -56,6 +56,7 @@ vaddr_t as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
                int flags)
 {
     struct as_mapping *map;
+    struct segment *phy_seg;
 
     if (!size)
         return 0;
@@ -80,21 +81,20 @@ vaddr_t as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
 
     if (!paddr)
     {
-        paddr = segment_alloc(size / PAGE_SIZE);
+        phy_seg = segment_alloc(size / PAGE_SIZE);
 
-        if (!paddr)
+        if (!phy_seg)
             goto segment_error;
     }
-    /* Try to allocate user memory in kernel as */
-    else if (vaddr < KERNEL_BEGIN && as == &kernel_as)
-        goto error;
+    else
+        phy_seg = segment_locate(paddr);
 
     map = kmalloc(sizeof (struct as_mapping));
     map->virt = vaddr;
-    map->phy = paddr;
+    map->phy = phy_seg;
     map->size = size;
 
-    if (!glue_call(as, map, as, vaddr, paddr, size, flags))
+    if (!glue_call(as, map, as, vaddr, phy_seg->base, size, flags))
         goto arch_map_error;
 
     spinlock_lock(&as->map_lock);
@@ -124,7 +124,7 @@ void as_unmap(struct as *as, vaddr_t vaddr, int flags)
             region_release(as, map->virt);
 
             if (flags & AS_UNMAP_RELEASE)
-                segment_free(map->phy);
+                segment_release(map->phy);
 
             glue_call(as, unmap, as, map->virt, map->size);
 
@@ -147,7 +147,7 @@ void as_destroy(struct as *as)
     {
         struct as_mapping *map = klist_elem(mlist, struct as_mapping, list);
 
-        segment_free(map->phy);
+        segment_release(map->phy);
 
         klist_del(&map->list);
 

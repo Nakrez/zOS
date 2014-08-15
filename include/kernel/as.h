@@ -20,7 +20,7 @@
 struct as_mapping
 {
     vaddr_t virt;
-    paddr_t phy;
+    struct segment *phy;
     size_t size;
 
     struct klist list;
