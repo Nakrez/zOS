@@ -50,6 +50,8 @@ paddr_t segment_alloc(uint32_t page_size);
  */
 int segment_reserve(paddr_t addr, uint32_t page_size);
 
+struct segment *segment_locate(paddr_t addr);
+
 /*
  * Free the segment starting at addr
  */

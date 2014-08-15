@@ -143,8 +143,6 @@ void as_unmap(struct as *as, vaddr_t vaddr, int flags)
 
 void as_destroy(struct as *as)
 {
-    glue_call(as, destroy, as);
-
     klist_for_each(&as->mapping, mlist, list)
     {
         struct as_mapping *map = klist_elem(mlist, struct as_mapping, list);
@@ -164,4 +162,6 @@ void as_destroy(struct as *as)
 
         kfree(reg);
     }
+
+    glue_call(as, destroy, as);
 }

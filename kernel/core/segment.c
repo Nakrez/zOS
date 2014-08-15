@@ -138,6 +138,24 @@ int segment_reserve(paddr_t addr, uint32_t page_size)
     return 0;
 }
 
+struct segment *segment_locate(paddr_t addr)
+{
+    struct segment *seg;
+
+    spinlock_unlock(&segment_lock);
+
+    klist_for_each_elem(&segment_head, seg, list)
+    {
+        if (seg->base >= addr
+            && seg->base + seg->page_size * PAGE_SIZE <= addr)
+            return seg;
+    }
+
+    spinlock_lock(&segment_lock);
+
+    return NULL;
+}
+
 static void segment_merge(struct segment *seg)
 {
     if (seg->list.prev != &segment_head)
