@@ -2,6 +2,7 @@
 
 #include <kernel/event.h>
 
+#include <arch/page_fault.h>
 #include <arch/cpu.h>
 #include <arch/pic.h>
 
@@ -19,6 +20,9 @@ int i386_event_initialize(void)
 {
     idt_initialize();
     pic_initialize();
+
+    if (!event_register(IRQ_PAGE_FAULT, EVENT_CALLBACK, page_fault_handler))
+        return 0;
 
     return 1;
 }

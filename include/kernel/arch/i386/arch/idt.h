@@ -4,6 +4,9 @@
 # include <kernel/types.h>
 
 # define MAX_IRQ_NUMBER 0xFF
+
+# define IRQ_PAGE_FAULT 0x14
+
 # define IRQ_SYSCALL 0x80
 
 # define INTERRUPT_GATE 0x8E00

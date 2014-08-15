@@ -18,6 +18,8 @@
 # define PROCESS_STATE_ALIVE 0
 # define PROCESS_STATE_ZOMBIE 1
 
+# define PROCESS_CODE_SEGV 128
+
 struct process
 {
     uint8_t pid;

@@ -10,9 +10,9 @@ static struct event_entry event_entries[MAX_IRQ_NUMBER];
 
 void event_initialize(void)
 {
-    glue_call(event, init);
-
     memset(event_entries, 0, sizeof (event_entries));
+
+    glue_call(event, init);
 }
 
 void event_dispatch(struct irq_regs *regs)
