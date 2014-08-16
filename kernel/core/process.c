@@ -32,7 +32,10 @@ static int process_new_pid(void)
         klist_for_each_elem(&processes, process, list)
         {
             if (process->pid == pid)
+            {
                 used = 1;
+                break;
+            }
         }
 
         if (!used)
@@ -104,9 +107,7 @@ struct process *process_create(int type, uintptr_t code, int flags)
     struct process *process;
     int pid;
 
-    pid = process_new_pid();
-
-    if (pid < 0)
+    if ((pid = process_new_pid()) < 0)
         return NULL;
 
     process = kmalloc(sizeof (struct process));
@@ -127,6 +128,7 @@ struct process *process_create(int type, uintptr_t code, int flags)
     process->state = PROCESS_STATE_ALIVE;
     process->thread_count = 0;
     process->type = type;
+    process->pid = pid;
 
     /* Init thread list */
     klist_head_init(&process->threads);
