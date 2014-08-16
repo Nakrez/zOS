@@ -62,7 +62,7 @@ struct as_mapping *as_mapping_locate(struct as *as, vaddr_t vaddr)
 
     klist_for_each_elem(&as->mapping, mapping, list)
     {
-        if (mapping->virt >= vaddr && mapping->virt + mapping->size > vaddr)
+        if (mapping->virt <= vaddr && mapping->virt + mapping->size > vaddr)
         {
             ret = mapping;
 
