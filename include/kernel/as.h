@@ -42,6 +42,7 @@ struct as_glue
     int (*init)(struct as *);
     int (*map)(struct as *, vaddr_t, paddr_t, size_t, int);
     int (*unmap)(struct as *, vaddr_t, size_t);
+    int (*duplicate)(struct as *, struct as *);
     paddr_t (*virt_to_phy)(vaddr_t);
     int (*destroy)(struct as *);
 };
@@ -80,6 +81,11 @@ struct as_mapping *as_mapping_locate(struct as *as, vaddr_t vaddr);
  */
 vaddr_t as_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
                int flags);
+
+/*
+ * Duplicate an entire address space relying on COW technique
+ */
+struct as *as_duplicate(struct as *as);
 
 /*
  * Unmap vaddr

@@ -235,6 +235,59 @@ void as_unmap(struct as *as, vaddr_t vaddr, int flags)
     spinlock_unlock(&as->map_lock);
 }
 
+struct as *as_duplicate(struct as *as)
+{
+    struct as *new_as = as_create();
+
+    if (!new_as)
+        return NULL;
+
+    /* Duplicate every mapping */
+    struct as_mapping *mapping;
+
+    spinlock_lock(&as->map_lock);
+
+    klist_for_each_elem(&as->mapping, mapping, list)
+    {
+        if (mapping->virt < KERNEL_BEGIN)
+        {
+            struct as_mapping *new_map;
+
+            if (!(new_map = kmalloc(sizeof (struct as_mapping))))
+                goto cleanup;
+
+            new_map->virt = region_reserve(new_as, mapping->virt,
+                                           mapping->size / PAGE_SIZE);
+
+            if (!new_map->virt || new_map->virt != mapping->virt)
+            {
+                kfree(new_map);
+
+                goto cleanup;
+            }
+
+            new_map->phy = mapping->phy;
+            new_map->size = mapping->size;
+
+            /* Increment ref count on physical page and set COW flags */
+            ++mapping->phy->ref_count;
+            mapping->phy->flags |= SEGMENT_FLAGS_COW;
+        }
+    }
+
+    spinlock_unlock(&as->map_lock);
+
+    if (!glue_call(as, duplicate, as, new_as))
+        goto cleanup;
+
+    return new_as;
+
+cleanup:
+    as_destroy(new_as);
+
+    return NULL;
+}
+
 void as_destroy(struct as *as)
 {
     klist_for_each(&as->mapping, mlist, list)

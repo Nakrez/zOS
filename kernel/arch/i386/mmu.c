@@ -280,6 +280,49 @@ int mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
     return 1;
 }
 
+int mmu_duplicate(struct as *old, struct as *new)
+{
+    (void) old;
+
+    uint32_t *old_pd = (uint32_t *)0xFFFFF000;
+    uint32_t *new_pd = (uint32_t *)as_map(&kernel_as, 0, new->arch.cr3,
+                                          PAGE_SIZE, AS_MAP_WRITE);
+
+    uint32_t *old_pt;
+
+    if (!new_pd)
+        return 0;
+
+    /* Go through every user space entries */
+    for (int i = 0; i < 768; ++i)
+    {
+        if (old_pd[i] & PD_PRESENT)
+        {
+            struct segment *seg = segment_locate(old_pd[i] & ~0xFFF);
+
+            if (!seg)
+                return 0;
+
+            ++seg->ref_count;
+            seg->flags |= SEGMENT_FLAGS_COW;
+
+            /* Clear write flag */
+            old_pd[i] &= ~PD_WRITE;
+
+            old_pt = (uint32_t *)(0xFFC00000 + i * 0x1000);
+
+            /* Clear write flags of every mapped page */
+            for (int j = 0; j < 1024; ++j)
+            {
+                if (old_pt[i] & PT_PRESENT)
+                    old_pt[i] &= ~PD_WRITE;
+            }
+        }
+    }
+
+    return 1;
+}
+
 void mmu_remove_cr3(struct as *as)
 {
     uint32_t *pd;

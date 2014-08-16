@@ -10,6 +10,7 @@ struct as_glue as_glue_dispatcher =
     i386_pc_as_initialize,
     mmu_map,
     mmu_unmap,
+    mmu_duplicate,
     mmu_virt_to_phy,
     i386_pc_as_destroy,
 };
