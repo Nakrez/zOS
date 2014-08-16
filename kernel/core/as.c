@@ -3,6 +3,7 @@
 #include <kernel/kmalloc.h>
 #include <kernel/region.h>
 #include <kernel/segment.h>
+#include <kernel/panic.h>
 
 #include <arch/mmu.h>
 
@@ -54,26 +55,129 @@ int as_initialize(struct as* as)
 
 struct as_mapping *as_mapping_locate(struct as *as, vaddr_t vaddr)
 {
-    struct as_mapping *mapping = NULL;
+    struct as_mapping *mapping;
+    struct as_mapping *ret = NULL;
 
     spinlock_lock(&as->map_lock);
 
     klist_for_each_elem(&as->mapping, mapping, list)
     {
         if (mapping->virt >= vaddr && mapping->virt + mapping->size > vaddr)
+        {
+            ret = mapping;
+
             break;
+        }
     }
 
     spinlock_unlock(&as->map_lock);
 
-    return mapping;
+    return ret;
 }
 
-vaddr_t as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
+static struct as_mapping *setup_mapping(struct as *as, vaddr_t vaddr,
+                                        paddr_t paddr, size_t size, int flags)
+{
+    struct as_mapping *map;
+
+    /* We need to find a region */
+    if (!vaddr)
+    {
+        map = kmalloc(sizeof (struct as_mapping));
+
+        if (!map)
+            goto error;
+
+        map->size = 0;
+        map->virt = region_reserve(as, 0, size / PAGE_SIZE);
+        map->phy = 0;
+
+        if (!map->virt)
+            goto free_vaddr;
+    }
+    /* Trying to allocate kernel addresses for user */
+    else if (vaddr >= KERNEL_BEGIN &&
+             (as != &kernel_as || flags & AS_MAP_USER))
+        goto error;
+    else
+    {
+        /* Are we trying to override a previous mapping ? */
+
+        /* No ? */
+        if (!(map = as_mapping_locate(as, vaddr)))
+        {
+            if (!(map = kmalloc(sizeof (struct as_mapping))))
+                goto error;
+
+            map->size = 0;
+            map->phy = 0;
+        }
+        /*
+         * Yes ? Check size if the new area is smaller we need to split the
+         * mapping otherwise it will be overwritten
+         */
+        else
+        {
+            spinlock_lock(&as->map_lock);
+
+            /* We remove this mapping from mapping list */
+            klist_del(&map->list);
+
+            spinlock_unlock(&as->map_lock);
+
+            if (map->size > size)
+                kernel_panic("as: need mapping split");
+        }
+    }
+
+    /* Remove previous physical pages if we override the area */
+    if (map->phy)
+        segment_release(map->phy);
+
+    if (!paddr)
+    {
+        map->phy = segment_alloc(size / PAGE_SIZE);
+
+        if (!map->phy)
+            goto free_vaddr;
+    }
+    else
+    {
+        map->phy = segment_locate(paddr);
+
+        if (!map->phy)
+            goto free_vaddr;
+    }
+
+    /*
+     * If a virtual address was given update mapping, otherwise this field
+     * is already valid
+     */
+    if (vaddr)
+        map->virt = vaddr;
+
+    map->size = size;
+
+    return map;
+
+free_vaddr:
+    /* Fresh allocation */
+    if (!map->size)
+    {
+        /* An region was requested and found */
+        if (!vaddr && map->virt)
+            region_release(as, map->virt);
+
+        kfree(map);
+    }
+error:
+    return NULL;
+}
+
+vaddr_t as_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
                int flags)
 {
     struct as_mapping *map;
-    struct segment *phy_seg;
 
     if (!size)
         return 0;
@@ -83,49 +187,22 @@ vaddr_t as_map(struct as* as, vaddr_t vaddr, paddr_t paddr, size_t size,
     paddr = ((paddr + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1));
     size = ((size + PAGE_SIZE  - 1) & ~(PAGE_SIZE - 1));
 
-    /* Locate a region */
-    if (!vaddr)
+    if (!(map = setup_mapping(as, vaddr, paddr, size, flags)))
+        return 0;
+
+    if (!glue_call(as, map, as, map->virt, map->phy->base, map->size, flags))
     {
-        vaddr = region_reserve(as, 0, size / PAGE_SIZE);
+        /* FIXME: more to do: release region and segment */
+        kfree(map);
 
-        if (!vaddr)
-            goto error;
+        return 0;
     }
-    /* Try to map in kernel a user region */
-    else if (vaddr >= KERNEL_BEGIN &&
-             (as != &kernel_as || flags & AS_MAP_USER))
-        goto error;
-
-    if (!paddr)
-    {
-        phy_seg = segment_alloc(size / PAGE_SIZE);
-
-        if (!phy_seg)
-            goto segment_error;
-    }
-    else
-        phy_seg = segment_locate(paddr);
-
-    map = kmalloc(sizeof (struct as_mapping));
-    map->virt = vaddr;
-    map->phy = phy_seg;
-    map->size = size;
-
-    if (!glue_call(as, map, as, vaddr, phy_seg->base, size, flags))
-        goto arch_map_error;
 
     spinlock_lock(&as->map_lock);
     klist_add(&as->mapping, &map->list);
     spinlock_unlock(&as->map_lock);
 
-    return vaddr;
-
-arch_map_error:
-    kfree(map);
-segment_error:
-    region_release(as, vaddr);
-error:
-    return 0;
+    return map->virt;
 }
 
 void as_unmap(struct as *as, vaddr_t vaddr, int flags)
