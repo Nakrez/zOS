@@ -38,7 +38,8 @@ void page_fault_handler(struct irq_regs *regs)
             }
         }
 
-        console_message(T_ERR, "Process %i: page fault", thread->parent->pid);
+        console_message(T_ERR, "Process %i: page fault (0x%x, 0x%x)",
+                        thread->parent->pid, addr_fault, regs->irq_data);
 
         process_exit(thread->parent, PROCESS_CODE_SEGV);
     }
@@ -53,7 +54,11 @@ void page_fault_handler(struct irq_regs *regs)
             seg = segment_locate(pt);
 
             if (seg && seg->flags & SEGMENT_FLAGS_COW)
+            {
                 kernel_panic("page_fault_handler: kernel COW implem needed");
+
+                return;
+            }
         }
 
         console_message(T_ERR, "KERNEL PAGE FAULT");
