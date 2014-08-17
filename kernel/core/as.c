@@ -198,6 +198,8 @@ vaddr_t as_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
         return 0;
     }
 
+    map->flags = flags;
+
     spinlock_lock(&as->map_lock);
     klist_add(&as->mapping, &map->list);
     spinlock_unlock(&as->map_lock);
@@ -268,10 +270,15 @@ struct as *as_duplicate(struct as *as)
 
             new_map->phy = mapping->phy;
             new_map->size = mapping->size;
+            new_map->flags = mapping->flags;
 
             /* Increment ref count on physical page and set COW flags */
             ++mapping->phy->ref_count;
+
+            /* TODO: mark pages that are only with write flags as COW */
             mapping->phy->flags |= SEGMENT_FLAGS_COW;
+
+            klist_add(&new_as->mapping, &new_map->list);
         }
     }
 

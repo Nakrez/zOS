@@ -22,6 +22,7 @@ struct as_mapping
     vaddr_t virt;
     struct segment *phy;
     size_t size;
+    int flags;
 
     struct klist list;
 };

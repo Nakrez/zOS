@@ -266,7 +266,7 @@ void segment_dump(void)
 
     klist_for_each_elem(&segment_head, seg, list)
     {
-        console_message(T_INF, "%s time referenced: 0x%x-0x%x (%u pages)",
+        console_message(T_INF, "%u time referenced: 0x%x-0x%x (%u pages)",
                         seg->ref_count,
                         seg->base, seg->base + seg->page_size * PAGE_SIZE,
                         seg->page_size);
