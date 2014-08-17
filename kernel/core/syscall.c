@@ -27,11 +27,19 @@ static int sys_exit(struct syscall *interface)
     return 0;
 }
 
+static int sys_fork(struct syscall *interface)
+{
+    (void)interface;
+
+    return process_fork(thread_current()->parent, interface->regs);
+}
+
 static syscall_callback syscalls[] =
 {
     &sys_print,
     &sys_usleep,
     &sys_exit,
+    &sys_fork,
 };
 
 void syscall_handler(struct irq_regs *regs)
