@@ -4,6 +4,7 @@
 # include <kernel/thread.h>
 
 int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip);
+int i386_thread_duplicate(struct thread *thread, struct irq_regs *regs);
 int i386_thread_current(void);
 
 #endif /* !ARCH_I386_THREAD_H */

@@ -39,6 +39,7 @@ struct thread
 struct thread_glue
 {
     int (*create)(struct process *, struct thread *, uintptr_t);
+    int (*duplicate)(struct thread *, struct irq_regs *regs);
     int (*current)(void);
 };
 
@@ -48,6 +49,9 @@ extern struct thread_glue thread_glue_dispatcher;
  * Create a new thread inside a process
  */
 int thread_create(struct process *process, uintptr_t code);
+
+int thread_duplicate(struct process *process, struct thread *thread,
+                     struct irq_regs *regs);
 
 /*
  * Get the running thread

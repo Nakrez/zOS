@@ -44,6 +44,38 @@ int thread_create(struct process *process, uintptr_t code)
     return 1;
 }
 
+int thread_duplicate(struct process *process, struct thread *thread,
+                     struct irq_regs *regs)
+{
+    struct thread *new;
+    void *t_mem;
+
+    if (!(t_mem = (void *)(as_map(&kernel_as, 0, 0, PAGE_SIZE, AS_MAP_WRITE))))
+        return 0;
+
+    new = t_mem + PAGE_SIZE - sizeof (struct thread);
+
+    new->parent = process;
+    new->state = THREAD_STATE_RUNNING;
+
+    new->uid = thread->uid;
+    new->gid = thread->gid;
+    new->kstack = (uintptr_t)new - 4;
+
+    if (!glue_call(thread, duplicate, new, regs))
+    {
+        as_unmap(&kernel_as, (vaddr_t)new, AS_UNMAP_RELEASE);
+
+        return 0;
+    }
+
+    klist_add(&process->threads, &new->list);
+
+    cpu_add_thread(new);
+
+    return 1;
+}
+
 static void timer_callback_sleep(int data)
 {
     struct thread *thread = (void *)data;
