@@ -20,6 +20,10 @@
 - Add memory specific syscalls (mmap, munmap)
 - Add IPC syscalls
 
+[AS]
+
+- When duplicating mark physical pages as COW only if original mapping as WRITE
+
 [X86]
 
 - Add APIC support
