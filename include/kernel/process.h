@@ -4,6 +4,8 @@
 # include <kernel/types.h>
 # include <kernel/as.h>
 
+# include <arch/cpu.h>
+
 # define PROCESS_MAX_PID 0xFF
 
 # define PROCESS_TYPE_KERNEL 0
@@ -36,12 +38,15 @@ struct process
 
     struct klist threads;
 
+    /* List of process */
     struct klist list;
 };
 
 void process_initialize(void);
 
 struct process *process_create(int type, uintptr_t code, int flags);
+
+int process_fork(struct process *process, struct irq_regs *regs);
 
 void process_exit(struct process *p, int code);
 

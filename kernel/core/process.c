@@ -156,6 +156,44 @@ error:
     return NULL;
 }
 
+int process_fork(struct process *process, struct irq_regs *regs)
+{
+    struct process *child;
+    int pid;
+
+    pid = process_new_pid();
+
+    if (!pid)
+        return -1;
+
+    child = kmalloc(sizeof (struct process));
+
+    if (!child)
+        return -1;
+
+    if (!(child->as = as_duplicate(process->as)))
+    {
+        kfree(child);
+
+        return -1;
+    }
+
+    child->pid = pid;
+    child->state = PROCESS_STATE_ALIVE;
+    child->type = process->type;
+    child->thread_count = 0;
+
+    klist_head_init(&child->threads);
+
+    /* TODO: cleanup */
+    if (!thread_duplicate(child, thread_current(), regs))
+        return -1;
+
+    klist_add(&processes, &child->list);
+
+    return pid;
+}
+
 void process_exit(struct process *p, int code)
 {
     struct thread *thread;
