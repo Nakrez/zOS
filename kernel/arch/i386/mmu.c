@@ -289,6 +289,7 @@ int mmu_duplicate(struct as *old, struct as *new)
                                           PAGE_SIZE, AS_MAP_WRITE);
 
     uint32_t *old_pt;
+    uint32_t *new_pt;
 
     if (!new_pd)
         return 0;
@@ -301,26 +302,58 @@ int mmu_duplicate(struct as *old, struct as *new)
             struct segment *seg = segment_locate(old_pd[i] & ~0xFFF);
 
             if (!seg)
-                return 0;
+                goto error;
 
             ++seg->ref_count;
             seg->flags |= SEGMENT_FLAGS_COW;
 
-            /* Clear write flag */
-            old_pd[i] &= ~PD_WRITE;
+            /* Allocate a new segment to copy this page table */
+            if (!(seg = segment_alloc(1)))
+                return 0;
+
+            /* Map the new page table in the kernel as to copy it */
+            new_pt = (uint32_t *)as_map(&kernel_as, 0, seg->base, PAGE_SIZE,
+                                        AS_MAP_WRITE);
+
+            if (!new_pt)
+                return 0;
+
+            /* New pd entry now point on the new allocated page table */
+            new_pd[i] = (vaddr_t)seg->base | (old_pd[i] & 0xFFF);
 
             old_pt = (uint32_t *)(0xFFC00000 + i * 0x1000);
 
             /* Clear write flags of every mapped page */
             for (int j = 0; j < 1024; ++j)
             {
-                if (old_pt[i] & PT_PRESENT)
-                    old_pt[i] &= ~PD_WRITE;
+                if (old_pt[j] & PT_PRESENT)
+                {
+                    /* Clear write flag to page fault to perform COW */
+                    old_pt[j] &= ~PT_WRITE;
+
+                    /* Copy parent page table entry */
+                    new_pt[j] = old_pt[j];
+                }
+                else
+                    new_pt[j] = 0;
             }
+
+            /* Unmap the page table from the kernel because we don't need it */
+            as_unmap(&kernel_as, (vaddr_t)new_pt, AS_UNMAP_NORELEASE);
         }
+        else
+            new_pd[i] = 0;
     }
 
+    cpu_flush_tlb();
+
+    as_unmap(&kernel_as, (vaddr_t)new_pd, AS_UNMAP_NORELEASE);
+
     return 1;
+
+error:
+    as_unmap(&kernel_as, (vaddr_t)new_pd, AS_UNMAP_NORELEASE);
+    return 0;
 }
 
 void mmu_remove_cr3(struct as *as)
