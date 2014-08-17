@@ -17,6 +17,8 @@ struct syscall
     int arg3;
     int arg4;
     int arg5;
+
+    struct irq_regs *regs;
 };
 
 typedef int (*syscall_callback)(struct syscall *interface);

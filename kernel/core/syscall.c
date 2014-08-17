@@ -45,6 +45,8 @@ void syscall_handler(struct irq_regs *regs)
 
     glue_call(syscall, convert, regs, &call);
 
+    call.regs = regs;
+
     if (call.num <= 0 || call.num > SYSCALL_MAX)
     {
         *call.ret = -1;
