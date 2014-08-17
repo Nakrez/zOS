@@ -89,6 +89,11 @@ vaddr_t as_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
 struct as *as_duplicate(struct as *as);
 
 /*
+ * Remap an existing mapping with different flags
+ */
+int as_remap(struct as *as, struct as_mapping *map, int flags);
+
+/*
  * Unmap vaddr
  */
 void as_unmap(struct as *as, vaddr_t vaddr, int flags);

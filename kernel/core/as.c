@@ -295,6 +295,13 @@ cleanup:
     return NULL;
 }
 
+int as_remap(struct as *as, struct as_mapping *map, int flags)
+{
+    map->flags = flags;
+
+    return glue_call(as, map, as, map->virt, map->phy->base, map->size, flags);
+}
+
 void as_destroy(struct as *as)
 {
     klist_for_each(&as->mapping, mlist, list)
