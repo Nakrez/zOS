@@ -28,7 +28,9 @@ int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip)
         t->regs.gs = USER_DS;
         t->regs.ss = USER_DS;
 
-        t->regs.esp = region_reserve(p->as, 0xC0000000 - 2 * PAGE_SIZE, 1);
+        t->regs.esp = region_reserve(p->as, THREAD_STACK_BASE -
+                                     t->tid * THREAD_MAX_STACK_SIZE,
+                                     1);
 
         if (!t->regs.esp)
             return 0;
