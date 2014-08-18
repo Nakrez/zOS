@@ -17,10 +17,15 @@ static int sys_print(struct syscall *interface)
 static syscall_callback syscalls[] =
 {
     &sys_print,
+
+    /* Process */
     &sys_usleep,
     &sys_exit,
     &sys_fork,
     &sys_getpid,
+
+    /* Thread */
+    &sys_thread_create,
     &sys_gettid,
 };
 
