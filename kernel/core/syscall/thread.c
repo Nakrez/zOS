@@ -10,9 +10,15 @@ int sys_thread_create(struct syscall *interface)
 
 int sys_thread_exit(struct syscall *interface)
 {
+    struct cpu *cpu = cpu_get(cpu_id_get());
+
     (void)interface;
 
     thread_exit(thread_current());
+
+    cpu->scheduler.time = 1;
+
+    scheduler_update(NULL);
 
     return 0;
 }

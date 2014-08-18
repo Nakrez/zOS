@@ -148,15 +148,8 @@ void thread_sleep(struct thread *thread, size_t ms, struct irq_regs *regs)
 
 void thread_exit(struct thread *thread)
 {
-    struct cpu *cpu = cpu_get(cpu_id_get());
-
     /* The thread will be destroy when it is elected by the scheduler */
     thread->state = THREAD_STATE_ZOMBIE;
-
-    if (cpu->scheduler.running == thread)
-        cpu->scheduler.time = 1;
-
-    scheduler_update(NULL);
 }
 
 void thread_destroy(struct thread *thread)

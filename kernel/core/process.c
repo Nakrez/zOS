@@ -9,6 +9,7 @@
 #include <kernel/region.h>
 #include <kernel/segment.h>
 #include <kernel/as.h>
+#include <kernel/cpu.h>
 
 #include <arch/mmu.h>
 
@@ -196,6 +197,7 @@ int process_fork(struct process *process, struct irq_regs *regs)
 
 void process_exit(struct process *p, int code)
 {
+    struct cpu *cpu = cpu_get(cpu_id_get());
     struct thread *thread;
 
     p->exit_state = code;
@@ -212,6 +214,10 @@ void process_exit(struct process *p, int code)
 
         thread_exit(thread);
     }
+
+    cpu->scheduler.time = 1;
+
+    scheduler_update(NULL);
 }
 
 void process_destroy(struct process *p)
