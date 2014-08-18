@@ -5,6 +5,7 @@
 # define SYS_EXIT 3
 # define SYS_FORK 4
 # define SYS_GETPID 5
+# define SYS_GETTID 6
 
 # define SYSCALL0(num, ret)                 \
     __asm__ __volatile__("mov %1, %%eax\n"  \
