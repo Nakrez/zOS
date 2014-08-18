@@ -22,3 +22,10 @@ int sys_fork(struct syscall *interface)
 
     return process_fork(thread_current()->parent, interface->regs);
 }
+
+int sys_getpid(struct syscall *interface)
+{
+    (void)interface;
+
+    return thread_current()->parent->pid;
+}

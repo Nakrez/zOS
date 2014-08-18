@@ -43,5 +43,6 @@ void syscall_handler(struct irq_regs *regs);
 int sys_usleep(struct syscall *interface);
 int sys_exit(struct syscall *interface);
 int sys_fork(struct syscall *interface);
+int sys_getpid(struct syscall *interface);
 
 #endif /* !SYSCALL_H */

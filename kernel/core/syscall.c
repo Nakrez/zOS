@@ -18,6 +18,7 @@ static syscall_callback syscalls[] =
     &sys_usleep,
     &sys_exit,
     &sys_fork,
+    &sys_getpid,
 };
 
 void syscall_handler(struct irq_regs *regs)
