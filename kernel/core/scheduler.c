@@ -54,7 +54,7 @@ void scheduler_update(struct irq_regs *regs)
                 cpu->scheduler.time = 1;
             }
 
-            thread_destory(new_thread);
+            thread_destroy(new_thread);
 
             new_thread = scheduler_elect(&cpu->scheduler);
         }

@@ -65,6 +65,6 @@ void thread_sleep(struct thread *thread, size_t ms);
 
 void thread_exit(struct thread *thread);
 
-void thread_destory(struct thread *thread);
+void thread_destroy(struct thread *thread);
 
 #endif /* !THREAD_H */

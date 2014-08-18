@@ -109,7 +109,7 @@ void thread_exit(struct thread *thread)
     scheduler_update(NULL);
 }
 
-void thread_destory(struct thread *thread)
+void thread_destroy(struct thread *thread)
 {
     thread->kstack = align(thread->kstack, PAGE_SIZE) - PAGE_SIZE;
 
