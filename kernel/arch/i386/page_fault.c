@@ -38,7 +38,9 @@ static void cow(struct as *as, struct as_mapping *mapping, vaddr_t addr_fault)
         as_unmap(&kernel_as, (vaddr_t)new_page, AS_UNMAP_NORELEASE);
 
         /* Since we duplicated the pages there is one less reference */
-        --mapping->phy->ref_count;
+        segment_release(mapping->phy);
+
+        mapping->phy = seg;
     }
 
     /* Remap with old rights */

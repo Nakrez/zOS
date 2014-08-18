@@ -215,7 +215,7 @@ static void segment_merge(struct segment *seg)
 
 void segment_release(struct segment *seg)
 {
-    if (!seg)
+    if (!seg || !seg->ref_count)
         return;
 
     spinlock_lock(&segment_lock);
