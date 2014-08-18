@@ -37,4 +37,11 @@ void syscall_initialize(void);
 
 void syscall_handler(struct irq_regs *regs);
 
+/* Syscalls */
+
+/* Process */
+int sys_usleep(struct syscall *interface);
+int sys_exit(struct syscall *interface);
+int sys_fork(struct syscall *interface);
+
 #endif /* !SYSCALL_H */
