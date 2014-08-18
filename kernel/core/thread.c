@@ -37,6 +37,8 @@ int thread_create(struct process *process, uintptr_t code)
         return 0;
     }
 
+    ++process->thread_count;
+
     klist_add(&process->threads, &thread->list);
 
     cpu_add_thread(thread);
@@ -68,6 +70,8 @@ int thread_duplicate(struct process *process, struct thread *thread,
 
         return 0;
     }
+
+    ++process->thread_count;
 
     klist_add(&process->threads, &new->list);
 
@@ -117,7 +121,7 @@ void thread_destroy(struct thread *thread)
 
     --(thread->parent->thread_count);
 
-    if (thread->parent->thread_count)
+    if (!thread->parent->thread_count)
         process_destroy(thread->parent);
 
     as_unmap(&kernel_as, thread->kstack, AS_UNMAP_RELEASE);
