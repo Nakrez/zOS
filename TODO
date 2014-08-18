@@ -20,11 +20,16 @@
 - Add memory specific syscalls (mmap, munmap)
 - Add IPC syscalls
 
+[THREAD]
+
+- Add thread_join()
+- TLS kernel ?
+
 [X86]
 
 - Add APIC support
 - Add SMP support
-- Add GPF/PF handler
+- Add GPF handler
 
 [USERLAND]
 
