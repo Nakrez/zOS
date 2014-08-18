@@ -46,5 +46,6 @@ int sys_gettid(struct syscall *interface);
 
 /* Thread */
 int sys_thread_create(struct syscall *interface);
+int sys_thread_exit(struct syscall *interface);
 
 #endif /* !SYSCALL_H */

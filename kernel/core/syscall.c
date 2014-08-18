@@ -26,6 +26,7 @@ static syscall_callback syscalls[] =
 
     /* Thread */
     &sys_thread_create,
+    &sys_thread_exit,
     &sys_gettid,
 };
 
