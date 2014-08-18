@@ -23,6 +23,8 @@ struct thread
     size_t uid;
     size_t gid;
 
+    int tid;
+
     int cpu;
 
     uintptr_t kstack;

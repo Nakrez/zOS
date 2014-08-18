@@ -6,11 +6,40 @@
 
 #include <arch/mmu.h>
 
+static int thread_new_tid(struct process *p)
+{
+    struct thread *thread;
+    int used;
+
+    for (int tid = 0; tid < THREAD_MAX_PER_PROCESS; ++tid)
+    {
+        used = 0;
+
+        klist_for_each_elem(&p->threads, thread, list)
+        {
+            if (thread->tid == tid)
+            {
+                used = 1;
+                break;
+            }
+        }
+
+        if (!used)
+            return tid;
+    }
+
+    return -1;
+}
+
 int thread_create(struct process *process, uintptr_t code)
 {
+    int tid;
     struct thread *thread;
 
     if (!code)
+        return 0;
+
+    if ((tid = thread_new_tid(process) < 0))
         return 0;
 
     /*
@@ -24,6 +53,7 @@ int thread_create(struct process *process, uintptr_t code)
         return 0;
 
     thread->parent = process;
+    thread->tid = tid;
 
     thread->state = THREAD_STATE_RUNNING;
 
@@ -49,8 +79,12 @@ int thread_create(struct process *process, uintptr_t code)
 int thread_duplicate(struct process *process, struct thread *thread,
                      struct irq_regs *regs)
 {
+    int tid;
     struct thread *new;
     void *t_mem;
+
+    if ((tid = thread_new_tid(process)) < 0)
+        return 0;
 
     if (!(t_mem = (void *)(as_map(&kernel_as, 0, 0, PAGE_SIZE, AS_MAP_WRITE))))
         return 0;
@@ -58,6 +92,7 @@ int thread_duplicate(struct process *process, struct thread *thread,
     new = t_mem + PAGE_SIZE - sizeof (struct thread);
 
     new->parent = process;
+    new->tid = tid;
     new->state = THREAD_STATE_RUNNING;
 
     new->uid = thread->uid;
