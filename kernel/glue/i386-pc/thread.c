@@ -5,4 +5,5 @@ struct thread_glue thread_glue_dispatcher =
     i386_thread_create,
     i386_thread_duplicate,
     i386_thread_current,
+    i386_thread_save_state,
 };

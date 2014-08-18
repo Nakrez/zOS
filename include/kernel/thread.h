@@ -41,8 +41,9 @@ struct thread
 struct thread_glue
 {
     int (*create)(struct process *, struct thread *, uintptr_t);
-    int (*duplicate)(struct thread *, struct irq_regs *regs);
+    int (*duplicate)(struct thread *, struct irq_regs *);
     int (*current)(void);
+    int (*save_state)(struct thread *, struct irq_regs *);
 };
 
 extern struct thread_glue thread_glue_dispatcher;
@@ -63,7 +64,9 @@ static inline struct thread *thread_current(void)
     return (struct thread *)glue_call(thread, current);
 }
 
-void thread_sleep(struct thread *thread, size_t ms);
+void thread_save_state(struct thread *thread, struct irq_regs *regs);
+
+void thread_sleep(struct thread *thread, size_t ms, struct irq_regs *regs);
 
 void thread_exit(struct thread *thread);
 

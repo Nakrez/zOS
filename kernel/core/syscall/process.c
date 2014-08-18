@@ -4,7 +4,7 @@
 
 int sys_usleep(struct syscall *interface)
 {
-    thread_sleep(thread_current(), interface->arg1);
+    thread_sleep(thread_current(), interface->arg1, interface->regs);
 
     return 0;
 }

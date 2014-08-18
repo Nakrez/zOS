@@ -115,17 +115,26 @@ int thread_duplicate(struct process *process, struct thread *thread,
     return 1;
 }
 
+void thread_save_state(struct thread *thread, struct irq_regs *regs)
+{
+    glue_call(thread, save_state, thread, regs);
+}
+
 static void timer_callback_sleep(int data)
 {
     struct thread *thread = (void *)data;
     struct cpu *cpu = cpu_get(thread->cpu);
 
+    thread->state = THREAD_STATE_RUNNING;
+
     scheduler_add_thread(&cpu->scheduler, thread);
 }
 
-void thread_sleep(struct thread *thread, size_t ms)
+void thread_sleep(struct thread *thread, size_t ms, struct irq_regs *regs)
 {
     struct cpu *cpu = cpu_get(thread->cpu);
+
+    thread_save_state(thread, regs);
 
     thread->state = THREAD_STATE_BLOCKED;
 
