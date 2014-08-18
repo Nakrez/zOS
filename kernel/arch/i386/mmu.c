@@ -299,24 +299,18 @@ int mmu_duplicate(struct as *old, struct as *new)
     {
         if (old_pd[i] & PD_PRESENT)
         {
-            struct segment *seg = segment_locate(old_pd[i] & ~0xFFF);
+            /* Allocate a new segment to copy this page table */
+            struct segment *seg = segment_alloc(1);
 
             if (!seg)
                 goto error;
-
-            ++seg->ref_count;
-            seg->flags |= SEGMENT_FLAGS_COW;
-
-            /* Allocate a new segment to copy this page table */
-            if (!(seg = segment_alloc(1)))
-                return 0;
 
             /* Map the new page table in the kernel as to copy it */
             new_pt = (uint32_t *)as_map(&kernel_as, 0, seg->base, PAGE_SIZE,
                                         AS_MAP_WRITE);
 
             if (!new_pt)
-                return 0;
+                goto error;
 
             /* New pd entry now point on the new allocated page table */
             new_pd[i] = (vaddr_t)seg->base | (old_pd[i] & 0xFFF);
