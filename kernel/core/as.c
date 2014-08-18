@@ -268,15 +268,16 @@ struct as *as_duplicate(struct as *as)
                 goto cleanup;
             }
 
+            /* Only pages with write flags are marked as copy on write */
+            if (mapping->flags & AS_MAP_WRITE)
+                mapping->phy->flags |= SEGMENT_FLAGS_COW;
+
             new_map->phy = mapping->phy;
             new_map->size = mapping->size;
             new_map->flags = mapping->flags;
 
             /* Increment ref count on physical page and set COW flags */
             ++mapping->phy->ref_count;
-
-            /* TODO: mark pages that are only with write flags as COW */
-            mapping->phy->flags |= SEGMENT_FLAGS_COW;
 
             klist_add(&new_as->mapping, &new_map->list);
         }
