@@ -1,9 +1,11 @@
 #include <kernel/syscall.h>
 #include <kernel/thread.h>
+#include <kernel/cpu.h>
 
 int sys_thread_create(struct syscall *interface)
 {
-    return thread_create(thread_current()->parent, interface->arg1);
+    return thread_create(thread_current()->parent, interface->arg1,
+                         2, interface->arg2, interface->arg3);
 }
 
 int sys_thread_exit(struct syscall *interface)

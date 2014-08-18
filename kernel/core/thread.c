@@ -31,16 +31,17 @@ static int thread_new_tid(struct process *p)
     return -1;
 }
 
-int thread_create(struct process *process, uintptr_t code)
+int thread_create(struct process *process, uintptr_t code, size_t arg_count,
+                  uintptr_t arg1, uintptr_t arg2)
 {
     int tid;
     struct thread *thread;
 
     if (!code)
-        return 0;
+        return -1;
 
-    if ((tid = thread_new_tid(process) < 0))
-        return 0;
+    if ((tid = thread_new_tid(process)) < 0)
+        return -1;
 
     /*
      * Allocate one entire page because thread structure is located on the
@@ -50,7 +51,7 @@ int thread_create(struct process *process, uintptr_t code)
              PAGE_SIZE - sizeof (struct thread));
 
     if (!thread)
-        return 0;
+        return -1;
 
     thread->parent = process;
     thread->tid = tid;
@@ -61,10 +62,11 @@ int thread_create(struct process *process, uintptr_t code)
     thread->gid = 0;
     thread->kstack = (uintptr_t)thread - 4;
 
-    if (!glue_call(thread, create, process, thread, code))
+    if (!glue_call(thread, create, process, thread, code, arg_count, arg1,
+                   arg2))
     {
         as_unmap(&kernel_as, (vaddr_t)thread, AS_UNMAP_RELEASE);
-        return 0;
+        return -1;
     }
 
     ++process->thread_count;
@@ -73,7 +75,7 @@ int thread_create(struct process *process, uintptr_t code)
 
     cpu_add_thread(thread);
 
-    return 1;
+    return thread->tid;
 }
 
 int thread_duplicate(struct process *process, struct thread *thread,

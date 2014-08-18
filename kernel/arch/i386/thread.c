@@ -6,7 +6,8 @@
 #include <arch/pm.h>
 #include <arch/mmu.h>
 
-int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip)
+int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip,
+                       size_t arg_count, uintptr_t arg1, uintptr_t arg2)
 {
     if (p->type == PROCESS_TYPE_KERNEL)
     {
@@ -46,6 +47,18 @@ int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip)
         }
 
         t->regs.esp += PAGE_SIZE - 4;
+
+        if (arg_count)
+        {
+            uintptr_t *stack = (uintptr_t *)t->regs.esp;
+
+            if (arg_count > 1)
+                *(stack--) = arg2;
+
+            *(stack--) = arg1;
+
+            t->regs.esp = (uintptr_t)stack;
+        }
     }
 
     t->regs.edi = 0;
