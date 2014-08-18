@@ -1,6 +1,6 @@
 CURDIR := kernel/core/syscall/
 
-OBJ := process.o
+OBJ := process.o thread.o
 
 BINSUBDIRS :=
 
