@@ -5,6 +5,8 @@
 #include <kernel/console.h>
 #include <kernel/zos.h>
 
+static int syscall_max;
+
 static int sys_print(struct syscall *interface)
 {
     console_message(T_INF, "Syscall print: %s", (char *)interface->arg1);
@@ -34,7 +36,7 @@ void syscall_handler(struct irq_regs *regs)
 
     call.regs = regs;
 
-    if (call.num <= 0 || call.num > SYSCALL_MAX)
+    if (call.num <= 0 || call.num > syscall_max)
     {
         *call.ret = -1;
         return;
@@ -45,5 +47,7 @@ void syscall_handler(struct irq_regs *regs)
 
 void syscall_initialize(void)
 {
+    syscall_max = sizeof (syscalls) / sizeof (syscall_callback);
+
     glue_call(syscall, init);
 }

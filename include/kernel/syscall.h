@@ -5,8 +5,6 @@
 
 # include <arch/cpu.h>
 
-# define SYSCALL_MAX 0x4
-
 struct syscall
 {
     int num;
