@@ -42,7 +42,8 @@ void scheduler_update(struct irq_regs *regs)
 
     --cpu->scheduler.time;
 
-    if (cpu->scheduler.time <= 0)
+    if (cpu->scheduler.time <= 0 ||
+        cpu->scheduler.running->state != THREAD_STATE_RUNNING)
     {
         struct thread *new_thread = scheduler_elect(&cpu->scheduler);
 
@@ -94,7 +95,7 @@ void scheduler_switch(struct scheduler *sched, struct thread *new_thread,
     sched->running = new_thread;
     sched->time = SCHEDULER_TIME;
 
-    if (old != NULL)
+    if (old != NULL && old->state == THREAD_STATE_RUNNING)
         klist_add_back(&sched->threads, &old->sched);
 
     _scheduler.sswitch(regs, new_thread, old);
@@ -104,6 +105,14 @@ void scheduler_remove_thread(struct thread *t, struct scheduler *sched)
 {
     if (t == sched->running)
     {
+        /* FIXME: Move that shit away ! */
+        if (sched->running->state != THREAD_STATE_ZOMBIE)
+        {
+            __asm__ __volatile__("int $0x20");
+
+            return;
+        }
+
         sched->running = NULL;
         sched->time = 1;
 
