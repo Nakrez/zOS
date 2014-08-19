@@ -143,7 +143,24 @@ void thread_sleep(struct thread *thread, size_t ms, struct irq_regs *regs)
     timer_register(thread->cpu, TIMER_CALLBACK | TIMER_ONE_SHOT,
                    (int)thread, ms, timer_callback_sleep);
 
+}
+
+void thread_block(struct thread *thread, int state)
+{
+    struct cpu *cpu = cpu_get(thread->cpu);
+
+    thread->state = state;
+
     scheduler_remove_thread(thread, &cpu->scheduler);
+}
+
+void thread_unblock(struct thread *thread)
+{
+    struct cpu *cpu = cpu_get(thread->cpu);
+
+    thread->state = THREAD_STATE_RUNNING;
+
+    scheduler_add_thread(&cpu->scheduler, thread);
 }
 
 void thread_exit(struct thread *thread)

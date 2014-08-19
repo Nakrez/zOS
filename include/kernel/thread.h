@@ -70,6 +70,9 @@ void thread_save_state(struct thread *thread, struct irq_regs *regs);
 
 void thread_sleep(struct thread *thread, size_t ms, struct irq_regs *regs);
 
+void thread_block(struct thread *thread, int state);
+void thread_unblock(struct thread *thread);
+
 void thread_exit(struct thread *thread);
 
 void thread_destroy(struct thread *thread);
