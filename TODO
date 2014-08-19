@@ -16,9 +16,12 @@
 
 [SYSCALL]
 
-- Add irq specific syscall
 - Add memory specific syscalls (mmap, munmap)
 - Add IPC syscalls
+
+[SCHEDULER]
+
+- Remove x86 asm inline in core scheduler
 
 [THREAD]
 
@@ -33,8 +36,4 @@
 
 [USERLAND]
 
-- Makefile mechanism
-- Add libc
-- Add libzos
-- Add vfs binary
 - Add init binary
