@@ -62,6 +62,8 @@ void event_acnowledge(int irq);
  */
 int event_register(int irq, int type, void (*callback)(struct irq_regs *));
 
+void event_unregister(int irq);
+
 /*
  * Mask an IRQ
  */

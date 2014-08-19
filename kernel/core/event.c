@@ -62,3 +62,13 @@ int event_register(int irq, int type, void (*callback)(struct irq_regs *))
 
     return 1;
 }
+
+void event_unregister(int irq)
+{
+    if (irq < 0 || irq > MAX_IRQ_NUMBER)
+        return;
+
+    event_mask(irq);
+
+    event_entries[irq].type = EVENT_NONE;
+}
