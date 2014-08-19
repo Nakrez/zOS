@@ -28,6 +28,11 @@ static syscall_callback syscalls[] =
     &sys_thread_create,
     &sys_thread_exit,
     &sys_gettid,
+
+    /* Event */
+    &sys_event_register,
+    &sys_event_listen,
+    &sys_event_unregister,
 };
 
 void syscall_handler(struct irq_regs *regs)

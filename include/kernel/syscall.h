@@ -42,10 +42,15 @@ int sys_usleep(struct syscall *interface);
 int sys_exit(struct syscall *interface);
 int sys_fork(struct syscall *interface);
 int sys_getpid(struct syscall *interface);
-int sys_gettid(struct syscall *interface);
 
 /* Thread */
 int sys_thread_create(struct syscall *interface);
 int sys_thread_exit(struct syscall *interface);
+int sys_gettid(struct syscall *interface);
+
+/* Event */
+int sys_event_register(struct syscall *interface);
+int sys_event_listen(struct syscall *interface);
+int sys_event_unregister(struct syscall *interface);
 
 #endif /* !SYSCALL_H */
