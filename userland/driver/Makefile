@@ -1,5 +1,5 @@
 CURDIR := userland/driver/
-SUBDIRS := vfs/
+SUBDIRS := kbd/
 
 include ${SRCDIR}mk/subdirs.mk
 

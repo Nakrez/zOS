@@ -1,4 +1,4 @@
-CURDIR := userland/driver/vfs/src/
+CURDIR := userland/driver/kbd/src/
 
 OBJ := main.o
 
