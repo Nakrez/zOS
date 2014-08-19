@@ -2,11 +2,17 @@
 # define EVENT_H
 
 # include <kernel/zos.h>
+
+# include <glue/event.h>
+
 # include <arch/cpu.h>
 
 # define EVENT_NONE 0
 # define EVENT_CALLBACK 1
 # define EVENT_MESSAGE 2
+
+# define EVENT_REGISTERED (1 << 0)
+# define EVENT_FIRED (1 << 1)
 
 struct event_glue
 {

@@ -12,6 +12,10 @@
 # define INTERRUPT_GATE 0x8E00
 # define TRAP_GATE 0xEF00
 
+# define IRQ_USER_BEGIN 0x21
+# define IRQ_USER_END 0x2F
+# define IRQ_USER_SIZE (IRQ_USER_END - IRQ_USER_BEGIN)
+
 struct idt_ptr
 {
     uint16_t size;

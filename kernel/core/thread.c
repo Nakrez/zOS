@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <kernel/thread.h>
 #include <kernel/kmalloc.h>
 #include <kernel/console.h>
@@ -62,6 +64,8 @@ int thread_create(struct process *process, uintptr_t code, size_t arg_count,
     thread->gid = 0;
     thread->kstack = (uintptr_t)thread - 4;
 
+    memset(thread->events, 0, sizeof (thread->events));
+
     if (!glue_call(thread, create, process, thread, code, arg_count, arg1,
                    arg2))
     {
@@ -100,6 +104,8 @@ int thread_duplicate(struct process *process, struct thread *thread,
     new->uid = thread->uid;
     new->gid = thread->gid;
     new->kstack = (uintptr_t)new - 4;
+
+    memset(thread->events, 0, sizeof (thread->events));
 
     if (!glue_call(thread, duplicate, new, regs))
     {
@@ -161,6 +167,15 @@ void thread_exit(struct thread *thread)
 {
     /* The thread will be destroy when it is elected by the scheduler */
     thread->state = THREAD_STATE_ZOMBIE;
+
+    /* Unregister events */
+    for (int i = 0; i < IRQ_USER_SIZE; ++i)
+    {
+        if (thread->events[i] & EVENT_REGISTERED)
+            event_unregister(i + IRQ_USER_BEGIN);
+
+        thread->events[i] = 0;
+    }
 }
 
 void thread_destroy(struct thread *thread)

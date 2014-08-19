@@ -5,6 +5,7 @@
 # include <kernel/klist.h>
 # include <kernel/process.h>
 # include <kernel/zos.h>
+# include <kernel/event.h>
 
 # include <arch/cpu.h>
 
@@ -27,6 +28,8 @@ struct thread
     int tid;
 
     int cpu;
+
+    uint8_t events[IRQ_USER_SIZE];
 
     uintptr_t kstack;
 
