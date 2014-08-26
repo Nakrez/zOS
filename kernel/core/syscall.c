@@ -4,19 +4,22 @@
 #include <kernel/panic.h>
 #include <kernel/console.h>
 #include <kernel/zos.h>
+#include <kernel/thread.h>
 
 static int syscall_max;
 
-static int sys_print(struct syscall *interface)
+static int sys_uprint(struct syscall *interface)
 {
-    console_message(T_INF, "Syscall print: %s", (char *)interface->arg1);
+    console_message(T_INF, "Userland (%i, %i): %s",
+                    thread_current()->parent->pid, thread_current()->tid,
+                    (char *)interface->arg1);
 
     return 0;
 }
 
 static syscall_callback syscalls[] =
 {
-    &sys_print,
+    &sys_uprint,
 
     /* Process */
     &sys_usleep,
