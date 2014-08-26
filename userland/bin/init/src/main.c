@@ -1,28 +1,13 @@
 #include <unistd.h>
-#include <stdlib.h>
+
+#include <zos/print.h>
 
 int main(void)
 {
-    char message[5];
-
-    message[0] = 'I';
-    message[1] = 'N';
-    message[2] = 'I';
-    message[3] = 'T';
-    message[4] = 0;
+    uprint("Init is launching");
 
     while (1)
-    {
-        __asm__ __volatile__("mov %0, %%ebx\n"
-                             "mov $1, %%eax\n"
-                             "int $0x80\n"
-                             :
-                             : "r" (message)
-                             : "memory");
-
-        exit(0);
-        /* sleep(1); */
-    }
+        sleep(1);
 
     return 0;
 }
