@@ -1,6 +1,6 @@
 CURDIR := userland/driver/kbd/src/arch/i386/
 
-OBJ := keymap.o
+OBJ := interrupt.o keymap.o
 
 BINSUBDIRS :=
 
