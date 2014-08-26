@@ -1,6 +1,7 @@
 #ifndef LIBC_I386_SYSCALL_H
 # define LIBC_I386_SYSCALL_H
 
+# define SYS_UPRINT 1
 # define SYS_USLEEP 2
 # define SYS_EXIT 3
 # define SYS_FORK 4
