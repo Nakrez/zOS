@@ -1,6 +1,6 @@
 CURDIR := kernel/core/vfs/
 
-OBJ := vfs.o
+OBJ := vfs.o vnode.o
 
 BINSUBDIRS :=
 
