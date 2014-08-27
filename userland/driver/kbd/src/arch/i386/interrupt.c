@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <event.h>
+#include <zos/interrupt.h>
 
 #include <sys/io.h>
 
@@ -18,9 +18,9 @@ void interrupt_thread(void *arg)
     uint8_t key;
     struct input_event event;
 
-    res = event_register(KEYBOARD_INTERRUPT);
+    res = interrupt_register(KEYBOARD_INTERRUPT);
 
-    /* Error while registering the event */
+    /* Error while registering the interrupt */
     if (res != 0)
     {
         uprint("Unable to reserve keyboard interrupt...");
@@ -31,7 +31,7 @@ void interrupt_thread(void *arg)
 
     while (1)
     {
-        res = event_listen();
+        res = interrupt_listen();
 
         if (res != KEYBOARD_INTERRUPT)
             continue;

@@ -9,9 +9,9 @@
 # define SYS_THREAD_CREATE 6
 # define SYS_THREAD_EXIT 7
 # define SYS_GETTID 8
-# define SYS_EVENT_REGISTER 9
-# define SYS_EVENT_LISTEN 10
-# define SYS_EVENT_UNREGISTER 11
+# define SYS_INTERRUPT_REGISTER 9
+# define SYS_INTERRUPT_LISTEN 10
+# define SYS_INTERRUPT_UNREGISTER 11
 
 # define SYSCALL0(num, ret)                     \
     __asm__ __volatile__("mov %1, %%eax\n"      \
