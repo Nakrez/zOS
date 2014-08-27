@@ -13,5 +13,7 @@ struct vtree_node {
 };
 
 int vtree_initialize(void);
+int vtree_lookup(const char *path, const char **remaining_path,
+                 struct vnode **node);
 
 #endif /* !VFS_PATH_TREE_H */

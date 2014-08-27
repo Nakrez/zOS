@@ -29,11 +29,9 @@
 # define VFS_TYPE_VIRTUAL (1 << 5)
 # define VFS_TYPE_FAKE (1 << 6)
 
-# define VFS_DEV_MAJOR_NONE 0x0
-# define VFS_DEV_MINOR_NONE 0x0
+# define VFS_TYPE_DEVICE (VFS_TYPE_CHARDEV | VFS_TYPE_BLOCKDEV)
 
-# define MAKEDEV(major, minor) (((major & 0xFFFF) << 16) | (minor & 0xFFFF))
-# define NODEV MAKEDEV(VFS_DEV_MAJOR_NONE, VFS_DEV_MINOR_NONE)
+# define VFS_DEVICE_NONE 0
 
 struct vnode {
     /* Name of the node */

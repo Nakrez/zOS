@@ -24,7 +24,7 @@ struct vnode *vnode_create(const char *name, int uid, int gid, uint16_t perm,
     node->gid = gid;
     node->perm = perm;
     node->type = type;
-    node->dev = NODEV;
+    node->dev = VFS_DEVICE_NONE;
     node->parent = NULL;
 
     return node;
