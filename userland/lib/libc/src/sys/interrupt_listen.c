@@ -2,11 +2,11 @@
 
 #include <arch/syscall.h>
 
-int interrupt_listen(void)
+int interrupt_listen(int interrupt)
 {
     int ret;
 
-    SYSCALL0(SYS_INTERRUPT_LISTEN, ret);
+    SYSCALL1(SYS_INTERRUPT_LISTEN, interrupt, ret);
 
     return ret;
 }

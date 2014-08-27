@@ -6,15 +6,15 @@
 # include <kernel/process.h>
 # include <kernel/zos.h>
 # include <kernel/interrupt.h>
+# include <kernel/scheduler/event.h>
 
 # include <arch/cpu.h>
 
 # define THREAD_MAX_PER_PROCESS 10
 
 # define THREAD_STATE_RUNNING 1
-# define THREAD_STATE_BLOCKED_TIMER 2
-# define THREAD_STATE_BLOCKED_INTERRUPT 3
-# define THREAD_STATE_ZOMBIE 4
+# define THREAD_STATE_BLOCKED 2
+# define THREAD_STATE_ZOMBIE 3
 
 struct thread
 {
@@ -28,6 +28,8 @@ struct thread
     int tid;
 
     int cpu;
+
+    struct scheduler_event event;
 
     uint8_t interrupts[IRQ_USER_SIZE];
 
@@ -74,7 +76,7 @@ void thread_save_state(struct thread *thread, struct irq_regs *regs);
 
 void thread_sleep(struct thread *thread, size_t ms, struct irq_regs *regs);
 
-void thread_block(struct thread *thread, int state);
+void thread_block(struct thread *thread, int event, int data);
 void thread_unblock(struct thread *thread);
 
 void thread_exit(struct thread *thread);

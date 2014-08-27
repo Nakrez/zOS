@@ -1,6 +1,7 @@
 #include <kernel/syscall.h>
 #include <kernel/thread.h>
 #include <kernel/interrupt.h>
+#include <kernel/scheduler/event.h>
 
 static struct thread *interrupts[IRQ_USER_SIZE];
 
@@ -14,8 +15,7 @@ static void user_interrupt_callback(struct irq_regs *regs)
 
     thread->interrupts[irq - IRQ_USER_BEGIN] |= INTERRUPT_FIRED;
 
-    if (thread->state == THREAD_STATE_BLOCKED_INTERRUPT)
-        thread_unblock(thread);
+    scheduler_event_notify(SCHED_EV_INTERRUPT, irq);
 }
 
 int sys_interrupt_register(struct syscall *interface)
@@ -44,46 +44,23 @@ int sys_interrupt_register(struct syscall *interface)
 
 int sys_interrupt_listen(struct syscall *interface)
 {
-    (void) interface;
-
-    int fired = -1;
-    int registered = -1;
-
     struct thread *t = thread_current();
 
-    for (int i = 0; i < IRQ_USER_SIZE; ++i)
-    {
-        if (t->interrupts[i] & INTERRUPT_REGISTERED)
-            registered = 1;
-
-        if (t->interrupts[i] & INTERRUPT_FIRED)
-        {
-            fired = i;
-            break;
-        }
-    }
-
-    /* Thread never registered any interrupt */
-    if (registered < 0)
+    if (interface->arg1 < IRQ_USER_BEGIN || interface->arg1 > IRQ_USER_END)
         return -1;
 
-    if (fired >= 0)
-    {
-        t->interrupts[fired] = INTERRUPT_REGISTERED;
-        return fired + IRQ_USER_BEGIN;
-    }
+    if (!(t->interrupts[interface->arg1 - IRQ_USER_BEGIN] &
+          INTERRUPT_REGISTERED))
+        return -1;
+
+    if (t->interrupts[interface->arg1 - IRQ_USER_BEGIN] & INTERRUPT_FIRED)
+        return interface->arg1;
 
     /* Block thread until an interrupt occured */
-    thread_block(t, THREAD_STATE_BLOCKED_INTERRUPT);
+    thread_block(t, SCHED_EV_INTERRUPT, interface->arg1);
 
-    for (int i = 0; i < IRQ_USER_SIZE; ++i)
-    {
-        if (t->interrupts[i] & INTERRUPT_FIRED)
-        {
-            t->interrupts[i] = INTERRUPT_REGISTERED;
-            return i + IRQ_USER_BEGIN;
-        }
-    }
+    if (t->interrupts[interface->arg1 - IRQ_USER_BEGIN] & INTERRUPT_FIRED)
+        return interface->arg1;
 
     return -1;
 }

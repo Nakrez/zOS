@@ -65,6 +65,7 @@ int thread_create(struct process *process, uintptr_t code, size_t arg_count,
     thread->kstack = (uintptr_t)thread - 4;
 
     memset(thread->interrupts, 0, sizeof (thread->interrupts));
+    memset(&thread->event, 0, sizeof (thread->event));
 
     if (!glue_call(thread, create, process, thread, code, arg_count, arg1,
                    arg2))
@@ -106,6 +107,7 @@ int thread_duplicate(struct process *process, struct thread *thread,
     new->kstack = (uintptr_t)new - 4;
 
     memset(thread->interrupts, 0, sizeof (thread->interrupts));
+    memset(&thread->event, 0, sizeof (thread->event));
 
     if (!glue_call(thread, duplicate, new, regs))
     {
@@ -130,37 +132,42 @@ void thread_save_state(struct thread *thread, struct irq_regs *regs)
 
 static void timer_callback_sleep(int data)
 {
-    struct thread *thread = (void *)data;
-
-    thread_unblock(thread);
+    scheduler_event_notify(SCHED_EV_TIMER, data);
 }
 
 void thread_sleep(struct thread *thread, size_t ms, struct irq_regs *regs)
 {
+    uint32_t data = (thread->parent->pid << 16) | thread->tid;
+
     thread_save_state(thread, regs);
 
     timer_register(thread->cpu, TIMER_CALLBACK | TIMER_ONE_SHOT,
-                   (int)thread, ms, timer_callback_sleep);
+                   data, ms, timer_callback_sleep);
 
-    thread_block(thread, THREAD_STATE_BLOCKED_TIMER);
+    thread_block(thread, SCHED_EV_TIMER, data);
 }
 
-void thread_block(struct thread *thread, int state)
+void thread_block(struct thread *thread, int event, int data)
 {
     struct cpu *cpu = cpu_get(thread->cpu);
 
-    thread->state = state;
+    thread->state = THREAD_STATE_BLOCKED;
+
+    thread->event.event = event;
+    thread->event.data = data;
+
+    scheduler_wait_event(thread);
 
     scheduler_remove_thread(thread, &cpu->scheduler);
+
+    --cpu->scheduler.thread_num;
 }
 
 void thread_unblock(struct thread *thread)
 {
-    struct cpu *cpu = cpu_get(thread->cpu);
-
     thread->state = THREAD_STATE_RUNNING;
 
-    scheduler_add_thread(&cpu->scheduler, thread);
+    cpu_add_thread(thread);
 }
 
 void thread_exit(struct thread *thread)

@@ -31,7 +31,7 @@ void interrupt_thread(void *arg)
 
     while (1)
     {
-        res = interrupt_listen();
+        res = interrupt_listen(KEYBOARD_INTERRUPT);
 
         if (res != KEYBOARD_INTERRUPT)
             continue;
