@@ -39,4 +39,6 @@ typedef __uptr uintptr_t;
 typedef __uptr paddr_t;
 typedef __uptr vaddr_t;
 
+typedef int pid_t;
+
 #endif /* !TYPES_H */

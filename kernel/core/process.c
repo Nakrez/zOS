@@ -131,6 +131,8 @@ struct process *process_create(int type, uintptr_t code, int flags)
     process->type = type;
     process->pid = pid;
 
+    memset(process->files, 0, sizeof (process->files));
+
     /* Init thread list */
     klist_head_init(&process->threads);
 
@@ -189,6 +191,13 @@ int process_fork(struct process *process, struct irq_regs *regs)
     /* TODO: cleanup */
     if (!thread_duplicate(child, thread_current(), regs))
         return -1;
+
+    /* Increase reference count on vnode associated to open file descriptors */
+    for (int i = 0; i < PROCESS_MAX_OPEN_FD; ++i)
+    {
+        if (child->files[i].mode != VFS_MODE_UNUSED)
+            ++child->files[i].vnode->ref_count;
+    }
 
     klist_add(&processes, &child->list);
 

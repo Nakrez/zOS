@@ -3,10 +3,12 @@
 
 # include <kernel/types.h>
 # include <kernel/as.h>
+# include <kernel/vfs/vfile.h>
 
 # include <arch/cpu.h>
 
 # define PROCESS_MAX_PID 0xFF
+# define PROCESS_MAX_OPEN_FD 255
 
 # define PROCESS_TYPE_KERNEL 0
 # define PROCESS_TYPE_USER (1 << 1)
@@ -35,6 +37,8 @@ struct process
     struct as *as;
 
     size_t thread_count;
+
+    struct vfile files[PROCESS_MAX_OPEN_FD];
 
     struct klist threads;
 
