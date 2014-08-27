@@ -1,47 +1,48 @@
-#include <glue/event.h>
+#include <glue/interrupt.h>
 
-#include <kernel/event.h>
+#include <kernel/interrupt.h>
 
 #include <arch/page_fault.h>
 #include <arch/cpu.h>
 #include <arch/pic.h>
 
-struct event_glue event_glue_dispatcher =
+struct interrupt_glue interrupt_glue_dispatcher =
 {
-    i386_event_initialize,
-    i386_event_enable,
-    i386_event_disable,
-    i386_event_acknowledge,
-    i386_event_mask,
-    i386_event_unmask,
+    i386_interrupt_initialize,
+    i386_interrupt_enable,
+    i386_interrupt_disable,
+    i386_interrupt_acknowledge,
+    i386_interrupt_mask,
+    i386_interrupt_unmask,
 };
 
-int i386_event_initialize(void)
+int i386_interrupt_initialize(void)
 {
     idt_initialize();
     pic_initialize();
 
-    if (!event_register(IRQ_PAGE_FAULT, EVENT_CALLBACK, page_fault_handler))
+    if (!interrupt_register(IRQ_PAGE_FAULT, INTERRUPT_CALLBACK,
+                            page_fault_handler))
         return 0;
 
     return 1;
 }
 
-int i386_event_enable(void)
+int i386_interrupt_enable(void)
 {
     cpu_irq_enable();
 
     return 1;
 }
 
-int i386_event_disable(void)
+int i386_interrupt_disable(void)
 {
     cpu_irq_disable();
 
     return 1;
 }
 
-int i386_event_acknowledge(int irq)
+int i386_interrupt_acknowledge(int irq)
 {
     if (irq >= PIC_START_IRQ && irq <= PIC_END_IRQ)
         pic_acnowledge(irq);
@@ -49,7 +50,7 @@ int i386_event_acknowledge(int irq)
     return 1;
 }
 
-int i386_event_mask(int irq)
+int i386_interrupt_mask(int irq)
 {
     if (irq < PIC_START_IRQ || irq > PIC_END_IRQ)
         return 1;
@@ -59,7 +60,7 @@ int i386_event_mask(int irq)
     return 1;
 }
 
-int i386_event_unmask(int irq)
+int i386_interrupt_unmask(int irq)
 {
     if (irq < PIC_START_IRQ || irq > PIC_END_IRQ)
         return 1;

@@ -5,7 +5,7 @@
 # include <kernel/klist.h>
 # include <kernel/process.h>
 # include <kernel/zos.h>
-# include <kernel/event.h>
+# include <kernel/interrupt.h>
 
 # include <arch/cpu.h>
 
@@ -13,7 +13,7 @@
 
 # define THREAD_STATE_RUNNING 1
 # define THREAD_STATE_BLOCKED_TIMER 2
-# define THREAD_STATE_BLOCKED_EVENT 3
+# define THREAD_STATE_BLOCKED_INTERRUPT 3
 # define THREAD_STATE_ZOMBIE 4
 
 struct thread
@@ -29,7 +29,7 @@ struct thread
 
     int cpu;
 
-    uint8_t events[IRQ_USER_SIZE];
+    uint8_t interrupts[IRQ_USER_SIZE];
 
     uintptr_t kstack;
 

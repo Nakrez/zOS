@@ -6,8 +6,8 @@
 void scheduler_initialize(struct scheduler *sched)
 {
     /*
-     * Time = 0 so when enabling events the timer event will fire and first
-     * thread will be scheduled
+     * Time = 0 so when enabling interrupts the timer interrupt will fire and
+     * first thread will be scheduled
      */
     sched->time = 0;
     sched->running = NULL;

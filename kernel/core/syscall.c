@@ -32,10 +32,10 @@ static syscall_callback syscalls[] =
     &sys_thread_exit,
     &sys_gettid,
 
-    /* Event */
-    &sys_event_register,
-    &sys_event_listen,
-    &sys_event_unregister,
+    /* Interrupts */
+    &sys_interrupt_register,
+    &sys_interrupt_listen,
+    &sys_interrupt_unregister,
 };
 
 void syscall_handler(struct irq_regs *regs)

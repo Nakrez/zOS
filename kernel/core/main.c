@@ -4,7 +4,7 @@
 #include <kernel/kmalloc.h>
 #include <kernel/segment.h>
 #include <kernel/as.h>
-#include <kernel/event.h>
+#include <kernel/interrupt.h>
 #include <kernel/timer.h>
 #include <kernel/process.h>
 #include <kernel/syscall.h>
@@ -30,9 +30,9 @@ void kernel_main(struct boot_info *boot)
 
     console_message(T_OK, "Kernel address space initialized");
 
-    event_initialize();
+    interrupt_initialize();
 
-    console_message(T_OK, "Event initialized");
+    console_message(T_OK, "Interrupt initialized");
 
     timer_initialize();
 

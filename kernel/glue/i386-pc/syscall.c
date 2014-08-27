@@ -12,8 +12,8 @@ struct syscall_glue syscall_glue_dispatcher =
 
 int i386_pc_syscall_initialize(void)
 {
-    if (!event_register(IRQ_SYSCALL, EVENT_CALLBACK, syscall_handler))
-        kernel_panic("Unable to register syscall event");
+    if (!interrupt_register(IRQ_SYSCALL, INTERRUPT_CALLBACK, syscall_handler))
+        kernel_panic("Unable to register syscall interrupt");
 
     return 1;
 }

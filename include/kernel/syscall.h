@@ -1,7 +1,7 @@
 #ifndef SYSCALL_H
 # define SYSCALL_H
 
-# include <kernel/event.h>
+# include <kernel/interrupt.h>
 
 # include <arch/cpu.h>
 
@@ -48,9 +48,9 @@ int sys_thread_create(struct syscall *interface);
 int sys_thread_exit(struct syscall *interface);
 int sys_gettid(struct syscall *interface);
 
-/* Event */
-int sys_event_register(struct syscall *interface);
-int sys_event_listen(struct syscall *interface);
-int sys_event_unregister(struct syscall *interface);
+/* Interrupt */
+int sys_interrupt_register(struct syscall *interface);
+int sys_interrupt_listen(struct syscall *interface);
+int sys_interrupt_unregister(struct syscall *interface);
 
 #endif /* !SYSCALL_H */

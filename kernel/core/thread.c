@@ -64,7 +64,7 @@ int thread_create(struct process *process, uintptr_t code, size_t arg_count,
     thread->gid = 0;
     thread->kstack = (uintptr_t)thread - 4;
 
-    memset(thread->events, 0, sizeof (thread->events));
+    memset(thread->interrupts, 0, sizeof (thread->interrupts));
 
     if (!glue_call(thread, create, process, thread, code, arg_count, arg1,
                    arg2))
@@ -105,7 +105,7 @@ int thread_duplicate(struct process *process, struct thread *thread,
     new->gid = thread->gid;
     new->kstack = (uintptr_t)new - 4;
 
-    memset(thread->events, 0, sizeof (thread->events));
+    memset(thread->interrupts, 0, sizeof (thread->interrupts));
 
     if (!glue_call(thread, duplicate, new, regs))
     {
@@ -168,13 +168,13 @@ void thread_exit(struct thread *thread)
     /* The thread will be destroy when it is elected by the scheduler */
     thread->state = THREAD_STATE_ZOMBIE;
 
-    /* Unregister events */
+    /* Unregister interrupts */
     for (int i = 0; i < IRQ_USER_SIZE; ++i)
     {
-        if (thread->events[i] & EVENT_REGISTERED)
-            event_unregister(i + IRQ_USER_BEGIN);
+        if (thread->interrupts[i] & INTERRUPT_REGISTERED)
+            interrupt_unregister(i + IRQ_USER_BEGIN);
 
-        thread->events[i] = 0;
+        thread->interrupts[i] = 0;
     }
 }
 

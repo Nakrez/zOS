@@ -25,7 +25,7 @@ isr_main:
     pop     %ebx
 
     push    %esp
-    call    event_dispatch
+    call    interrupt_dispatch
     add     $4, %esp
 
     pop     %gs
