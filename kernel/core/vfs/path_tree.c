@@ -84,7 +84,7 @@ static int vtree_next_lookup(const char **remaining_path, char *result)
 
     *remaining_path = path;
 
-    return size - 1;
+    return size;
 }
 
 static int path_cmp(const char *str1, const char *str2, int size)
