@@ -28,10 +28,14 @@ size_t strlen(const char *str)
 
 char *strcpy(char *destination, const char *source)
 {
+    char *res = destination;
+
     while (*source)
         *(destination++) = *(source++);
 
-    return destination;
+    *destination = 0;
+
+    return res;
 }
 
 int strcmp(const char *str1, const char *str2)
