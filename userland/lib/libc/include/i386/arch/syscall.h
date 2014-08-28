@@ -12,6 +12,7 @@
 # define SYS_INTERRUPT_REGISTER 9
 # define SYS_INTERRUPT_LISTEN 10
 # define SYS_INTERRUPT_UNREGISTER 11
+# define SYS_DEVICE_CREATE 12
 
 # define SYSCALL0(num, ret)                         \
     __asm__ __volatile__("mov %1, %%eax\n"          \
