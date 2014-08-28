@@ -12,7 +12,7 @@ struct vnode *vnode_create(const char *name, int uid, int gid, uint16_t perm,
     if (!(node = kmalloc(sizeof (struct vnode))))
         return NULL;
 
-    if (!(node->name = kmalloc(strlen(name))))
+    if (!(node->name = kmalloc(strlen(name) + 1)))
     {
         kfree(node);
         return NULL;
