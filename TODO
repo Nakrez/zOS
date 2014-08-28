@@ -8,6 +8,7 @@
 - Add IPC mechanism
 - Review ELF loader (Move it to its own files & map memory with correct rights)
 - Review locks (Some might be missing)
+- !!! Check user pointers from syscalls !!!
 
 [MEM]
 
