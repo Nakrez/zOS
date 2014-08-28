@@ -34,6 +34,12 @@
 # define VFS_DEVICE_NONE 0
 
 struct vnode {
+    /*
+     * If this is a file or directory belonging to a fs it index helps indicate
+     * which file is targeted by a request
+     */
+    int index;
+
     /* Name of the node */
     char *name;
 
