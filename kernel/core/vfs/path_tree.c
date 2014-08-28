@@ -106,7 +106,7 @@ static int path_cmp(const char *str1, const char *str2, int size)
 }
 
 int vtree_lookup(const char *path, const char **remaining_path,
-                 struct vnode **node)
+                 struct vtree_node **node)
 {
     int res;
     int found;
@@ -185,13 +185,13 @@ int vtree_lookup(const char *path, const char **remaining_path,
             return -ENOENT;
 
         *remaining_path = res_path;
-        *node = res_node->vnode;
+        *node = res_node;
 
         return 0;
     }
 
     /* We found the total path. cur holds the real vnode */
-    *node = cur->vnode;
+    *node = cur;
 
     return 0;
 }
