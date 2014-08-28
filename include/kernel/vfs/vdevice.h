@@ -19,7 +19,7 @@ struct vdevice {
     struct vchannel *channel;
 };
 
-struct vdevice *device_create(int pid, const char __user* name);
+int device_create(int pid, const char __user* name, struct vdevice **device);
 struct vdevice *device_get(int dev);
 int device_destroy(int pid, int dev);
 

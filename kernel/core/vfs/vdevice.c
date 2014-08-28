@@ -10,10 +10,11 @@
 static struct vdevice devices[VFS_MAX_DEVICE];
 static spinlock_t device_lock = SPINLOCK_INIT;
 
-struct vdevice *device_create(int pid, const char __user* name)
+int device_create(int pid, const char __user* name, struct vdevice **device)
 {
     int found = 0;
-    struct vdevice *dev = NULL;
+
+    *device = NULL;
 
     spinlock_lock(&device_lock);
 
@@ -22,13 +23,13 @@ struct vdevice *device_create(int pid, const char __user* name)
         /* FIXME: User access */
         if (devices[i].active && strcmp(devices[i].name, name) == 0)
             found = 1;
-        if (!dev && !devices[i].active)
+        if (!(*device) && !devices[i].active)
         {
             if (!(devices[i].name = kmalloc(strlen(name) + 1)))
             {
                 spinlock_unlock(&device_lock);
 
-                return NULL;
+                return -ENOMEM;
             }
 
             if (!(devices[i].channel = channel_create()))
@@ -36,7 +37,7 @@ struct vdevice *device_create(int pid, const char __user* name)
                 kfree(devices[i].name);
                 spinlock_unlock(&device_lock);
 
-                return NULL;
+                return -ENOMEM;
             }
 
             /* FIXME: User access !!! */
@@ -46,22 +47,29 @@ struct vdevice *device_create(int pid, const char __user* name)
             devices[i].active = 1;
             devices[i].pid = pid;
 
-            dev = &devices[i];
+            *device = &devices[i];
         }
     }
 
     /* Device already exists */
-    if (found && dev)
+    if (found && *device)
     {
-        dev->active = 0;
-        kfree(dev->name);
-        channel_destroy(dev->channel);
-        dev = NULL;
+        (*device)->active = 0;
+        kfree((*device)->name);
+        channel_destroy((*device)->channel);
+        *device = NULL;
+
+        spinlock_unlock(&device_lock);
+
+        return -EEXIST;
     }
 
     spinlock_unlock(&device_lock);
 
-    return dev;
+    if (!(*device))
+        return -ENOMEM;
+
+    return (*device)->id;
 }
 
 struct vdevice *device_get(int dev)
