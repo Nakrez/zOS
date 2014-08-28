@@ -16,6 +16,8 @@ static struct vtree_node *vtree_node_create(struct vnode *node)
 
     tnode->vnode = node;
 
+    spinlock_init(&tnode->sons_lock);
+
     klist_head_init(&tnode->sons);
 
     return tnode;
@@ -140,6 +142,8 @@ int vtree_lookup(const char *path, const char **remaining_path,
         if (res < 0)
             return res;
 
+        spinlock_lock(&cur->sons_lock);
+
         klist_for_each_elem(&cur->sons, tmp, brothers)
         {
             if (path_cmp(tmp->vnode->name, current, res) == 0)
@@ -163,6 +167,8 @@ int vtree_lookup(const char *path, const char **remaining_path,
 
             }
         }
+
+        spinlock_unlock(&cur->sons_lock);
 
         if (found)
             continue;

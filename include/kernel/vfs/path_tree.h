@@ -4,8 +4,12 @@
 # include <kernel/klist.h>
 # include <kernel/vfs/vnode.h>
 
+# include <arch/spinlock.h>
+
 struct vtree_node {
     struct vnode *vnode;
+
+    spinlock_t sons_lock;
 
     struct klist sons;
 
