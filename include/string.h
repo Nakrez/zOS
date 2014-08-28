@@ -9,4 +9,6 @@ void *memset(void *ptr, int value, size_t size);
 size_t strlen(const char *str);
 char *strcpy(char *destination, const char *source);
 
+int strcmp(const char *str1, const char *str2);
+
 #endif /* !STRING_H */
