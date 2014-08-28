@@ -17,6 +17,7 @@ struct vtree_node {
 };
 
 int vtree_initialize(void);
+int vtree_insert(const char *path, struct vnode *vnode);
 int vtree_lookup(const char *path, const char **remaining_path,
                  struct vtree_node **node);
 

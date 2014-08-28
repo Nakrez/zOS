@@ -1,11 +1,16 @@
 #include <string.h>
 
+#include <kernel/errno.h>
+#include <kernel/kmalloc.h>
+#include <kernel/panic.h>
+
 #include <kernel/vfs/path_tree.h>
 #include <kernel/vfs/vfs.h>
-#include <kernel/kmalloc.h>
-#include <kernel/errno.h>
 
 static struct vtree_node *__root = NULL;
+
+/* Global lock for tree modification */
+static spinlock_t vtree_lock = SPINLOCK_INIT;
 
 static struct vtree_node *vtree_node_create(struct vnode *node)
 {
@@ -60,6 +65,53 @@ error:
     kfree(root_tree);
     kfree(dev_tree);
     return -1;
+}
+
+int vtree_insert(const char *path, struct vnode *vnode)
+{
+    int res;
+    struct vtree_node *parent;
+    struct vtree_node *vtree_node;
+    const char *remaining;
+
+    spinlock_lock(&vtree_lock);
+
+    res = vtree_lookup(path, &remaining, &parent);
+
+    if (res < 0)
+        return res;
+
+    /* FIXME: Panic, not sure what to do here, fix when you know :) */
+
+    /* Will the path always be populated on insert ? */
+    if (*remaining)
+        kernel_panic("vtree_insert: Path not fully populated...");
+
+    /*
+     * If the path is fully populated there should not be any fake
+     * directories. Not sure that this flag wil be used anyway
+     */
+    if (parent->vnode->type & VFS_TYPE_FAKE)
+        kernel_panic("vtree_insert: Fake directory encountered...");
+
+    if (!(parent->vnode->type & VFS_TYPE_DIR))
+        return -ENOENT;
+
+
+    vtree_node = vtree_node_create(vnode);
+
+    if (!vtree_node)
+        return -ENOMEM;
+
+    spinlock_lock(&parent->sons_lock);
+
+    klist_add(&parent->sons, &vtree_node->brothers);
+
+    spinlock_unlock(&parent->sons_lock);
+
+    spinlock_unlock(&vtree_lock);
+
+    return 0;
 }
 
 static int vtree_next_lookup(const char **remaining_path, char *result)
