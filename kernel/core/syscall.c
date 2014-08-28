@@ -36,6 +36,9 @@ static syscall_callback syscalls[] =
     &sys_interrupt_register,
     &sys_interrupt_listen,
     &sys_interrupt_unregister,
+
+    /* Vfs */
+    sys_vfs_device_create,
 };
 
 void syscall_handler(struct irq_regs *regs)

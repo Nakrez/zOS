@@ -53,4 +53,7 @@ int sys_interrupt_register(struct syscall *interface);
 int sys_interrupt_listen(struct syscall *interface);
 int sys_interrupt_unregister(struct syscall *interface);
 
+/* Vfs */
+int sys_vfs_device_create(struct syscall *interface);
+
 #endif /* !SYSCALL_H */
