@@ -3,6 +3,7 @@
 
 # define EPERM 1 /* Operation not permitted */
 # define ENOENT 2 /* No such file or directory */
+# define ENOMEM 12 /* Out of memory */
 # define EEXIST 17 /* File exists */
 # define ENODEV 19 /* No such device */
 # define EINVAL 22 /* Invalid argument */
