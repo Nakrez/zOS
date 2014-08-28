@@ -14,7 +14,7 @@ void arch_back_trace(void)
         uint32_t eip_stack = ebp + 4;
         uint32_t eip = *(uint32_t *)eip_stack;
 
-        if (eip < 0xC0100000)
+        if (eip < 0xC0000000)
             break;
 
         console_message(T_INF, "0x%x", eip);
