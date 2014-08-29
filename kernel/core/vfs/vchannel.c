@@ -105,6 +105,28 @@ int channel_recv_request(struct vchannel *chan, char *buf, size_t size)
     return -ENODATA;
 }
 
+int channel_send_response(struct vchannel *chan, struct message *msg)
+{
+    uint32_t req_id = ((struct answer_hdr *)(msg + 1))->req_id;
+    struct msg_list *list;
+
+    if (!(list = kmalloc(sizeof (struct msg_list))))
+        return -ENOMEM;
+
+    list->msg = msg;
+
+    spinlock_lock(&chan->outbox_lock);
+
+    klist_add_back(&chan->outbox, &list->list);
+
+    spinlock_unlock(&chan->outbox_lock);
+
+    /* Notify that the response has arrived */
+    scheduler_event_notify(SCHED_EV_RESP, req_id);
+
+    return 0;
+}
+
 static int outbox_msg_pop(struct klist *outbox_head, uint32_t req_id,
                           struct message **msg)
 {

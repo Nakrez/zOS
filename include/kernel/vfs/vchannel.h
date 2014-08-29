@@ -50,6 +50,15 @@ int channel_send_request(struct vchannel *chan, struct message *msg);
 int channel_recv_request(struct vchannel *chan, char *buf, size_t size);
 
 /*
+ * Send a response to a previous request
+ *
+ * Return:
+ *          0: Success
+ *          -ENOMEM: Cannot allocate necessary memory
+ */
+int channel_send_response(struct vchannel *chan, struct message *msg);
+
+/*
  * Receive a response to a request
  *
  * Return:
