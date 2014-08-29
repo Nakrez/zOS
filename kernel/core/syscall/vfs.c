@@ -3,9 +3,11 @@
 #include <kernel/thread.h>
 
 #include <kernel/vfs/vfs.h>
+#include <kernel/vfs/vdevice.h>
 
 int sys_vfs_device_create(struct syscall *interface)
 {
+    /* FIXME: Check name */
     char *name = (void *)interface->arg1;
     int pid = thread_current()->parent->pid;
     int uid = interface->arg2;
@@ -18,4 +20,14 @@ int sys_vfs_device_create(struct syscall *interface)
         return -EPERM;
 
     return vfs_device_create(name, pid, uid, gid, perm, ops);
+}
+
+int sys_vfs_device_recv_request(struct syscall *interface)
+{
+    /* FIXME: Check buf */
+    int dev = interface->arg1;
+    char *buf = (void *)interface->arg2;
+    size_t size = interface->arg3;
+
+    return device_recv_request(dev, buf, size);
 }
