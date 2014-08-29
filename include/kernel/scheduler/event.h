@@ -15,6 +15,9 @@
 /* A new request has arrived on a channel */
 # define SCHED_EV_REQ 3
 
+/* A new response has arrived */
+# define SCHED_EV_RESP 4
+
 struct scheduler_event {
     int event;
     int data;
