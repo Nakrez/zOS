@@ -14,6 +14,7 @@
 # define SYS_INTERRUPT_UNREGISTER 11
 # define SYS_DEVICE_CREATE 12
 # define SYS_DEVICE_RECV_REQUEST 13
+# define SYS_DEVICE_SEND_RESPONSE 14
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \
