@@ -1,12 +1,7 @@
 #ifndef DRIVER_DRIVER_H
 # define DRIVER_DRIVER_H
 
-struct driver_ops {
-    void (*open)(void);
-    void (*read)(void);
-    void (*write)(void);
-    void (*close)(void);
-};
+# include <zos/vfs.h>
 
 struct driver {
     const char *dev_name;
@@ -15,10 +10,21 @@ struct driver {
 
     int running;
 
+    int ops;
+
     struct driver_ops *dev_ops;
+};
+
+struct driver_ops {
+    void (*open)(struct driver *driver, int mid, struct open_msg *);
+    void (*read)(char *buf);
+    void (*write)(char *buf);
+    void (*close)(char *buf);
 };
 
 int driver_create(const char *dev_name, int uid, int gid, int perm,
                   struct driver_ops *dev_ops, struct driver *result);
+
+int driver_loop(struct driver *driver);
 
 #endif /* !DRIVER_DRIVER_H */
