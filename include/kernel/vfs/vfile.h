@@ -13,6 +13,8 @@
 # define VFS_MODE_CHANNEL (1 << 3)
 
 struct vfile {
+    int used;
+
     char mode;
 
     /* Current offset in the file */
