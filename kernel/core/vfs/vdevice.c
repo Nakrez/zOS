@@ -106,6 +106,35 @@ int device_recv_request(int dev, char *buf, size_t size)
     return channel_recv_request(devices[dev].channel, buf, size);
 }
 
+int device_send_response(int dev, char *buf, size_t size)
+{
+    int res;
+    int pid = thread_current()->parent->pid;
+    struct message *message;
+
+    if (dev < 0 || dev >= VFS_MAX_DEVICE)
+        return -EINVAL;
+
+    if (!devices[dev].active)
+        return -ENODEV;
+
+    if (devices[dev].pid != pid)
+        return -EINVAL;
+
+    if (!(message = message_alloc(size)))
+        return -ENOMEM;
+
+    memcpy(message + 1, buf, size);
+
+    message->size = size;
+
+    if ((res = channel_send_response(devices[dev].channel, message)) < 0)
+        message_free(message);
+
+    return res;
+}
+
+
 int device_destroy(int pid, int dev)
 {
     if (dev < 0 || dev >= VFS_MAX_DEVICE)

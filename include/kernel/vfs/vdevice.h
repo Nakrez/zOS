@@ -25,6 +25,17 @@ int device_create(int pid, const char __user* name, int ops,
                   struct vdevice **device);
 struct vdevice *device_get(int dev);
 int device_recv_request(int dev, char *buf, size_t size);
+
+/* Send a response
+ *
+ * Return:
+ *          0: Success
+ *          -EINVAL: Device id is not ours our out of range
+ *          -ENODEV: Device id does not belong to an active device
+ *          -ENOMEM: Cannot allocate necessary memory
+ */
+int device_send_response(int dev, char *buf, size_t size);
+
 int device_destroy(int pid, int dev);
 
 #endif /* !VFS_VDEVICE_H */
