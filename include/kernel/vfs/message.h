@@ -2,20 +2,27 @@
 # define VFS_MESSAGE_H
 
 # include <kernel/types.h>
+# include <kernel/klist.h>
 
-# define VFS_OP_OPEN 1
-# define VFS_OP_READ 2
-# define VFS_OP_WRITE 3
-# define VFS_OP_CLOSE 4
+struct free_msg {
+    struct message *msg;
+
+    struct klist list;
+};
 
 struct message {
     uint32_t mid;
 
     size_t size;
+
+    size_t max_size;
 };
 
 struct answer_hdr {
     uint32_t req_id;
 };
+
+struct message *message_alloc(size_t size);
+void message_free(struct message *msg);
 
 #endif /* !VFS_MESSAGE_H */
