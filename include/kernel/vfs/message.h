@@ -22,6 +22,17 @@ struct answer_hdr {
     uint32_t req_id;
 };
 
+/* Open related message */
+struct open_msg {
+    char *path;
+};
+
+struct open_resp {
+    struct answer_hdr hdr;
+
+    int ret;
+};
+
 struct message *message_alloc(size_t size);
 void message_free(struct message *msg);
 
