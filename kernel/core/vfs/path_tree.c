@@ -82,7 +82,10 @@ int vtree_insert(const char *path, struct vnode *vnode)
     res = vtree_lookup(path, &remaining, &parent);
 
     if (res < 0)
+    {
+        spinlock_unlock(&vtree_lock);
         return res;
+    }
 
     /* FIXME: Panic, not sure what to do here, fix when you know :) */
 
@@ -98,13 +101,18 @@ int vtree_insert(const char *path, struct vnode *vnode)
         kernel_panic("vtree_insert: Fake directory encountered...");
 
     if (!(parent->vnode->type & VFS_TYPE_DIR))
+    {
+        spinlock_unlock(&vtree_lock);
         return -ENOENT;
-
+    }
 
     vtree_node = vtree_node_create(vnode);
 
     if (!vtree_node)
+    {
+        spinlock_unlock(&vtree_lock);
         return -ENOMEM;
+    }
 
     vtree_node->father = parent;
 
@@ -205,7 +213,7 @@ int vtree_lookup(const char *path, const char **remaining_path,
         {
             if (path_cmp(tmp->vnode->name, current, res) == 0)
             {
-                cur = tmp;
+                found = 1;
 
                 /*
                  * If we fond a device or a virtual directory, change
@@ -218,14 +226,14 @@ int vtree_lookup(const char *path, const char **remaining_path,
                     res_node = tmp;
                     res_path = *remaining_path;
 
-                    found = 1;
                     break;
                 }
-
             }
         }
 
         spinlock_unlock(&cur->sons_lock);
+
+        cur = tmp;
 
         if (found)
             continue;
