@@ -41,6 +41,8 @@ static syscall_callback syscalls[] =
     sys_vfs_device_create,
     sys_vfs_device_recv_request,
     sys_vfs_device_send_response,
+
+    sys_vfs_open,
 };
 
 void syscall_handler(struct irq_regs *regs)

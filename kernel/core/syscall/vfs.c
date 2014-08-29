@@ -3,6 +3,7 @@
 #include <kernel/thread.h>
 
 #include <kernel/vfs/vfs.h>
+#include <kernel/vfs/vops.h>
 #include <kernel/vfs/vdevice.h>
 
 int sys_vfs_device_create(struct syscall *interface)
@@ -40,4 +41,14 @@ int sys_vfs_device_send_response(struct syscall *interface)
     size_t size = interface->arg3;
 
     return device_send_response(dev, buf, size);
+}
+
+int sys_vfs_open(struct syscall *interface)
+{
+    /* FIXME: Check pathname */
+    const char *pathname = (void *)interface->arg1;
+    int flags = interface->arg2;
+    int mode = interface->arg3;
+
+    return vfs_open(pathname, flags, mode);
 }
