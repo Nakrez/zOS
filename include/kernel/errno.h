@@ -8,5 +8,6 @@
 # define ENODEV 19 /* No such device */
 # define EINVAL 22 /* Invalid argument */
 # define ENAMETOOLONG 36 /* File name too long */
+# define ENODATA 61 /* No data available */
 
 #endif /* !ERRNO_H */
