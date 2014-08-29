@@ -31,6 +31,14 @@ struct vchannel {
 struct vchannel *channel_create(void);
 
 /*
+ * Send a message to the inbox of a channel
+ *
+ * Return:
+ *          0: success
+ *          -ENOMEM: Cannot allocate necessary memory
+ */
+int channel_send_request(struct vchannel *chan, struct message *msg);
+
 /*
  * Receive a message from the inbox of the channel
  *

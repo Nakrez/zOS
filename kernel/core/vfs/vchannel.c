@@ -29,6 +29,27 @@ struct vchannel *channel_create(void)
     return chan;
 }
 
+int channel_send_request(struct vchannel *chan, struct message *msg)
+{
+    struct msg_list *list;
+
+    if (!(list = kmalloc(sizeof (struct msg_list))))
+        return -ENOMEM;
+
+    list->msg = msg;
+
+    spinlock_lock(&chan->inbox_lock);
+
+    klist_add_back(&chan->inbox, &list->list);
+
+    spinlock_unlock(&chan->inbox_lock);
+
+    /* Notify blocked thread that a new message income */
+    scheduler_event_notify(SCHED_EV_REQ, chan->cid);
+
+    return 0;
+}
+
 static int inbox_msg_pop(struct klist *inbox_head, char *buf, size_t size)
 {
     int mid;
