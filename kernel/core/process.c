@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include <kernel/errno.h>
 #include <kernel/zos.h>
 #include <kernel/process.h>
 #include <kernel/panic.h>
@@ -131,6 +132,8 @@ struct process *process_create(int type, uintptr_t code, int flags)
     process->type = type;
     process->pid = pid;
 
+    spinlock_init(&process->files_lock);
+
     memset(process->files, 0, sizeof (process->files));
 
     /* Init thread list */
@@ -188,6 +191,8 @@ int process_fork(struct process *process, struct irq_regs *regs)
 
     klist_head_init(&child->threads);
 
+    spinlock_init(&child->files_lock);
+
     /* TODO: cleanup */
     if (!thread_duplicate(child, thread_current(), regs))
         return -1;
@@ -202,6 +207,39 @@ int process_fork(struct process *process, struct irq_regs *regs)
     klist_add(&processes, &child->list);
 
     return pid;
+}
+
+int process_new_fd(struct process *process)
+{
+    spinlock_lock(&process->files_lock);
+
+    for (int i; i < PROCESS_MAX_OPEN_FD; ++i)
+    {
+        if (!process->files[i].used)
+        {
+            process->files[i].used = 1;
+
+            spinlock_unlock(&process->files_lock);
+
+            return i;
+        }
+    }
+
+    spinlock_unlock(&process->files_lock);
+
+    return -EMFILE;
+}
+
+void process_free_fd(struct process *process, int fd)
+{
+    if (fd < 0 || fd >= PROCESS_MAX_OPEN_FD)
+        return;
+
+    spinlock_lock(&process->files_lock);
+
+    process->files[fd].used = 0;
+
+    spinlock_unlock(&process->files_lock);
 }
 
 void process_exit(struct process *p, int code)

@@ -6,6 +6,7 @@
 # include <kernel/vfs/vfile.h>
 
 # include <arch/cpu.h>
+# include <arch/spinlock.h>
 
 # define PROCESS_MAX_PID 0xFF
 # define PROCESS_MAX_OPEN_FD 255
@@ -38,6 +39,8 @@ struct process
 
     size_t thread_count;
 
+    spinlock_t files_lock;
+
     struct vfile files[PROCESS_MAX_OPEN_FD];
 
     struct klist threads;
@@ -51,6 +54,9 @@ void process_initialize(void);
 struct process *process_create(int type, uintptr_t code, int flags);
 
 int process_fork(struct process *process, struct irq_regs *regs);
+
+int process_new_fd(struct process *process);
+void process_free_fd(struct process *process, int fd);
 
 void process_exit(struct process *p, int code);
 
