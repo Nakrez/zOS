@@ -1,4 +1,4 @@
 CURDIR := userland/lib/
-SUBDIRS := libc/
+SUBDIRS := libc/ libdriver/
 
 include ${SRCDIR}mk/subdirs.mk
