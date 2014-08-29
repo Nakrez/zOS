@@ -5,12 +5,21 @@
 #include <zos/print.h>
 #include <zos/device.h>
 
+#include <driver/driver.h>
+
 #include <arch/interrupt.h>
+
+static struct driver_ops kbd_ops = {
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+};
 
 int main(void)
 {
+    struct driver kbd_driver;
     int arch_tid;
-    int dev_id;
 
     arch_tid = thread_create(interrupt_thread, NULL);
 
@@ -20,10 +29,7 @@ int main(void)
         return 1;
     }
 
-    dev_id = device_create("kbd", 0, 0, 0444,
-                           VFS_OPS_OPEN | VFS_OPS_READ | VFS_OPS_CLOSE);
-
-    if (dev_id < 0)
+    if (driver_create("kbd", 0, 0, 0444, &kbd_ops, &kbd_driver) < 0)
     {
         uprint("Cannot register \"kbd\" device");
         return 2;
