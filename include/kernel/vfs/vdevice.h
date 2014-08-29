@@ -24,6 +24,7 @@ struct vdevice {
 int device_create(int pid, const char __user* name, int ops,
                   struct vdevice **device);
 struct vdevice *device_get(int dev);
+int device_recv_request(int dev, char *buf, size_t size);
 int device_destroy(int pid, int dev);
 
 #endif /* !VFS_VDEVICE_H */

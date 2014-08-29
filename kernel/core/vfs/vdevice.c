@@ -2,6 +2,7 @@
 
 #include <kernel/errno.h>
 #include <kernel/kmalloc.h>
+#include <kernel/thread.h>
 
 #include <kernel/vfs/vfs.h>
 #include <kernel/vfs/vdevice.h>
@@ -87,6 +88,22 @@ struct vdevice *device_get(int dev)
         return NULL;
 
     return &devices[dev];
+}
+
+int device_recv_request(int dev, char *buf, size_t size)
+{
+    int pid = thread_current()->parent->pid;
+
+    if (dev < 0 || dev >= VFS_MAX_DEVICE)
+        return -EINVAL;
+
+    if (!devices[dev].active)
+        return -ENODEV;
+
+    if (devices[dev].pid != pid)
+        return -EINVAL;
+
+    return channel_recv_request(devices[dev].channel, buf, size);
 }
 
 int device_destroy(int pid, int dev)
