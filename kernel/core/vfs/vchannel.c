@@ -105,6 +105,60 @@ int channel_recv_request(struct vchannel *chan, char *buf, size_t size)
     return -ENODATA;
 }
 
+static int outbox_msg_pop(struct klist *outbox_head, uint32_t req_id,
+                          struct message **msg)
+{
+    klist_for_each(outbox_head, mlist, list)
+    {
+        struct msg_list *list = klist_elem(mlist, struct msg_list, list);
+
+        if (((struct answer_hdr *)(list->msg + 1))->req_id == req_id)
+        {
+            klist_del(&list->list);
+
+            *msg = list->msg;
+
+            kfree(list);
+
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+int channel_recv_response(struct vchannel *chan, uint32_t req_id,
+                          struct message **msg)
+{
+    spinlock_lock(&chan->outbox_lock);
+
+    if (!klist_empty(&chan->outbox) &&
+        outbox_msg_pop(&chan->outbox, req_id, msg))
+    {
+        spinlock_unlock(&chan->outbox_lock);
+
+        return 0;
+    }
+
+    spinlock_unlock(&chan->outbox_lock);
+
+    thread_block(thread_current(), SCHED_EV_RESP, req_id);
+
+    spinlock_lock(&chan->outbox_lock);
+
+    if (!klist_empty(&chan->outbox) &&
+        outbox_msg_pop(&chan->outbox, req_id, msg))
+    {
+        spinlock_unlock(&chan->outbox_lock);
+
+        return 0;
+    }
+
+    spinlock_unlock(&chan->outbox_lock);
+
+    return -ENODATA;
+}
+
 void channel_destroy(struct vchannel *chan)
 {
     if (!klist_empty(&chan->inbox) || !klist_empty(&chan->outbox))

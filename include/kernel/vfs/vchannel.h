@@ -43,10 +43,21 @@ int channel_send_request(struct vchannel *chan, struct message *msg);
  * Receive a message from the inbox of the channel
  *
  * Return:
- *          0: success
- *          ENODATA: Message was supposed to be here but was not
+ *          0: Success
+ *          -ENODATA: Message was supposed to be here but was not
+ *          -EINVAL: Invalid size to receive the buffer
  */
 int channel_recv_request(struct vchannel *chan, char *buf, size_t size);
+
+/*
+ * Receive a response to a request
+ *
+ * Return:
+ *          0: Success
+ *          -ENODATA: Message was supposed to be here but was not
+ */
+int channel_recv_response(struct vchannel *chan, uint32_t req_id,
+                          struct message **msg);
 
 /*
  * Destroy a channel
