@@ -34,7 +34,7 @@ static int inbox_msg_pop(struct klist *inbox_head, char *buf, size_t size)
     int mid;
     struct msg_list *mlist;
 
-    mlist = klist_elem(inbox_head, struct msg_list, list);
+    mlist = klist_elem(inbox_head->next, struct msg_list, list);
 
     if (mlist->msg->size > size)
         return -EINVAL;
