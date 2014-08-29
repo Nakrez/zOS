@@ -35,8 +35,5 @@ int main(void)
         return 2;
     }
 
-    while (1)
-        sleep(1);
-
-    return 0;
+    return driver_loop(&kbd_driver);
 }
