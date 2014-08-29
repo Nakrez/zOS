@@ -6,7 +6,9 @@
 # define ENOMEM 12 /* Out of memory */
 # define EEXIST 17 /* File exists */
 # define ENODEV 19 /* No such device */
+# define EISDIR 21 /* Is a directory */
 # define EINVAL 22 /* Invalid argument */
+# define EMFILE 24 /* Too many open files */
 # define ENAMETOOLONG 36 /* File name too long */
 # define ENODATA 61 /* No data available */
 
