@@ -31,6 +31,16 @@ struct vchannel {
 struct vchannel *channel_create(void);
 
 /*
+/*
+ * Receive a message from the inbox of the channel
+ *
+ * Return:
+ *          0: success
+ *          ENODATA: Message was supposed to be here but was not
+ */
+int channel_recv_request(struct vchannel *chan, char *buf, size_t size);
+
+/*
  * Destroy a channel
  */
 void channel_destroy(struct vchannel *chan);
