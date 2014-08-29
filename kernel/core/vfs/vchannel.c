@@ -1,7 +1,15 @@
+#include <string.h>
+
+#include <kernel/errno.h>
 #include <kernel/kmalloc.h>
 #include <kernel/panic.h>
+#include <kernel/thread.h>
+
+#include <kernel/scheduler/event.h>
 
 #include <kernel/vfs/vchannel.h>
+
+static int cid = 0;
 
 struct vchannel *channel_create(void)
 {
@@ -15,6 +23,8 @@ struct vchannel *channel_create(void)
 
     klist_head_init(&chan->inbox);
     klist_head_init(&chan->outbox);
+
+    chan->cid = cid++;
 
     return chan;
 }

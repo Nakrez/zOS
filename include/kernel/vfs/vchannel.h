@@ -15,6 +15,8 @@ struct msg_list
 };
 
 struct vchannel {
+    int cid;
+
     spinlock_t inbox_lock;
     spinlock_t outbox_lock;
 
@@ -23,7 +25,14 @@ struct vchannel {
     struct klist outbox;
 };
 
+/*
+ * Create a new channel, return the channel is success, NULL otherwise
+ */
 struct vchannel *channel_create(void);
+
+/*
+ * Destroy a channel
+ */
 void channel_destroy(struct vchannel *chan);
 
 #endif /* !VFS_VCHANNEL_H */
