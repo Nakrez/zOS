@@ -9,6 +9,8 @@
 struct vtree_node {
     struct vnode *vnode;
 
+    struct vtree_node *father;
+
     spinlock_t sons_lock;
 
     struct klist sons;

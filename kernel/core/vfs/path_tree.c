@@ -20,6 +20,7 @@ static struct vtree_node *vtree_node_create(struct vnode *node)
         return NULL;
 
     tnode->vnode = node;
+    tnode->father = NULL;
 
     spinlock_init(&tnode->sons_lock);
 
@@ -54,6 +55,8 @@ int vtree_initialize(void)
         goto error;
 
     __root = root_tree;
+
+    dev_tree->father = __root;
 
     klist_add(&__root->sons, &dev_tree->brothers);
 
@@ -102,6 +105,8 @@ int vtree_insert(const char *path, struct vnode *vnode)
 
     if (!vtree_node)
         return -ENOMEM;
+
+    vtree_node->father = parent;
 
     spinlock_lock(&parent->sons_lock);
 
