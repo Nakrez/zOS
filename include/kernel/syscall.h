@@ -56,5 +56,6 @@ int sys_interrupt_unregister(struct syscall *interface);
 /* Vfs */
 int sys_vfs_device_create(struct syscall *interface);
 int sys_vfs_device_recv_request(struct syscall *interface);
+int sys_vfs_device_send_response(struct syscall *interface);
 
 #endif /* !SYSCALL_H */

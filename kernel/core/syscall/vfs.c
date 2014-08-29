@@ -31,3 +31,13 @@ int sys_vfs_device_recv_request(struct syscall *interface)
 
     return device_recv_request(dev, buf, size);
 }
+
+int sys_vfs_device_send_response(struct syscall *interface)
+{
+    /* FIXME: Check buf */
+    int dev = interface->arg1;
+    char *buf = (void *)interface->arg2;
+    size_t size = interface->arg3;
+
+    return device_send_response(dev, buf, size);
+}
