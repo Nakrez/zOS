@@ -15,13 +15,14 @@ int vfs_initialize(void)
     return 0;
 }
 
-int vfs_device_create(const char *name, int pid, int uid, int gid, int perm)
+int vfs_device_create(const char *name, int pid, int uid, int gid, int perm,
+                      int ops)
 {
     int res;
     struct vdevice *device = NULL;
     struct vnode *node = NULL;
 
-    res = device_create(pid, name, &device);
+    res = device_create(pid, name, ops, &device);
 
     if (res < 0)
         return res;

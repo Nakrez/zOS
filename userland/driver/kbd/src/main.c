@@ -20,7 +20,8 @@ int main(void)
         return 1;
     }
 
-    dev_id = device_create("kbd", 0, 0, 0444);
+    dev_id = device_create("kbd", 0, 0, 0444,
+                           VFS_OPS_OPEN | VFS_OPS_READ | VFS_OPS_CLOSE);
 
     if (dev_id < 0)
     {

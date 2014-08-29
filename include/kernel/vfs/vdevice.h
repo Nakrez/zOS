@@ -16,10 +16,13 @@ struct vdevice {
 
     int pid;
 
+    int ops;
+
     struct vchannel *channel;
 };
 
-int device_create(int pid, const char __user* name, struct vdevice **device);
+int device_create(int pid, const char __user* name, int ops,
+                  struct vdevice **device);
 struct vdevice *device_get(int dev);
 int device_destroy(int pid, int dev);
 

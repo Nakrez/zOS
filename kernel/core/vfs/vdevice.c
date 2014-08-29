@@ -3,6 +3,7 @@
 #include <kernel/errno.h>
 #include <kernel/kmalloc.h>
 
+#include <kernel/vfs/vfs.h>
 #include <kernel/vfs/vdevice.h>
 
 #include <arch/spinlock.h>
@@ -10,9 +11,13 @@
 static struct vdevice devices[VFS_MAX_DEVICE];
 static spinlock_t device_lock = SPINLOCK_INIT;
 
-int device_create(int pid, const char __user* name, struct vdevice **device)
+int device_create(int pid, const char __user* name, int ops,
+                  struct vdevice **device)
 {
     int found = 0;
+
+    if (!(ops & VFS_OPS_OPEN) || !(ops & VFS_OPS_CLOSE))
+        return -EINVAL;
 
     *device = NULL;
 
@@ -46,6 +51,7 @@ int device_create(int pid, const char __user* name, struct vdevice **device)
             devices[i].id = i;
             devices[i].active = 1;
             devices[i].pid = pid;
+            devices[i].ops = ops;
 
             *device = &devices[i];
         }
