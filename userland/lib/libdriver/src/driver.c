@@ -9,9 +9,9 @@ static void driver_base_open(struct driver *driver, int mid,
 {
     (void) msg;
 
-    struct open_resp resp;
+    struct msg_response resp;
 
-    resp.hdr.req_id = mid;
+    resp.req_id = mid;
     resp.ret = 0;
 
     if (device_send_response(driver->dev_id, (void *)&resp, sizeof (resp)) < 0)

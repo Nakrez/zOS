@@ -113,7 +113,7 @@ int vfs_open(const char *pathname, int flags, int mode)
     }
 
     /* Process the response */
-    struct open_resp *response = (void *)(message + 1);
+    struct msg_response *response = (void *)(message + 1);
 
     if (response->ret)
     {

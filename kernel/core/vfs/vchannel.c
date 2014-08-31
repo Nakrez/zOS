@@ -107,7 +107,7 @@ int channel_recv_request(struct vchannel *chan, char *buf, size_t size)
 
 int channel_send_response(struct vchannel *chan, struct message *msg)
 {
-    uint32_t req_id = ((struct answer_hdr *)(msg + 1))->req_id;
+    uint32_t req_id = ((struct msg_response *)(msg + 1))->req_id;
     struct msg_list *list;
 
     if (!(list = kmalloc(sizeof (struct msg_list))))
@@ -134,7 +134,7 @@ static int outbox_msg_pop(struct klist *outbox_head, uint32_t req_id,
     {
         struct msg_list *list = klist_elem(mlist, struct msg_list, list);
 
-        if (((struct answer_hdr *)(list->msg + 1))->req_id == req_id)
+        if (((struct msg_response *)(list->msg + 1))->req_id == req_id)
         {
             klist_del(&list->list);
 

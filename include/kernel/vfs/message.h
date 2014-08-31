@@ -18,8 +18,10 @@ struct message {
     size_t max_size;
 };
 
-struct answer_hdr {
+struct msg_response {
     uint32_t req_id;
+
+    int ret;
 };
 
 /* Open related message */
@@ -27,11 +29,7 @@ struct open_msg {
     char *path;
 };
 
-struct open_resp {
-    struct answer_hdr hdr;
 
-    int ret;
-};
 
 struct message *message_alloc(size_t size);
 void message_free(struct message *msg);
