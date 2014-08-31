@@ -9,9 +9,28 @@
 
 #include <arch/interrupt.h>
 
+static void kbd_read(struct driver *driver, int mid, struct read_msg *msg)
+{
+    struct msg_response resp;
+    char *data = msg->data;
+
+    data[0] = 'T';
+    data[1] = 'E';
+    data[2] = 'S';
+    data[3] = 'T';
+    data[4] = 0;
+
+    resp.req_id = mid;
+    resp.ret = 0;
+
+    if (device_send_response(driver->dev_id, (void *)&resp, sizeof (resp)) < 0)
+        uprint("kbd_read: device_send_response() failed");
+
+}
+
 static struct driver_ops kbd_ops = {
     NULL,
-    NULL,
+    kbd_read,
     NULL,
     NULL,
 };
