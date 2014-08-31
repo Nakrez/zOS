@@ -27,6 +27,7 @@ struct message *message_alloc(size_t size)
             spinlock_unlock(&cache_lock);
 
             res = msg->msg;
+            res->size = size;
 
             kfree(msg);
 
@@ -43,7 +44,7 @@ struct message *message_alloc(size_t size)
 
     spinlock_lock(&mid_lock);
 
-    res->mid = mid++;
+    res->mid = (mid++) << 8;
 
     spinlock_unlock(&mid_lock);
 
