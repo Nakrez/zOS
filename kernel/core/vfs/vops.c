@@ -128,5 +128,8 @@ int vfs_open(const char *pathname, int flags, int mode)
 
     ++node->vnode->ref_count;
 
+    /* Delete the response message */
+    message_free(message);
+
     return fd;
 }
