@@ -53,6 +53,7 @@ void process_initialize(void);
 
 struct process *process_create(int type, uintptr_t code, int flags);
 
+struct process *process_get(int pid);
 int process_fork(struct process *process, struct irq_regs *regs);
 
 int process_new_fd(struct process *process);

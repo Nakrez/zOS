@@ -162,6 +162,19 @@ error:
     return NULL;
 }
 
+struct process *process_get(int pid)
+{
+    struct process *process;
+
+    klist_for_each_elem(&processes, process, list)
+    {
+        if (process->pid == pid)
+            return process;
+    }
+
+    return NULL;
+}
+
 int process_fork(struct process *process, struct irq_regs *regs)
 {
     struct process *child;
