@@ -52,3 +52,12 @@ int sys_vfs_open(struct syscall *interface)
 
     return vfs_open(pathname, flags, mode);
 }
+
+int sys_vfs_read(struct syscall *interface)
+{
+    int fd = interface->arg1;
+    char *buf = (void *)interface->arg2;
+    size_t count = interface->arg3;
+
+    return vfs_read(fd, buf, count);
+}

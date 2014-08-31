@@ -59,5 +59,6 @@ int sys_vfs_device_recv_request(struct syscall *interface);
 int sys_vfs_device_send_response(struct syscall *interface);
 
 int sys_vfs_open(struct syscall *interface);
+int sys_vfs_read(struct syscall *interface);
 
 #endif /* !SYSCALL_H */
