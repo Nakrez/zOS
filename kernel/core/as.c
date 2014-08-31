@@ -296,6 +296,34 @@ cleanup:
     return NULL;
 }
 
+int as_is_mapped(struct as *as, vaddr_t ptr, size_t size)
+{
+    struct as_mapping *mapping;
+
+    spinlock_lock(&as->map_lock);
+
+    klist_for_each_elem(&as->mapping, mapping, list)
+    {
+        if (mapping->virt >= ptr && mapping->virt + mapping->size < ptr)
+        {
+            if (ptr - mapping->virt + size > mapping->size)
+            {
+                spinlock_unlock(&as->map_lock);
+                return -1;
+            }
+            else
+            {
+                spinlock_unlock(&as->map_lock);
+                return 0;
+            }
+        }
+    }
+
+    spinlock_unlock(&as->map_lock);
+
+    return -1;
+}
+
 int as_remap(struct as *as, struct as_mapping *map, int flags)
 {
     map->flags = flags;
