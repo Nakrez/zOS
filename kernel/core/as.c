@@ -1,9 +1,12 @@
+#include <string.h>
+
 #include <kernel/as.h>
 #include <kernel/zos.h>
 #include <kernel/kmalloc.h>
 #include <kernel/region.h>
 #include <kernel/segment.h>
 #include <kernel/panic.h>
+#include <kernel/errno.h>
 
 #include <arch/mmu.h>
 
@@ -329,6 +332,50 @@ int as_remap(struct as *as, struct as_mapping *map, int flags)
     map->flags = flags;
 
     return glue_call(as, map, as, map->virt, map->phy->base, map->size, flags);
+}
+
+int as_copy(struct as *src_as, struct as *dest_as, void *src, void *dest,
+            size_t size)
+{
+    /* Locate the mapping on address space 1 */
+    struct as_mapping *mapping_src = as_mapping_locate(src_as, (vaddr_t)src);
+
+    /* Locate the mapping on address space 2 */
+    struct as_mapping *mapping_dest = as_mapping_locate(dest_as,
+                                                        (vaddr_t)dest);
+
+    /* Calculate offset from base */
+    size_t offset_src = (vaddr_t)src - mapping_src->virt;
+    size_t offset_dest = (vaddr_t)dest - mapping_dest->virt;
+
+    vaddr_t kaddr_src = as_map(&kernel_as, 0, mapping_src->phy->base, size,
+                               AS_MAP_WRITE);
+
+    vaddr_t kaddr_dest = as_map(&kernel_as, 0, mapping_dest->phy->base, size,
+                                AS_MAP_WRITE);
+
+    if (!kaddr_src)
+    {
+        if (kaddr_dest)
+            as_unmap(&kernel_as, kaddr_dest, AS_UNMAP_NORELEASE);
+
+        return -ENOMEM;
+    }
+
+    if (!kaddr_dest)
+    {
+        as_unmap(&kernel_as, kaddr_src, AS_UNMAP_NORELEASE);
+
+        return -ENOMEM;
+    }
+
+    memcpy((void *)(kaddr_dest + offset_dest),
+           (void *)(kaddr_src + offset_src), size);
+
+    as_unmap(&kernel_as, kaddr_src, AS_UNMAP_NORELEASE);
+    as_unmap(&kernel_as, kaddr_dest, AS_UNMAP_NORELEASE);
+
+    return 0;
 }
 
 void as_destroy(struct as *as)

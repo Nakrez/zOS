@@ -99,6 +99,11 @@ int as_is_mapped(struct as *as, vaddr_t ptr, size_t size);
 int as_remap(struct as *as, struct as_mapping *map, int flags);
 
 /*
+ * Copy buffers between 2 address spaces
+ */
+int as_copy(struct as *src_as, struct as *dest_as, void *src, void *dest,
+            size_t size);
+/*
  * Unmap vaddr
  */
 void as_unmap(struct as *as, vaddr_t vaddr, int flags);
