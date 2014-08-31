@@ -233,7 +233,7 @@ void clean_if_needed(uint32_t *pt, uint32_t *pd, uint32_t pd_index)
     }
 }
 
-int mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
+int unmap_mirror(struct as *as, vaddr_t vaddr, size_t size)
 {
     uint32_t pd_index = (vaddr >> 22) & 0x3FF;
     uint32_t pt_index = (vaddr >> 12) & 0x3FF;
@@ -278,6 +278,31 @@ int mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
         clean_if_needed(pt, pd, pd_index);
 
     return 1;
+}
+
+int mmu_unmap(struct as *as, vaddr_t vaddr, size_t size)
+{
+    paddr_t cr3 = cr3_get();
+
+    if (&kernel_as == as)
+        return unmap_mirror(as, vaddr, size);
+
+    struct thread *thread = thread_current();
+
+    if (!thread || thread->parent->as != as)
+    {
+        int ret = 0;
+
+        cr3_set(as->arch.cr3);
+
+        ret = unmap_mirror(as, vaddr, size);
+
+        cr3_set(cr3);
+
+        return ret;
+    }
+    else
+        return unmap_mirror(as, vaddr, size);
 }
 
 int mmu_duplicate(struct as *old, struct as *new)
