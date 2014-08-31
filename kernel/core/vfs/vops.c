@@ -133,3 +133,93 @@ int vfs_open(const char *pathname, int flags, int mode)
 
     return fd;
 }
+
+int vfs_read(int fd, void *buf, size_t count)
+{
+    int res;
+    struct process *process = thread_current()->parent;
+    struct process *pdevice;
+    struct vdevice *device;
+    struct message *message;
+    struct message *mresponse;
+    struct read_msg *request;
+
+    if (!process->files[fd].used)
+        return -EBADF;
+
+    if (!(device = device_get(process->files[fd].vnode->dev)))
+        return -ENODEV;
+
+    if (!(device->ops & VFS_OPS_READ))
+        return -EINVAL;
+
+    if (!(message = message_alloc(sizeof (struct read_msg))))
+        return -ENOMEM;
+
+    request = (void *)(message + 1);
+
+    /* This index has been returned by open and only matters to filesystem */
+    request->index = process->files[fd].vnode->index;
+    request->size = count;
+    request->off = process->files[fd].offset;
+
+    pdevice = process_get(device->pid);
+
+    request->data = (void *)as_map(pdevice->as, 0, 0, count,
+                                   AS_MAP_USER | AS_MAP_WRITE);
+
+    if (!request->data)
+    {
+        message_free(message);
+
+        return -ENOMEM;
+    }
+
+    message->mid = (message->mid & ~0xFF) | VFS_OPS_READ;
+
+    /* Send the request through the channel */
+    if ((res = channel_send_request(device->channel, message)) < 0)
+    {
+        message_free(message);
+        as_unmap(pdevice->as, (vaddr_t)request->data, AS_UNMAP_RELEASE);
+
+        return res;
+    }
+
+    /* Block the current thread until we have our answer */
+    thread_block(thread_current(), SCHED_EV_RESP, message->mid);
+
+    if ((res = channel_recv_response(device->channel, message->mid,
+                                     &mresponse)) < 0)
+    {
+        message_free(message);
+        as_unmap(pdevice->as, (vaddr_t)request->data, AS_UNMAP_RELEASE);
+
+        return res;
+    }
+
+    struct msg_response *response = (void *)(mresponse + 1);
+
+    if (response->ret < 0)
+    {
+        res = response->ret;
+
+        message_free(message);
+        message_free(mresponse);
+
+        as_unmap(pdevice->as, (vaddr_t)request->data, AS_UNMAP_RELEASE);
+
+        return res;
+    }
+
+    res = as_copy(pdevice->as, process->as, request->data, buf, count);
+
+    if (res == 0)
+        res = response->ret;
+
+    as_unmap(pdevice->as, (vaddr_t)request->data, AS_UNMAP_RELEASE);
+    message_free(message);
+    message_free(mresponse);
+
+    return res;
+}
