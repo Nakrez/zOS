@@ -2,6 +2,7 @@
 #include <kernel/kmalloc.h>
 
 #include <arch/spinlock.h>
+#include <arch/cpu.h>
 
 static spinlock_t waiting_lock = SPINLOCK_INIT;
 
@@ -12,6 +13,12 @@ static struct klist waiting_list = {
 
 void scheduler_event_notify(int event, int data)
 {
+    /*
+     * We can't be interrupted while doing this, otherwise we could
+     * cause a giant deadlock
+     */
+    cpu_irq_disable();
+
     spinlock_lock(&waiting_lock);
 
     klist_for_each(&waiting_list, wlist, list)
@@ -32,6 +39,7 @@ void scheduler_event_notify(int event, int data)
     }
 
     spinlock_unlock(&waiting_lock);
+    cpu_irq_enable();
 }
 
 void scheduler_wait_event(struct thread *thread)
