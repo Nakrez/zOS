@@ -29,7 +29,16 @@ struct open_msg {
     char *path;
 };
 
+/* Read related message */
+struct read_msg {
+    uint32_t index;
 
+    size_t size;
+
+    size_t off;
+
+    void *data;
+};
 
 struct message *message_alloc(size_t size);
 void message_free(struct message *msg);
