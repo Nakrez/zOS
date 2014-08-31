@@ -16,4 +16,14 @@ struct open_msg {
     char *path;
 };
 
+struct read_msg {
+    uint32_t index;
+
+    size_t size;
+
+    size_t off;
+
+    void *data;
+};
+
 #endif /* !ZOS_VFS_H */
