@@ -69,6 +69,9 @@ static void dispatch(struct driver *driver, int mid, char *buf)
         case VFS_OPS_OPEN:
             driver->dev_ops->open(driver, mid, (void *)buf);
             break;
+        case VFS_OPS_READ:
+            driver->dev_ops->read(driver, mid, (void *)buf);
+            break;
     }
 }
 
