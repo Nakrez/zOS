@@ -312,19 +312,19 @@ int as_is_mapped(struct as *as, vaddr_t ptr, size_t size)
             if (ptr - mapping->virt + size > mapping->size)
             {
                 spinlock_unlock(&as->map_lock);
-                return -1;
+                return 0;
             }
             else
             {
                 spinlock_unlock(&as->map_lock);
-                return 0;
+                return 1;
             }
         }
     }
 
     spinlock_unlock(&as->map_lock);
 
-    return -1;
+    return 0;
 }
 
 int as_remap(struct as *as, struct as_mapping *map, int flags)
