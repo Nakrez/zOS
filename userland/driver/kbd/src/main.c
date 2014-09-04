@@ -11,7 +11,6 @@
 
 static void kbd_read(struct driver *driver, int mid, struct rdwr_msg *msg)
 {
-    struct msg_response resp;
     char *data = msg->data;
 
     data[0] = 'T';
@@ -20,26 +19,12 @@ static void kbd_read(struct driver *driver, int mid, struct rdwr_msg *msg)
     data[3] = 'T';
     data[4] = 0;
 
-    resp.req_id = mid;
-    resp.ret = 0;
-
-    if (device_send_response(driver->dev_id, (void *)&resp, sizeof (resp)) < 0)
-        uprint("kbd_read: device_send_response() failed");
-
+    driver_send_response(driver, mid, msg->size);
 }
 
 static void kbd_write(struct driver *driver, int mid, struct rdwr_msg *msg)
 {
-    struct msg_response resp;
-
-    uprint("Write:");
-    uprint(msg->data);
-
-    resp.req_id = mid;
-    resp.ret = 0;
-
-    if (device_send_response(driver->dev_id, (void *)&resp, sizeof (resp)) < 0)
-        uprint("kbd_write: device_send_response() failed");
+    driver_send_response(driver, mid, msg->size);
 }
 
 static struct driver_ops kbd_ops = {
