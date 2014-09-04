@@ -30,6 +30,9 @@ int sys_vfs_device_recv_request(struct syscall *interface)
     char *buf = (void *)interface->arg2;
     size_t size = interface->arg3;
 
+    if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf, size))
+        return -EFAULT;
+
     return device_recv_request(dev, buf, size);
 }
 
@@ -39,6 +42,9 @@ int sys_vfs_device_send_response(struct syscall *interface)
     int dev = interface->arg1;
     char *buf = (void *)interface->arg2;
     size_t size = interface->arg3;
+
+    if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf, size))
+        return -EFAULT;
 
     return device_send_response(dev, buf, size);
 }
@@ -59,6 +65,9 @@ int sys_vfs_read(struct syscall *interface)
     void *buf = (void *)interface->arg2;
     size_t count = interface->arg3;
 
+    if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf, count))
+        return -EFAULT;
+
     return vfs_read(fd, buf, count);
 }
 
@@ -67,6 +76,9 @@ int sys_vfs_write(struct syscall *interface)
     int fd = interface->arg1;
     const void *buf = (void *)interface->arg2;
     size_t count = interface->arg3;
+
+    if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf, count))
+        return -EFAULT;
 
     return vfs_write(fd, buf, count);
 }
