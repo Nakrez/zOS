@@ -143,6 +143,25 @@ int vfs_open(const char *pathname, int flags, int mode)
     return fd;
 }
 
+static int check_fd(struct process *process, int fd, int op,
+                    struct vdevice **dev)
+{
+    struct vdevice *device;
+
+    if (!process->files[fd].used)
+        return -EBADF;
+
+    if (!(device = device_get(process->files[fd].vnode->dev)))
+        return -ENODEV;
+
+    if (!(device->ops & op))
+        return -EINVAL;
+
+    *dev = device;
+
+    return 0;
+}
+
 int vfs_read(int fd, void *buf, size_t count)
 {
     int res;
@@ -153,14 +172,8 @@ int vfs_read(int fd, void *buf, size_t count)
     struct message *mresponse;
     struct read_msg *request;
 
-    if (!process->files[fd].used)
-        return -EBADF;
-
-    if (!(device = device_get(process->files[fd].vnode->dev)))
-        return -ENODEV;
-
-    if (!(device->ops & VFS_OPS_READ))
-        return -EINVAL;
+    if ((res = check_fd(process, fd, VFS_OPS_READ, &device)) < 0)
+        return res;
 
     if (!(message = message_alloc(sizeof (struct read_msg))))
         return -ENOMEM;
