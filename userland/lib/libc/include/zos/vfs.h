@@ -16,7 +16,7 @@ struct open_msg {
     char *path;
 };
 
-struct read_msg {
+struct rdwr_msg {
     uint32_t index;
 
     size_t size;

@@ -16,9 +16,9 @@ struct driver {
 };
 
 struct driver_ops {
-    void (*open)(struct driver *driver, int mid, struct open_msg *);
-    void (*read)(struct driver *driver, int mid, struct read_msg *);
-    void (*write)(char *buf);
+    void (*open)(struct driver *, int, struct open_msg *);
+    void (*read)(struct driver *, int, struct rdwr_msg *);
+    void (*write)(struct driver *, int, struct rdwr_msg *);
     void (*close)(char *buf);
 };
 

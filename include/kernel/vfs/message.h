@@ -30,7 +30,7 @@ struct open_msg {
 };
 
 /* Read related message */
-struct read_msg {
+struct rdwr_msg {
     uint32_t index;
 
     size_t size;

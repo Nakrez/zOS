@@ -170,12 +170,12 @@ int vfs_read(int fd, void *buf, size_t count)
     struct vdevice *device;
     struct message *message;
     struct message *mresponse;
-    struct read_msg *request;
+    struct rdwr_msg *request;
 
     if ((res = check_fd(process, fd, VFS_OPS_READ, &device)) < 0)
         return res;
 
-    if (!(message = message_alloc(sizeof (struct read_msg))))
+    if (!(message = message_alloc(sizeof (struct rdwr_msg))))
         return -ENOMEM;
 
     request = (void *)(message + 1);

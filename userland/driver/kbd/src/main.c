@@ -9,7 +9,7 @@
 
 #include <arch/interrupt.h>
 
-static void kbd_read(struct driver *driver, int mid, struct read_msg *msg)
+static void kbd_read(struct driver *driver, int mid, struct rdwr_msg *msg)
 {
     struct msg_response resp;
     char *data = msg->data;
