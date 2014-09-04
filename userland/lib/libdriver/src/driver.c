@@ -9,13 +9,7 @@ static void driver_base_open(struct driver *driver, int mid,
 {
     (void) msg;
 
-    struct msg_response resp;
-
-    resp.req_id = mid;
-    resp.ret = 0;
-
-    if (device_send_response(driver->dev_id, (void *)&resp, sizeof (resp)) < 0)
-        uprint("Default open failed");
+    driver_send_response(driver, mid, 0);
 }
 
 static void driver_base_close(struct driver *driver, int mid,
@@ -23,7 +17,7 @@ static void driver_base_close(struct driver *driver, int mid,
 {
     (void) msg;
 
-    uprint("Close default");
+    driver_send_response(driver, mid, 0);
 }
 
 int driver_create(const char *dev_name, int uid, int gid, int perm,
@@ -106,3 +100,15 @@ int driver_loop(struct driver *driver)
     return 0;
 }
 
+int driver_send_response(struct driver *driver, int mid, int ret)
+{
+    struct msg_response resp;
+
+    resp.req_id = mid;
+    resp.ret = ret;
+
+    if (device_send_response(driver->dev_id, (void *)&resp, sizeof (resp)) < 0)
+        return -1;
+
+    return 0;
+}

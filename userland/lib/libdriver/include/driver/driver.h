@@ -26,5 +26,6 @@ int driver_create(const char *dev_name, int uid, int gid, int perm,
                   struct driver_ops *dev_ops, struct driver *result);
 
 int driver_loop(struct driver *driver);
+int driver_send_response(struct driver *driver, int mid, int ret);
 
 #endif /* !DRIVER_DRIVER_H */
