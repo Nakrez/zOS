@@ -26,4 +26,8 @@ struct rdwr_msg {
     void *data;
 };
 
+struct close_msg {
+    uint32_t index;
+};
+
 #endif /* !ZOS_VFS_H */

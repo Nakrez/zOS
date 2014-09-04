@@ -18,6 +18,7 @@
 # define SYS_OPEN 15
 # define SYS_READ 16
 # define SYS_WRITE 17
+# define SYS_CLOSE 18
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \
