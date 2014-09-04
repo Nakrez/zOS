@@ -26,6 +26,9 @@ int main(void)
 
     uprint(buf);
 
+    if (write(fd, "init", 5) < 0)
+        uprint("Write failed");
+
     while (1)
         sleep(1);
 
