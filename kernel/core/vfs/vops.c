@@ -286,3 +286,50 @@ end:
 
     return res;
 }
+
+int vfs_close(int fd)
+{
+    int res;
+    struct process *process = thread_current()->parent;
+    struct vdevice *device;
+    struct close_msg *request;
+    struct message *message = NULL;
+    struct message *mresponse = NULL;
+    struct msg_response *response;
+
+    if ((res = check_fd(process, fd, VFS_OPS_CLOSE, &device)) < 0)
+        return res;
+
+    if (!(message = message_alloc(sizeof (struct close_msg))))
+        return -ENOMEM;
+
+    request = (void *)(message + 1);
+
+    request->index = process->files[fd].vnode->index;
+
+    message->mid = (message->mid & ~0xFF) | VFS_OPS_CLOSE;
+
+    if ((res = vfs_send_recv(device->channel, message, &mresponse)) < 0)
+        goto error;
+
+    response = (void *)(mresponse + 1);
+
+    if (response->ret < 0)
+    {
+        res = response->ret;
+
+        goto error;
+    }
+
+    message_free(message);
+    message_free(mresponse);
+
+    process_free_fd(process, fd);
+
+    return 0;
+error:
+    message_free(message);
+    message_free(mresponse);
+
+    return res;
+}
