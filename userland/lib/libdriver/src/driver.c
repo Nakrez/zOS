@@ -18,9 +18,10 @@ static void driver_base_open(struct driver *driver, int mid,
         uprint("Default open failed");
 }
 
-static void driver_base_close(char *buf)
+static void driver_base_close(struct driver *driver, int mid,
+                              struct close_msg *msg)
 {
-    (void) buf;
+    (void) msg;
 
     uprint("Close default");
 }
@@ -74,6 +75,9 @@ static void dispatch(struct driver *driver, int mid, char *buf)
             break;
         case VFS_OPS_WRITE:
             driver->dev_ops->write(driver, mid, (void *)buf);
+            break;
+        case VFS_OPS_CLOSE:
+            driver->dev_ops->close(driver, mid, (void *)buf);
             break;
     }
 }
