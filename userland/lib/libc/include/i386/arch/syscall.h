@@ -17,6 +17,7 @@
 # define SYS_DEVICE_SEND_RESPONSE 14
 # define SYS_OPEN 15
 # define SYS_READ 16
+# define SYS_WRITE 17
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \

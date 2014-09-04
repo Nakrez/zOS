@@ -12,5 +12,6 @@ pid_t getpid(void);
 pid_t gettid(void);
 
 int read(int fd, void *buf, size_t count);
+int write(int fd, const void *buf, size_t count);
 
 #endif /* !LIBC_UNISTD_H */
