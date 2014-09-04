@@ -70,3 +70,10 @@ int sys_vfs_write(struct syscall *interface)
 
     return vfs_write(fd, buf, count);
 }
+
+int sys_vfs_close(struct syscall *interface)
+{
+    int fd = interface->arg1;
+
+    return vfs_close(fd);
+}
