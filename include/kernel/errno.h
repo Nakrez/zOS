@@ -5,6 +5,7 @@
 # define ENOENT 2 /* No such file or directory */
 # define EBADF 9 /* Bad file number */
 # define ENOMEM 12 /* Out of memory */
+# define EFAULT 14 /* Bad address */
 # define EEXIST 17 /* File exists */
 # define ENODEV 19 /* No such device */
 # define EISDIR 21 /* Is a directory */
