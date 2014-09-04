@@ -101,7 +101,7 @@ int as_remap(struct as *as, struct as_mapping *map, int flags);
 /*
  * Copy buffers between 2 address spaces
  */
-int as_copy(struct as *src_as, struct as *dest_as, void *src, void *dest,
+int as_copy(struct as *src_as, struct as *dest_as, const void *src, void *dest,
             size_t size);
 /*
  * Unmap vaddr

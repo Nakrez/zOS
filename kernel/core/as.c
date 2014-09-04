@@ -334,7 +334,7 @@ int as_remap(struct as *as, struct as_mapping *map, int flags)
     return glue_call(as, map, as, map->virt, map->phy->base, map->size, flags);
 }
 
-int as_copy(struct as *src_as, struct as *dest_as, void *src, void *dest,
+int as_copy(struct as *src_as, struct as *dest_as, const void *src, void *dest,
             size_t size)
 {
     /* Locate the mapping on address space 1 */
