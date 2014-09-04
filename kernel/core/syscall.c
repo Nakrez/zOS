@@ -44,6 +44,7 @@ static syscall_callback syscalls[] =
 
     sys_vfs_open,
     sys_vfs_read,
+    sys_vfs_write,
 };
 
 void syscall_handler(struct irq_regs *regs)
