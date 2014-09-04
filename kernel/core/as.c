@@ -307,7 +307,7 @@ int as_is_mapped(struct as *as, vaddr_t ptr, size_t size)
 
     klist_for_each_elem(&as->mapping, mapping, list)
     {
-        if (mapping->virt >= ptr && mapping->virt + mapping->size < ptr)
+        if (ptr >= mapping->virt && ptr < mapping->virt + mapping->size)
         {
             if (ptr - mapping->virt + size > mapping->size)
             {
