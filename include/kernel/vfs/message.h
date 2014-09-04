@@ -29,7 +29,7 @@ struct open_msg {
     char *path;
 };
 
-/* Read related message */
+/* Read/Write related message */
 struct rdwr_msg {
     uint32_t index;
 
@@ -39,6 +39,12 @@ struct rdwr_msg {
 
     void *data;
 };
+
+/* Close related message */
+struct close_msg {
+    uint32_t index;
+};
+
 
 struct message *message_alloc(size_t size);
 void message_free(struct message *msg);
