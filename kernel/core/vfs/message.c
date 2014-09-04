@@ -58,6 +58,9 @@ void message_free(struct message *msg)
 {
     struct free_msg *free;
 
+    if (!msg)
+        return;
+
     if (!(free = kmalloc(sizeof (struct free_msg))))
     {
         /*
