@@ -34,17 +34,39 @@ static int vfs_open_extract_channel(struct vtree_node *node,
     return 0;
 }
 
+static int vfs_send_recv(struct vchannel *channel, struct message *message,
+                         struct message **response)
+{
+    int res;
+    int req_id;
+
+    if ((res = channel_send_request(channel, message)) < 0)
+        return res;
+
+    /* Block the current thread until we have our answer */
+    thread_block(thread_current(), SCHED_EV_RESP, message->mid);
+
+    /* Save the request id */
+    req_id = message->mid;
+
+    /* Get our response, thanks to the request id saved */
+    if ((res = channel_recv_response(channel, req_id, response)) < 0)
+        return res;
+
+    return 0;
+}
+
 int vfs_open(const char *pathname, int flags, int mode)
 {
     (void) flags;
     (void) mode;
 
     int res;
-    int req_id;
     int fd;
     struct vtree_node *node;
     const char *remaining;
-    struct message *message;
+    struct message *message = NULL;
+    struct message *response = NULL;
     struct vchannel *channel;
     struct process *process = thread_current()->parent;
 
@@ -85,8 +107,7 @@ int vfs_open(const char *pathname, int flags, int mode)
      * request some other need it
      */
 
-    /* Send the request through the channel */
-    if ((res = channel_send_request(channel, message)) < 0)
+    if ((res = vfs_send_recv(channel, message, &response)) < 0)
     {
         message_free(message);
         process_free_fd(process, fd);
@@ -94,32 +115,20 @@ int vfs_open(const char *pathname, int flags, int mode)
         return res;
     }
 
-    /* Block the current thread until we have our answer */
-    thread_block(thread_current(), SCHED_EV_RESP, message->mid);
-
-    /* Save the request id */
-    req_id = message->mid;
-
-    /* Delete the request, not needed anymore */
     message_free(message);
-    message = NULL;
-
-    /* Get our response, thanks to the request id saved */
-    if ((res = channel_recv_response(channel, req_id, &message)) < 0)
-    {
-        process_free_fd(process, fd);
-
-        return res;
-    }
 
     /* Process the response */
-    struct msg_response *response = (void *)(message + 1);
+    struct msg_response *mresponse = (void *)(response + 1);
 
-    if (response->ret)
+    if (mresponse->ret)
     {
         process_free_fd(process, fd);
 
-        return response->ret;
+        res = mresponse->ret;
+
+        message_free(response);
+
+        return res;
     }
 
     /* TODO: Set the rest */
@@ -129,7 +138,7 @@ int vfs_open(const char *pathname, int flags, int mode)
     ++node->vnode->ref_count;
 
     /* Delete the response message */
-    message_free(message);
+    message_free(response);
 
     return fd;
 }
@@ -177,26 +186,8 @@ int vfs_read(int fd, void *buf, size_t count)
 
     message->mid = (message->mid & ~0xFF) | VFS_OPS_READ;
 
-    /* Send the request through the channel */
-    if ((res = channel_send_request(device->channel, message)) < 0)
-    {
-        message_free(message);
-        as_unmap(pdevice->as, (vaddr_t)request->data, AS_UNMAP_RELEASE);
-
-        return res;
-    }
-
-    /* Block the current thread until we have our answer */
-    thread_block(thread_current(), SCHED_EV_RESP, message->mid);
-
-    if ((res = channel_recv_response(device->channel, message->mid,
-                                     &mresponse)) < 0)
-    {
-        message_free(message);
-        as_unmap(pdevice->as, (vaddr_t)request->data, AS_UNMAP_RELEASE);
-
-        return res;
-    }
+    if ((res = vfs_send_recv(device->channel, message, &mresponse)) < 0)
+        goto end;
 
     struct msg_response *response = (void *)(mresponse + 1);
 
@@ -204,19 +195,18 @@ int vfs_read(int fd, void *buf, size_t count)
     {
         res = response->ret;
 
-        message_free(message);
-        message_free(mresponse);
-
-        as_unmap(pdevice->as, (vaddr_t)request->data, AS_UNMAP_RELEASE);
-
-        return res;
+        goto end;
     }
 
     res = as_copy(pdevice->as, process->as, request->data, buf, count);
 
     if (res == 0)
+    {
         res = response->ret;
+        process->files[fd].offset += res;
+    }
 
+end:
     as_unmap(pdevice->as, (vaddr_t)request->data, AS_UNMAP_RELEASE);
     message_free(message);
     message_free(mresponse);
