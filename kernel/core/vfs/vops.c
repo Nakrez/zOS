@@ -226,3 +226,63 @@ end:
 
     return res;
 }
+
+int vfs_write(int fd, const void *buf, size_t count)
+{
+    int res;
+    struct message *message = NULL;
+    struct message *mresponse = NULL;
+    struct process *process = thread_current()->parent;
+    struct process *pdevice;
+    struct vdevice *device;
+    struct rdwr_msg *request;
+
+    if ((res = check_fd(process, fd, VFS_OPS_WRITE, &device)) < 0)
+        return res;
+
+    if (!(message = message_alloc(sizeof (struct rdwr_msg))))
+        return -ENOMEM;
+
+    request = (void *)(message + 1);
+
+    /* This index has been returned by open and only matters to filesystem */
+    request->index = process->files[fd].vnode->index;
+    request->size = count;
+    request->off = process->files[fd].offset;
+
+    pdevice = process_get(device->pid);
+
+    request->data = (void *)as_map(pdevice->as, 0, 0, count,
+                                   AS_MAP_USER | AS_MAP_WRITE);
+
+    if (!request->data)
+    {
+        message_free(message);
+
+        return -ENOMEM;
+    }
+
+    res = as_copy(process->as, pdevice->as, buf, request->data, count);
+
+    if (res < 0)
+        goto end;
+
+    message->mid = (message->mid & ~0xFF) | VFS_OPS_WRITE;
+
+    if ((res = vfs_send_recv(device->channel, message, &mresponse)) < 0)
+        goto end;
+
+    struct msg_response *response = (void *)(mresponse + 1);
+
+    res = response->ret;
+
+    if (response->ret > 0)
+        process->files[fd].offset += res;
+
+end:
+    as_unmap(pdevice->as, (vaddr_t)request->data, AS_UNMAP_RELEASE);
+    message_free(message);
+    message_free(mresponse);
+
+    return res;
+}
