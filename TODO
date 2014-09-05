@@ -5,10 +5,8 @@
 [CORE]
 
 - Review CPU to be sure it could support SMP (which I doubt)
-- Add IPC mechanism
 - Review ELF loader (Move it to its own files & map memory with correct rights)
 - Review locks (Some might be missing)
-- !!! Check user pointers from syscalls !!!
 
 [MEM]
 
@@ -18,7 +16,11 @@
 [SYSCALL]
 
 - Add memory specific syscalls (mmap, munmap)
-- Add IPC syscalls
+- /!\ Check user pointers from syscalls /!\
+
+[VFS]
+
+- Add Filesystem driver interface
 
 [SCHEDULER]
 
@@ -37,4 +39,5 @@
 
 [USERLAND]
 
+- Add TTY driver + kbd + vga driver
 - Add init binary
