@@ -9,29 +9,60 @@
 
 #include <arch/interrupt.h>
 
-static void kbd_read(struct driver *driver, int mid, struct rdwr_msg *msg)
+#include <buffer.h>
+
+/* Kbd driver can only be opened once */
+static int kbd_opened = 0;
+
+static void kbd_open(struct driver *driver, int mid, struct open_msg *msg)
 {
-    char *data = msg->data;
+    (void) msg;
 
-    data[0] = 'T';
-    data[1] = 'E';
-    data[2] = 'S';
-    data[3] = 'T';
-    data[4] = 0;
-
-    driver_send_response(driver, mid, msg->size);
+    if (!kbd_opened)
+    {
+        driver_send_response(driver, mid, 0);
+        kbd_opened = 1;
+    }
+    else
+        /* TODO: EBUSY */
+        driver_send_response(driver, mid, -1);
 }
 
-static void kbd_write(struct driver *driver, int mid, struct rdwr_msg *msg)
+static void kbd_read(struct driver *driver, int mid, struct rdwr_msg *msg)
 {
-    driver_send_response(driver, mid, msg->size);
+    struct input_event result;
+
+    if (msg->size < sizeof (struct input_event))
+    {
+        /* TODO: EINVAL */
+        driver_send_response(driver, mid, -1);
+
+        return;
+    }
+
+    while (buffer_empty())
+        ;
+
+    buffer_pop(&result);
+
+    memcpy(msg->data, &result, sizeof (struct input_event));
+
+    driver_send_response(driver, mid, sizeof (struct input_event));
+}
+
+static void kbd_close(struct driver *driver, int mid, struct close_msg *msg)
+{
+    (void) msg;
+
+    kbd_opened = 0;
+
+    driver_send_response(driver, mid, 0);
 }
 
 static struct driver_ops kbd_ops = {
-    NULL,
-    kbd_read,
-    kbd_write,
-    NULL,
+    .open = kbd_open,
+    .read = kbd_read,
+    .close = kbd_close,
 };
 
 int main(void)
