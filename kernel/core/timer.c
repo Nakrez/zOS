@@ -5,9 +5,19 @@
 #include <kernel/scheduler.h>
 #include <kernel/cpu.h>
 
+static struct timer_entry timers[TIMER_NUM];
+spinlock_t timer_lock;
+
 void timer_initialize(void)
 {
     glue_call(timer, init);
+
+    for (int i = 0; i < TIMER_NUM; ++i)
+    {
+        timers[i].free = 1;
+    }
+
+    spinlock_init(&timer_lock);
 }
 
 void timer_handler(struct irq_regs *regs)
@@ -33,7 +43,7 @@ void timer_handler(struct irq_regs *regs)
             else
             {
                 klist_del(&timer->list);
-                kfree(timer);
+                timer->free = 1;
             }
         }
     }
@@ -41,11 +51,20 @@ void timer_handler(struct irq_regs *regs)
     scheduler_update(regs);
 }
 
+static int timer_new(void)
+{
+    for (int i = 0; i < TIMER_NUM; ++i)
+        if (timers[i].free)
+            return i;
+
+    return -1;
+}
+
 int timer_register(int cpu_id, int type, int data, size_t time,
                    void (*callback)(int))
 {
+    int timer;
     struct cpu *cpu = cpu_get(cpu_id);
-    struct timer_entry *timer;
 
     if (!cpu)
         return 0;
@@ -62,15 +81,28 @@ int timer_register(int cpu_id, int type, int data, size_t time,
     if (!time)
         return 0;
 
-    timer = kmalloc(sizeof (struct timer_entry));
+    spinlock_lock(&timer_lock);
 
-    timer->type = type;
-    timer->data = data;
-    timer->timer = time / TIMER_GRANULARITY;
-    timer->count = time / TIMER_GRANULARITY;
-    timer->callback = callback;
+    timer = timer_new();
 
-    klist_add(&cpu->timers, &timer->list);
+    if (timer < 0)
+    {
+        spinlock_unlock(&timer_lock);
+
+        return 0;
+    }
+
+    timers[timer].free = 0;
+
+    spinlock_unlock(&timer_lock);
+
+    timers[timer].type = type;
+    timers[timer].data = data;
+    timers[timer].timer = time / TIMER_GRANULARITY;
+    timers[timer].count = time / TIMER_GRANULARITY;
+    timers[timer].callback = callback;
+
+    klist_add(&cpu->timers, &timers[timer].list);
 
     return 1;
 }

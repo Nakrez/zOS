@@ -4,7 +4,11 @@
 # include <kernel/types.h>
 # include <kernel/klist.h>
 
+# include <arch/spinlock.h>
+
 # include <arch/cpu.h>
+
+# define TIMER_NUM 255
 
 /* 1 ms */
 # define TIMER_GRANULARITY 1
@@ -22,6 +26,7 @@ struct timer_glue
 
 struct timer_entry
 {
+    int free;
     int type;
     int data;
     size_t timer;
