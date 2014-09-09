@@ -8,7 +8,7 @@
 # include <arch/cpu.h>
 # include <arch/spinlock.h>
 
-# define SCHEDULER_TIME 25 / TIMER_GRANULARITY
+# define SCHEDULER_TIME 10 / TIMER_GRANULARITY
 
 struct scheduler
 {
