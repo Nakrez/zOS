@@ -3,6 +3,8 @@
 
 # include <stdint.h>
 
+# include "partition.h"
+
 # define PCI_CMD 0xCF8
 # define PCI_DATA 0xCFC
 
@@ -245,6 +247,7 @@ struct ide_device {
     uint8_t driver;
     uint8_t id;
     struct identify_device infos;
+    struct partition partitions[4];
 
     int exists;
 };

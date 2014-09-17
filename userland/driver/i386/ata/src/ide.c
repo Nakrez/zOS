@@ -208,6 +208,8 @@ static void ide_device_initialize(struct ide_device *device)
 
     device->exists = 1;
 
+    partition_initialize(device->partitions, buf);
+
     return;
 }
 
