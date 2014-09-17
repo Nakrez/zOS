@@ -12,14 +12,16 @@
 # define SYS_INTERRUPT_REGISTER 9
 # define SYS_INTERRUPT_LISTEN 10
 # define SYS_INTERRUPT_UNREGISTER 11
-# define SYS_DEVICE_CREATE 12
-# define SYS_DEVICE_RECV_REQUEST 13
-# define SYS_DEVICE_SEND_RESPONSE 14
-# define SYS_OPEN 15
-# define SYS_READ 16
-# define SYS_WRITE 17
-# define SYS_CLOSE 18
-# define SYS_LSEEK 19
+# define SYS_MMAP 12
+# define SYS_MUNMAP 13
+# define SYS_DEVICE_CREATE 14
+# define SYS_DEVICE_RECV_REQUEST 15
+# define SYS_DEVICE_SEND_RESPONSE 16
+# define SYS_OPEN 17
+# define SYS_READ 18
+# define SYS_WRITE 19
+# define SYS_CLOSE 20
+# define SYS_LSEEK 21
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \
@@ -37,6 +39,18 @@
                          : "=r" (ret)                       \
                          : "i" (num),                       \
                            "g" (arg1)                       \
+                         : "memory");
+
+# define SYSCALL2(num, arg1, arg2, ret)                     \
+    __asm__ __volatile__("mov %3, %%ecx\n"                  \
+                         "mov %2, %%ebx\n"                  \
+                         "mov %1, %%eax\n"                  \
+                         "int $0x80\n"                      \
+                         "mov %%eax, %0\n"                  \
+                         : "=r" (ret)                       \
+                         : "i" (num),                       \
+                           "g" (arg1),                      \
+                           "g" (arg2)                       \
                          : "memory");
 
 # define SYSCALL3(num, arg1, arg2, arg3, ret)               \
@@ -86,4 +100,5 @@
                            "g" (arg4),                      \
                            "g" (arg5)                       \
                          : "memory");
+
 #endif /* !LIBC_I386_SYSCALL_H */
