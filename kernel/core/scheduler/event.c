@@ -34,7 +34,8 @@ void scheduler_event_notify(int event, int data)
 
             klist_del(&waiting->list);
 
-            kfree(waiting);
+            /* TODO: Fix free */
+            /* kfree(waiting); */
         }
     }
 
