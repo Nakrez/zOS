@@ -89,3 +89,12 @@ int sys_vfs_close(struct syscall *interface)
 
     return vfs_close(fd);
 }
+
+int sys_vfs_lseek(struct syscall *interface)
+{
+    int fd = interface->arg1;
+    int off = interface->arg2;
+    int whence = interface->arg3;
+
+    return vfs_lseek(fd, off, whence);
+}
