@@ -57,30 +57,77 @@ int ide_detect(struct ide_controller* ctrl)
     return -1;
 }
 
-static void ide_wait(struct ide_device *device)
+uint8_t ide_read_reg(struct ide_device *device, uint16_t reg)
 {
-    inb(device->chan->io_base + ATA_REG_STATUS);
-    inb(device->chan->io_base + ATA_REG_STATUS);
-    inb(device->chan->io_base + ATA_REG_STATUS);
-    inb(device->chan->io_base + ATA_REG_STATUS);
+    uint8_t res;
+
+    /* LBA 48 */
+    if (reg > ATA_REG_CMD && reg < ATA_REG_CONTROL)
+        ide_write_reg(device, ATA_REG_CONTROL, 0x80 | IDE_NIEN);
+
+    if (reg < ATA_REG_SECCOUNT1)
+        res = inb(device->chan->io_base + reg);
+    else if (reg < ATA_REG_CONTROL)
+        res = inb(device->chan->io_base + reg - 0x06);
+    else
+        res = inb(device->chan->io_ctrl + reg - 0x0A);
+
+    /* LBA 48 */
+    if (reg > ATA_REG_CMD && reg < ATA_REG_CONTROL)
+        ide_write_reg(device, ATA_REG_CONTROL, IDE_NIEN);
+
+    return res;
 }
 
-static void ide_read_words(struct ide_device *device, int reg, uint16_t *buf,
-                           size_t size)
+void ide_write_reg(struct ide_device *device, uint16_t reg, uint8_t data)
+{
+    /* LBA 48 */
+    if (reg > ATA_REG_CMD && reg < ATA_REG_CONTROL)
+        ide_write_reg(device, ATA_REG_CONTROL, 0x80 | IDE_NIEN);
+
+    if (reg < ATA_REG_SECCOUNT1)
+        outb(device->chan->io_base + reg, data);
+    else if (reg < ATA_REG_CONTROL)
+        outb(device->chan->io_base + reg - 0x06, data);
+    else
+        outb(device->chan->io_ctrl + reg - 0x0A, data);
+
+    /* LBA 48 */
+    if (reg > ATA_REG_CMD && reg < ATA_REG_CONTROL)
+        ide_write_reg(device, ATA_REG_CONTROL, IDE_NIEN);
+}
+
+void ide_wait(struct ide_device *device)
+{
+    ide_read_reg(device, ATA_REG_STATUS);
+    ide_read_reg(device, ATA_REG_STATUS);
+    ide_read_reg(device, ATA_REG_STATUS);
+    ide_read_reg(device, ATA_REG_STATUS);
+}
+
+void ide_read_words(struct ide_device *device, int reg, uint16_t *buf,
+                    size_t size)
 {
     for (size_t i = 0; i < size; ++i)
         buf[i] = inw(device->chan->io_base + reg);
 }
 
-static int ide_wait_status(struct ide_device *device, int timeout,
-                           uint8_t check_true, uint8_t check_false)
+void ide_write_words(struct ide_device *device, int reg, uint16_t *buf,
+                     size_t size)
+{
+    for (size_t i = 0; i < size; ++i)
+        outw(device->chan->io_base + reg, buf[i]);
+}
+
+int ide_wait_status(struct ide_device *device, int timeout, uint8_t check_true,
+                    uint8_t check_false)
 {
     int elapsed = 0;
     uint8_t status;
 
     while (elapsed < timeout)
     {
-        status = inb(device->chan->io_base + ATA_REG_STATUS);
+        status = ide_read_reg(device, ATA_REG_STATUS);
 
         if (!(status & check_false) && (status & check_true) == check_true)
             return 1;
@@ -94,35 +141,23 @@ static int ide_wait_status(struct ide_device *device, int timeout,
 
 static int ide_device_identify(struct ide_device *device, uint32_t command)
 {
-    int timeout = 0;
     uint8_t status;
 
     /* Select driver */
-    outb(device->chan->io_base + ATA_REG_HDDSEL, (device->id & 0x1) << 4);
+    ide_write_reg(device, ATA_REG_HDDSEL, (device->id & 0x1) << 4);
 
     ide_wait(device);
 
     /* Disable interruption */
-    outb(device->chan->io_base + ATA_REG_CONTROL, IDE_NIEN);
+    ide_write_reg(device, ATA_REG_CONTROL, IDE_NIEN);
 
     /* Send the identification command */
-    outb(device->chan->io_base + ATA_REG_CMD, command);
+    ide_write_reg(device, ATA_REG_CMD, command);
 
-    status = inb(device->chan->io_base + ATA_REG_STATUS);
+    status = ide_read_reg(device, ATA_REG_STATUS);
 
     if (status == 0)
         return 0;
-
-    while (timeout < ATA_TIMEOUT)
-    {
-        status = inb(device->chan->io_base + ATA_REG_STATUS);
-
-        if (!(status & ATA_SR_BSY))
-            break;
-
-        usleep(50);
-        timeout += 50;
-    }
 
     ide_wait(device);
 

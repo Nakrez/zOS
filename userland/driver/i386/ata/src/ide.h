@@ -22,19 +22,34 @@
 /* ATA SR bit mask */
 # define ATA_SR_ERR 0x01
 # define ATA_SR_DRQ 0x08
+# define ATA_SR_RDY 0x40
 # define ATA_SR_BSY 0x80
 
 /* ATA Commands */
+# define ATA_CMD_READ_PIO 0x20
+# define ATA_CMD_READ_PIO_EXT 0x24
+# define ATA_CMD_WRITE_PIO 0x30
+# define ATA_CMD_WRITE_PIO_EXT 0x34
+# define ATA_CMD_READ_DMA 0xC8
+# define ATA_CMD_READ_DMA_EXT 0x25
+# define ATA_CMD_WRITE_DMA 0xCA
+# define ATA_CMD_WRITE_DMA_EXT 0x35
 # define ATA_CMD_IDENTIFY_PACKET 0xA1
 # define ATA_CMD_IDENTIFY 0xEC
 
 /* ATA Register */
 # define ATA_REG_DATA 0x0
+# define ATA_REG_SECCOUNT0 0x2
+# define ATA_REG_LBA0 0x03
 # define ATA_REG_LBA1 0x04
 # define ATA_REG_LBA2 0x05
 # define ATA_REG_HDDSEL 0x6
 # define ATA_REG_CMD 0x7
 # define ATA_REG_STATUS 0x7
+# define ATA_REG_SECCOUNT1 0x8
+# define ATA_REG_LBA3 0x09
+# define ATA_REG_LBA4 0x0A
+# define ATA_REG_LBA5 0x0B
 # define ATA_REG_CONTROL 0xC
 
 struct ide_channel {
@@ -95,7 +110,7 @@ struct identify_device {
         /* Reserved */
         uint8_t : 2;
         uint16_t : 16;
-    } __attribute__ ((packed));
+    } __attribute__ ((packed)) capabilities;
 
     /* Obsolete */
     uint16_t : 16;
@@ -251,5 +266,16 @@ struct ide_controller {
  */
 int ide_detect(struct ide_controller* ctrl);
 int ide_initialize(struct ide_controller *ctrl);
+void ide_wait(struct ide_device *device);
+int ide_wait_status(struct ide_device *device, int timeout, uint8_t check_true,
+                    uint8_t check_false);
+void ide_read_words(struct ide_device *device, int reg, uint16_t *buf,
+                    size_t size);
+uint8_t ide_read_reg(struct ide_device *device, uint16_t reg);
+void ide_write_reg(struct ide_device *device, uint16_t reg, uint8_t data);
+void ide_read_words(struct ide_device *device, int reg, uint16_t *buf,
+                    size_t size);
+void ide_write_words(struct ide_device *device, int reg, uint16_t *buf,
+                     size_t size);
 
 #endif /* !IDE_H */
