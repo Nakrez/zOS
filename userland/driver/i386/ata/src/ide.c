@@ -5,6 +5,7 @@
 #include <sys/io.h>
 
 #include "ide.h"
+#include "ata.h"
 
 static uint16_t pci_cfg_readw(int bus, int dev, int fun, uint8_t off)
 {
@@ -176,6 +177,8 @@ static int ide_device_identify(struct ide_device *device, uint32_t command)
 
 static void ide_device_initialize(struct ide_device *device)
 {
+    char buf[512];
+
     if (!ide_device_identify(device, ATA_CMD_IDENTIFY))
     {
         if (!ide_device_identify(device, ATA_CMD_IDENTIFY_PACKET))
@@ -185,6 +188,20 @@ static void ide_device_initialize(struct ide_device *device)
     if (device->infos.configuration.is_atapi)
     {
         uprint("ATA: ATAPI detected but not supported yet");
+
+        return;
+    }
+
+    if (!device->infos.capabilities.lba)
+    {
+        uprint("ATA: No support for CHS yet");
+
+        return;
+    }
+
+    if (!ata_rdwr(device, ATA_OP_READ, 0, buf, ATA_SECTOR_SIZE, 1))
+    {
+        uprint("ATA: Impossible to read first sector");
 
         return;
     }

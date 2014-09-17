@@ -1,6 +1,6 @@
 CURDIR := userland/driver/i386/ata/src/
 
-OBJ := main.o ide.o
+OBJ := main.o ide.o ata.o
 
 BINSUBDIRS :=
 
