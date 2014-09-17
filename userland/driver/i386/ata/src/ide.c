@@ -43,9 +43,9 @@ int ide_detect(struct ide_controller* ctrl)
                         ctrl->device_id = pci_cfg_readw(bus, device, fun, 0x2);
 
                         ctrl->channels[ATA_PRIMARY].io_base = 0x1F0;
-                        ctrl->channels[ATA_PRIMARY].io_ctrl = 0x3F6;
+                        ctrl->channels[ATA_PRIMARY].io_ctrl = 0x3F4;
                         ctrl->channels[ATA_SECONDARY].io_base = 0x170;
-                        ctrl->channels[ATA_SECONDARY].io_ctrl = 0x376;
+                        ctrl->channels[ATA_SECONDARY].io_ctrl = 0x374;
 
                         return 0;
                     }
