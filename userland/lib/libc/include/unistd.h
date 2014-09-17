@@ -3,6 +3,10 @@
 
 # include <stdint.h>
 
+# define SEEK_SET (1 << 0)
+# define SEEK_CUR (1 << 1)
+# define SEEK_END (1 << 2)
+
 typedef int pid_t;
 
 int usleep(size_t mseconds);
@@ -14,5 +18,6 @@ pid_t gettid(void);
 int read(int fd, void *buf, size_t count);
 int write(int fd, const void *buf, size_t count);
 int close(int fd);
+int lseek(int fd, off_t off, int whence);
 
 #endif /* !LIBC_UNISTD_H */

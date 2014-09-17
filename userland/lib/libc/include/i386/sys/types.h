@@ -12,4 +12,6 @@ typedef unsigned long long __u64;
 
 typedef __u32 __size;
 
+typedef int off_t;
+
 #endif /* !I386_SYS_TYPES_H */
