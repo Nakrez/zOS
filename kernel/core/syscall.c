@@ -37,6 +37,10 @@ static syscall_callback syscalls[] =
     &sys_interrupt_listen,
     &sys_interrupt_unregister,
 
+    /* Memory */
+    sys_mmap,
+    sys_munmap,
+
     /* Vfs */
     sys_vfs_device_create,
     sys_vfs_device_recv_request,

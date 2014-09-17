@@ -53,6 +53,10 @@ int sys_interrupt_register(struct syscall *interface);
 int sys_interrupt_listen(struct syscall *interface);
 int sys_interrupt_unregister(struct syscall *interface);
 
+/* Memory */
+int sys_mmap(struct syscall *interface);
+int sys_munmap(struct syscall *interface);
+
 /* Vfs */
 int sys_vfs_device_create(struct syscall *interface);
 int sys_vfs_device_recv_request(struct syscall *interface);
