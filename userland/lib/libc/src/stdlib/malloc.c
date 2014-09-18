@@ -92,9 +92,9 @@ void *malloc(size_t size)
         tmp = tmp->next;
     }
 
-    /* We need a new allocation */
     spinlock_unlock(&malloc_lock);
 
+    /* We need a new allocation */
     if (!(tmp = request_memory(size)))
         return NULL;
 
