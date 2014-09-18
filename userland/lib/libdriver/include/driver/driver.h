@@ -4,13 +4,16 @@
 # include <zos/vfs.h>
 
 struct driver {
-    const char *dev_name;
+    char *dev_name;
 
     int dev_id;
 
     int running;
 
     int ops;
+
+    /* Private data that the driver can use */
+    void *private;
 
     struct driver_ops *dev_ops;
 };

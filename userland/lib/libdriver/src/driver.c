@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>
 
 #include <zos/device.h>
 
@@ -36,12 +37,19 @@ int driver_create(const char *dev_name, int uid, int gid, int perm,
     if (dev_ops->write != NULL)
         result->ops |= VFS_OPS_WRITE;
 
+    if (!(result->dev_name = malloc(strlen(dev_name) + 1)))
+        return -1;
+
     dev_id = device_create(dev_name, uid, gid, perm, result->ops);
 
     if (dev_id < 0)
-        return dev_id;
+    {
+        free(result->dev_name);
 
-    result->dev_name = dev_name;
+        return dev_id;
+    }
+
+    result->dev_name = strcpy(result->dev_name, dev_name);
     result->dev_id = dev_id;
     result->running = 1;
     result->dev_ops = dev_ops;
