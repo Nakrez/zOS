@@ -5,4 +5,3 @@ OBJ := malloc.o
 LIBSUBDIRS :=
 
 include $(SRCDIR)mk/libsubdirs.mk
-
