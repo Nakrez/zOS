@@ -84,10 +84,8 @@ int channel_recv_request(struct vchannel *chan, char *buf, size_t size)
         return res;
     }
 
-    spinlock_unlock(&chan->inbox_lock);
-
     /* No message was in the channel, so block until we receive one */
-    thread_block(thread_current(), SCHED_EV_REQ, chan->cid);
+    thread_block(thread_current(), SCHED_EV_REQ, chan->cid, &chan->inbox_lock);
 
     spinlock_lock(&chan->inbox_lock);
 
@@ -162,9 +160,7 @@ int channel_recv_response(struct vchannel *chan, uint32_t req_id,
         return 0;
     }
 
-    spinlock_unlock(&chan->outbox_lock);
-
-    thread_block(thread_current(), SCHED_EV_RESP, req_id);
+    thread_block(thread_current(), SCHED_EV_RESP, req_id, &chan->outbox_lock);
 
     spinlock_lock(&chan->outbox_lock);
 

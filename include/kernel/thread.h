@@ -76,7 +76,12 @@ void thread_save_state(struct thread *thread, struct irq_regs *regs);
 
 void thread_sleep(struct thread *thread, size_t ms, struct irq_regs *regs);
 
-void thread_block(struct thread *thread, int event, int data);
+/*
+ * Block a thread and remove it from scheduler
+ *
+ * The additionnal spinlock is unlock if l != NULL
+ */
+void thread_block(struct thread *thread, int event, int data, spinlock_t *l);
 void thread_unblock(struct thread *thread);
 
 void thread_exit(struct thread *thread);

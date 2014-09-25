@@ -44,7 +44,7 @@ static int vfs_send_recv(struct vchannel *channel, struct message *message,
         return res;
 
     /* Block the current thread until we have our answer */
-    thread_block(thread_current(), SCHED_EV_RESP, message->mid);
+    thread_block(thread_current(), SCHED_EV_RESP, message->mid, NULL);
 
     /* Save the request id */
     req_id = message->mid;

@@ -144,10 +144,10 @@ void thread_sleep(struct thread *thread, size_t ms, struct irq_regs *regs)
     timer_register(thread->cpu, TIMER_CALLBACK | TIMER_ONE_SHOT,
                    data, ms, timer_callback_sleep);
 
-    thread_block(thread, SCHED_EV_TIMER, data);
+    thread_block(thread, SCHED_EV_TIMER, data, NULL);
 }
 
-void thread_block(struct thread *thread, int event, int data)
+void thread_block(struct thread *thread, int event, int data, spinlock_t *l)
 {
     struct cpu *cpu = cpu_get(thread->cpu);
 
@@ -157,6 +157,9 @@ void thread_block(struct thread *thread, int event, int data)
     thread->event.data = data;
 
     scheduler_wait_event(thread);
+
+    if (l)
+        spinlock_unlock(l);
 
     scheduler_remove_thread(thread, &cpu->scheduler);
 
