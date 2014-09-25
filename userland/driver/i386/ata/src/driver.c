@@ -43,7 +43,7 @@ static size_t read_with_offset(struct driver *driver, int mid,
     msg->data += read_size;
     msg->size -= read_size;
 
-    lba += ATA_SECTOR_SIZE;
+    ++(*lba);
 
     return read_size;
 }
@@ -60,7 +60,7 @@ static size_t read_blocks(struct driver *driver, struct rdwr_msg *msg,
         return 0;
 
     read_size = ALIGN_INF(msg->size, ATA_SECTOR_SIZE);
-    *lba += read_size;
+    *lba += read_size / ATA_SECTOR_SIZE;
     msg->size -= read_size;
     msg->data += read_size;
 
@@ -101,7 +101,7 @@ static void ata_global_read(struct driver *driver, int mid,
         driver_send_response(driver, mid, -1);
     else
     {
-        lba += ALIGN_INF(msg->off, ATA_SECTOR_SIZE);
+        lba += msg->off / ATA_SECTOR_SIZE;
 
         /*
          * If the offset is inside a block,

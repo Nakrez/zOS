@@ -31,10 +31,10 @@ static int ata_rdwr_pio(struct ide_device *device, int op, void *buf,
             return 0;
 
         if (op == ATA_OP_READ)
-            ide_read_words(device, ATA_REG_DATA, buf,
+            ide_read_words(device, ATA_REG_DATA, buffer,
                            sec_size / sizeof (uint16_t));
         else
-            ide_write_words(device, ATA_REG_DATA, buf,
+            ide_write_words(device, ATA_REG_DATA, buffer,
                             sec_size / sizeof (uint16_t));
 
         buffer += sec_size / sizeof (uint16_t);
