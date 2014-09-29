@@ -42,6 +42,9 @@ struct thread
 
     /* List for the scheduler */
     struct klist sched;
+
+    /* Blocked list */
+    struct klist block;
 };
 
 struct thread_glue

@@ -1,7 +1,6 @@
 #ifndef SCHEDULER_EVENT_H
 # define SCHEDULER_EVENT_H
 
-# include <kernel/thread.h>
 # include <kernel/klist.h>
 
 # define SCHED_EV_NONE 0
@@ -18,18 +17,17 @@
 /* A new response has arrived */
 # define SCHED_EV_RESP 4
 
+# define SCHED_EV_SIZE SCHED_EV_RESP
+
+struct thread;
+
 struct scheduler_event {
     int event;
     int data;
 };
 
-struct scheduler_wait {
-    struct thread *thread;
-
-    struct klist list;
-};
-
+void scheduler_event_initialize(void);
 void scheduler_event_notify(int event, int data);
-void scheduler_wait_event(struct thread *thread);
+void scheduler_event_wait(int event, struct thread *thread);
 
 #endif /* !SCHEDULER_EVENT_H */

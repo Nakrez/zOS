@@ -156,7 +156,7 @@ void thread_block(struct thread *thread, int event, int data, spinlock_t *l)
     thread->event.event = event;
     thread->event.data = data;
 
-    scheduler_wait_event(thread);
+    scheduler_event_wait(event, thread);
 
     if (l)
         spinlock_unlock(l);

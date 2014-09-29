@@ -1,58 +1,39 @@
+#include <kernel/thread.h>
 #include <kernel/scheduler.h>
 #include <kernel/kmalloc.h>
 
 #include <arch/spinlock.h>
 #include <arch/cpu.h>
 
-static spinlock_t waiting_lock = SPINLOCK_INIT;
+static struct klist waiting_list[SCHED_EV_SIZE];
 
-static struct klist waiting_list = {
-    &waiting_list,
-    &waiting_list,
-};
+void scheduler_event_initialize(void)
+{
+    for (int i = 0; i < SCHED_EV_SIZE; ++i)
+        klist_head_init(&waiting_list[i]);
+}
 
 void scheduler_event_notify(int event, int data)
 {
-    /*
-     * We can't be interrupted while doing this, otherwise we could
-     * cause a giant deadlock
-     */
-    cpu_irq_disable();
+    struct klist *ev_list = &waiting_list[event - 1];
 
-    spinlock_lock(&waiting_lock);
-
-    klist_for_each(&waiting_list, wlist, list)
+    klist_for_each(ev_list, wlist, block)
     {
-        struct scheduler_wait *waiting;
+        struct thread *waiting_thread;
 
-        waiting = klist_elem(wlist, struct scheduler_wait, list);
+        waiting_thread = klist_elem(wlist, struct thread, block);
 
-        if (waiting->thread->event.event == event &&
-            waiting->thread->event.data == data)
+        if (waiting_thread->event.event == event &&
+            waiting_thread->event.data == data)
         {
-            thread_unblock(waiting->thread);
+            thread_unblock(waiting_thread);
 
-            klist_del(&waiting->list);
-
-            /* TODO: Fix free */
-            /* kfree(waiting); */
+            klist_del(&waiting_thread->block);
         }
     }
-
-    spinlock_unlock(&waiting_lock);
-    cpu_irq_enable();
 }
 
-void scheduler_wait_event(struct thread *thread)
+void scheduler_event_wait(int event, struct thread *thread)
 {
-    /* TODO err */
-    struct scheduler_wait *new = kmalloc(sizeof (struct scheduler_wait));
-
-    new->thread = thread;
-
-    spinlock_lock(&waiting_lock);
-
-    klist_add(&waiting_list, &new->list);
-
-    spinlock_unlock(&waiting_lock);
+    klist_add(&waiting_list[event - 1], &thread->block);
 }

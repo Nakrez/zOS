@@ -16,6 +16,8 @@ void scheduler_initialize(struct scheduler *sched)
     spinlock_init(&sched->sched_lock);
 
     klist_head_init(&sched->threads);
+
+    scheduler_event_initialize();
 }
 
 void scheduler_add_thread(struct scheduler *sched, struct thread *thread)
