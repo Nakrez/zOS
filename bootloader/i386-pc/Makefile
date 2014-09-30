@@ -36,6 +36,7 @@ rootfs/boot/grub/grub.cfg:
 	@echo "module /boot/zkernel" >> $@
 	@echo "module /bin/ata" >> $@
 	@echo "module /bin/kbd" >> $@
+	@echo "module /bin/ext2" >> $@
 	@echo "module /bin/init" >> $@
 	@echo "boot" >> $@
 	@echo "}" >> $@

@@ -1,5 +1,5 @@
 CURDIR := userland/driver/
-SUBDIRS := kbd/ ${ZOS_ARCH}/
+SUBDIRS := kbd/ ext2/ ${ZOS_ARCH}/
 
 include ${SRCDIR}mk/subdirs.mk
 
