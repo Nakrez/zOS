@@ -12,5 +12,6 @@
 int vfs_initialize(void);
 int vfs_device_create(const char *name, int pid, int uid, int gid, int perm,
                       int ops);
+int vfs_mount(int fd, const char *mount_path);
 
 #endif /* !VFS_H */

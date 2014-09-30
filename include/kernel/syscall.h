@@ -68,4 +68,6 @@ int sys_vfs_write(struct syscall *interface);
 int sys_vfs_close(struct syscall *interface);
 int sys_vfs_lseek(struct syscall *interface);
 
+int sys_vfs_mount(struct syscall *interface);
+
 #endif /* !SYSCALL_H */

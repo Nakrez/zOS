@@ -98,3 +98,11 @@ int sys_vfs_lseek(struct syscall *interface)
 
     return vfs_lseek(fd, off, whence);
 }
+
+int sys_vfs_mount(struct syscall *interface)
+{
+    int fd = interface->arg1;
+    const char *path = (char *)interface->arg2;
+
+    return vfs_mount(fd, path);
+}
