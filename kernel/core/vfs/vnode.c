@@ -26,6 +26,7 @@ struct vnode *vnode_create(const char *name, int uid, int gid, uint16_t perm,
     node->type = type;
     node->dev = VFS_DEVICE_NONE;
     node->parent = NULL;
+    node->ref_count = 1;
 
     return node;
 }
@@ -35,6 +36,11 @@ void vnode_destroy(struct vnode *node)
     if (!node)
         return;
 
-    kfree(node->name);
-    kfree(node);
+    --node->ref_count;
+
+    if (node->ref_count < 1)
+    {
+        kfree(node->name);
+        kfree(node);
+    }
 }

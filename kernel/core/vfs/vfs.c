@@ -44,6 +44,8 @@ int vfs_device_create(const char *name, int pid, int uid, int gid, int perm,
     if (res < 0)
         goto error;
 
+    device->node = node;
+
     return device->id;
 
 error:

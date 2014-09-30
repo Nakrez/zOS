@@ -45,7 +45,6 @@ struct close_msg {
     uint32_t index;
 };
 
-
 struct message *message_alloc(size_t size);
 void message_free(struct message *msg);
 
