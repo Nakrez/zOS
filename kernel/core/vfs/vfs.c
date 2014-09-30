@@ -27,8 +27,11 @@ int vfs_device_create(const char *name, int pid, int uid, int gid, int perm,
     if (res < 0)
         return res;
 
-    node = vnode_create(name, uid, gid, perm,
-                        VFS_TYPE_CHARDEV | VFS_TYPE_FILE);
+    if (ops & VFS_OPS_UMOUNT)
+        node = vnode_create(name, uid, gid, perm, VFS_TYPE_FS | VFS_TYPE_DIR);
+    else
+        node = vnode_create(name, uid, gid, perm,
+                            VFS_TYPE_CHARDEV | VFS_TYPE_FILE);
 
     if (!node)
     {

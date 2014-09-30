@@ -28,6 +28,7 @@
 # define VFS_TYPE_FILE (1 << 4)
 # define VFS_TYPE_VIRTUAL (1 << 5)
 # define VFS_TYPE_FAKE (1 << 6)
+# define VFS_TYPE_FS (1 << 7)
 
 # define VFS_TYPE_DEVICE (VFS_TYPE_CHARDEV | VFS_TYPE_BLOCKDEV)
 
