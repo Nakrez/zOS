@@ -7,6 +7,7 @@
 # define VFS_OPS_READ (1 << 1)
 # define VFS_OPS_WRITE (1 << 2)
 # define VFS_OPS_CLOSE (1 << 3)
+# define VFS_OPS_UMOUNT (1 << 4)
 
 struct msg_response {
     uint32_t req_id;

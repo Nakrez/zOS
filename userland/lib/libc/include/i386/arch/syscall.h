@@ -22,6 +22,7 @@
 # define SYS_WRITE 19
 # define SYS_CLOSE 20
 # define SYS_LSEEK 21
+# define SYS_MOUNT 22
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \
