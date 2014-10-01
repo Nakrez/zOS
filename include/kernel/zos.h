@@ -1,7 +1,9 @@
 #ifndef ZOS_H
 # define ZOS_H
 
-# define NULL ((void *)0)
+# ifndef NULL
+#  define NULL ((void *)0)
+# endif /* !NULL */
 
 typedef __builtin_va_list va_list;
 
