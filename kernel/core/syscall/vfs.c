@@ -3,6 +3,7 @@
 #include <kernel/thread.h>
 
 #include <kernel/vfs/vfs.h>
+#include <kernel/vfs/mount.h>
 #include <kernel/vfs/vops.h>
 #include <kernel/vfs/vdevice.h>
 
@@ -101,8 +102,8 @@ int sys_vfs_lseek(struct syscall *interface)
 
 int sys_vfs_mount(struct syscall *interface)
 {
-    int fd = interface->arg1;
-    const char *path = (char *)interface->arg2;
+    const char *path = (char *)interface->arg1;
+    int fd = interface->arg2;
 
-    return vfs_mount(fd, path);
+    return vfs_mount(path, fd);
 }
