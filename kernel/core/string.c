@@ -95,3 +95,16 @@ char *strtok_r(char *str, const char *delim, char **saveptr)
 
     return base;
 }
+
+char *strchr(const char *s, int c)
+{
+    while (*s)
+    {
+        if (*s == c)
+            return (char *)s;
+
+        ++s;
+    }
+
+    return NULL;
+}
