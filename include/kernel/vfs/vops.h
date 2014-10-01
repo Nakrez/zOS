@@ -1,9 +1,17 @@
 #ifndef VFS_VOPS_H
 # define VFS_VOPS_H
 
+# include <kernel/types.h>
+
 # define VFS_SEEK_SET (1 << 0)
 # define VFS_SEEK_CUR (1 << 1)
 # define VFS_SEEK_END (1 << 2)
+
+struct mount_entry;
+
+int vfs_lookup(const char *path, int uid, int gid, ino_t *inode,
+               struct mount_entry **mount_pt);
+int vfs_mkdir(const char *path, int uid, int gid, mode_t mode);
 
 int vfs_open(const char *pathname, int flags, int mode);
 int vfs_read(int fd, void *buf, size_t count);
