@@ -14,5 +14,6 @@ size_t strlen(const char *str);
 char *strcpy(char *destination, const char *source);
 
 int strcmp(const char *str1, const char *str2);
+char *strtok_r(char *str, const char *delim, char **saveptr);
 
 #endif /* !STRING_H */
