@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <kernel/errno.h>
 #include <kernel/console.h>
 
@@ -48,40 +50,27 @@ int vfs_device_create(const char *name, int pid, int uid, int gid, int perm,
 {
     int res;
     struct vdevice *device = NULL;
-    struct vnode *node = NULL;
+    char *node_path;
 
     res = device_create(pid, name, ops, &device);
 
     if (res < 0)
         return res;
 
-    if (ops & VFS_OPS_UMOUNT)
-        node = vnode_create(name, uid, gid, perm, VFS_TYPE_FS | VFS_TYPE_DIR);
-    else
-        node = vnode_create(name, uid, gid, perm,
-                            VFS_TYPE_CHARDEV | VFS_TYPE_FILE);
+    /*
+     * If mknod fails we don't really care because the device exists node the
+     * node in the FS, but it can be created later
+     */
 
-    if (!node)
-    {
-        res = -ENOMEM;
+    /* 5 = strlen("/dev/") */
+    if (!(node_path = kmalloc(5 + strlen(name) + 1)))
+        return device->id;
 
-        goto error;
-    }
+    strcpy(node_path, "/dev/");
 
-    node->dev = device->id;
+    strcat(node_path, name);
 
-    res = vtree_insert("/dev", node);
-
-    if (res < 0)
-        goto error;
-
-    device->node = node;
+    vfs_mknod(node_path, uid, gid, perm, device->id);
 
     return device->id;
-
-error:
-    vnode_destroy(node);
-    device_destroy(pid, device->id);
-
-    return res;
 }
