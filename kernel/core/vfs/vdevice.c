@@ -128,12 +128,64 @@ int device_send_response(int dev, uint32_t req_id, char *buf, size_t size)
 
     message->size = size;
 
-    if ((res = channel_send_response(devices[dev].channel, message)) < 0)
+    res = channel_send_response(devices[dev].channel, req_id, message);
+
+    if (res < 0)
         message_free(message);
 
     return res;
 }
 
+int device_open(int dev, ino_t inode, uint16_t uid, uint16_t gid, int flags,
+                mode_t mode)
+{
+    int ret = 0;
+    struct vdevice *device;
+    struct message *message;
+    struct message *response;
+    struct req_open *request;
+    struct resp_open *answer;
+
+    if (!(device = device_get(dev)))
+        return -ENODEV;
+
+    if (!(message = message_alloc(sizeof (struct req_open))))
+        return -ENOMEM;
+
+    request = MESSAGE_EXTRACT(struct req_open, message);
+
+    request->inode = inode;
+    request->uid = uid;
+    request->gid = gid;
+    request->flags = flags;
+    request->mode = mode;
+
+    message->mid = (message->mid & ~0xFF) | VFS_OPS_OPEN;
+
+    if ((ret = channel_send_recv(device->channel, message, &response)) < 0)
+    {
+        message_free(message);
+
+        return ret;
+    }
+
+    message_free(message);
+
+    answer = MESSAGE_EXTRACT(struct resp_open, response);
+
+    if (answer->ret < 0)
+    {
+        message_free(response);
+
+        return answer->ret;
+    }
+
+    ret = answer->inode;
+
+    message_free(response);
+
+    return ret;
+}
 
 int device_destroy(int pid, int dev)
 {
