@@ -187,6 +187,75 @@ int device_open(int dev, ino_t inode, uint16_t uid, uint16_t gid, int flags,
     return ret;
 }
 
+int device_read(int dev, struct req_rdwr *req, char *buf)
+{
+    int res;
+    struct vdevice *device;
+    struct process *pdevice;
+    struct message *message;
+    struct req_rdwr *request;
+    struct message *response;
+    struct resp_rdwr *answer;
+    struct process *process = thread_current()->parent;
+
+    if (!(device = device_get(dev)))
+        return -ENODEV;
+
+    if (!(device->ops & VFS_OPS_READ))
+        return -ENOSYS;
+
+    if (!(message = message_alloc(sizeof (struct rdwr_msg))))
+        return -ENOMEM;
+
+    request = MESSAGE_EXTRACT(struct req_rdwr, message);
+
+    request->inode = req->inode;
+    request->size = req->size;
+    request->off = req->off;
+
+    pdevice = process_get(device->pid);
+
+    request->data = (void *)as_map(pdevice->as, 0, 0, req->size,
+                                   AS_MAP_USER | AS_MAP_WRITE);
+
+    if (!request->data)
+    {
+        message_free(message);
+
+        return -ENOMEM;
+    }
+
+    message->mid = (message->mid & ~0xFF) | VFS_OPS_READ;
+
+    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
+        goto end;
+
+    answer = MESSAGE_EXTRACT(struct resp_rdwr, response);
+
+    if (answer->ret < 0)
+    {
+        res = answer->ret;
+
+        goto end;
+    }
+
+    res = as_copy(pdevice->as, process->as, request->data, buf, request->size);
+
+    if (res == 0)
+    {
+        res = answer->size;
+
+        req->off += answer->size;
+    }
+
+end:
+    as_unmap(pdevice->as, (vaddr_t)request->data, AS_UNMAP_RELEASE);
+    message_free(message);
+    message_free(response);
+
+    return res;
+}
+
 int device_destroy(int pid, int dev)
 {
     if (dev < 0 || dev >= VFS_MAX_DEVICE)

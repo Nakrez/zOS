@@ -5,6 +5,7 @@
 
 # include <kernel/vfs/vchannel.h>
 # include <kernel/vfs/vnode.h>
+# include <kernel/vfs/message.h>
 
 # define VFS_MAX_DEVICE 255
 
@@ -76,6 +77,7 @@ int device_send_response(int dev, uint32_t req_id, char *buf, size_t size);
 
 int device_open(int dev, ino_t inode, uint16_t uid, uint16_t gid, int flags,
                 mode_t mode);
+int device_read(int dev, struct req_rdwr *, char *buf);
 
 int device_destroy(int pid, int dev);
 
