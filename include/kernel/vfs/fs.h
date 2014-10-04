@@ -15,7 +15,7 @@ struct fs_ops {
     int (*mknod)(struct mount_entry *, const char *, ino_t, uint16_t, uint16_t,
                  mode_t, uint16_t);
     int (*mount)(struct mount_entry *, ino_t, int);
-    int (*open)(struct mount_entry *, ino_t, uint16_t, uint16_t, int, int);
+    int (*open)(struct mount_entry *, ino_t, uint16_t, uint16_t, int, mode_t);
     void (*cleanup)(void *);
 };
 

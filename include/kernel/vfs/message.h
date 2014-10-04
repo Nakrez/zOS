@@ -24,11 +24,6 @@ struct msg_response {
     int ret;
 };
 
-/* Open related message */
-struct open_msg {
-    char *path;
-};
-
 /* Read/Write related message */
 struct rdwr_msg {
     uint32_t index;
@@ -50,6 +45,8 @@ void message_free(struct message *msg);
 
 
 /* New messages */
+
+# define MESSAGE_EXTRACT(type, msg) ((type *)(msg + 1))
 
 # define RES_OK 0
 # define RES_ENTER_MOUNT 1
@@ -83,7 +80,6 @@ struct req_open {
 struct resp_open {
     int ret;
     ino_t inode;
-    int dev;
 };
 
 #endif /* !VFS_MESSAGE_H */
