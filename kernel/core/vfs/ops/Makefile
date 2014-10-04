@@ -1,6 +1,6 @@
 CURDIR := kernel/core/vfs/ops/
 
-OBJ := lookup.o mkdir.o
+OBJ := lookup.o mkdir.o mknod.o
 
 BINSUBDIRS :=
 
