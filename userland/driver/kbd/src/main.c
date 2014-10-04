@@ -14,16 +14,25 @@
 /* Kbd driver can only be opened once */
 static int kbd_opened = 0;
 
-static void kbd_open(struct driver *driver, int mid, struct open_msg *msg)
+static int kbd_open(struct driver *driver, int mid, struct req_open *request,
+                     ino_t *inode)
 {
-    (void) msg;
     (void) driver;
+    (void) request;
     (void) mid;
+
+    *inode = 0;
 
     if (!kbd_opened)
     {
         kbd_opened = 1;
+
+        return 0;
     }
+
+    /* TODO: EBUSY */
+
+    return -1;
 }
 
 static void kbd_read(struct driver *driver, int mid, struct rdwr_msg *msg)

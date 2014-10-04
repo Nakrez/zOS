@@ -5,13 +5,16 @@
 
 #include <driver/driver.h>
 
-static void driver_base_open(struct driver *driver, int mid,
-                             struct open_msg *msg)
+static int driver_base_open(struct driver *driver, int mid,
+                            struct req_open *request, ino_t *inode)
 {
-    (void) msg;
     (void) driver;
     (void) mid;
+    (void) request;
 
+    *inode = 0;
+
+    return 0;
 }
 
 static void driver_base_close(struct driver *driver, int mid,
@@ -71,7 +74,15 @@ static void dispatch(struct driver *driver, int mid, char *buf)
     switch (op)
     {
         case VFS_OPS_OPEN:
-            driver->dev_ops->open(driver, mid, (void *)buf);
+            {
+                struct resp_open response;
+
+                response.ret = driver->dev_ops->open(driver, mid, (void *)buf,
+                                                     &response.inode);
+
+                device_send_response(driver->dev_id, mid, &response,
+                                     sizeof (struct resp_open));
+            }
             break;
         case VFS_OPS_READ:
             driver->dev_ops->read(driver, mid, (void *)buf);
