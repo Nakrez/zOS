@@ -46,9 +46,15 @@ int vfs_open(const char *path, int uid, int gid, int flags, mode_t mode)
     process->files[fd].inode = ret;
 
     if (res.dev < 0)
+    {
+        process->files[fd].mount = mount_pt;
         process->files[fd].dev = mount_pt->dev;
+    }
     else
+    {
+        process->files[fd].mount = NULL;
         process->files[fd].dev = res.dev;
+    }
 
     return fd;
 }

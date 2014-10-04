@@ -2,7 +2,8 @@
 # define VFS_VFILE_H
 
 # include <kernel/types.h>
-# include <kernel/vfs/vnode.h>
+
+# include <kernel/vfs/mount.h>
 
 # define VFS_MODE_UNUSED 0
 
@@ -23,6 +24,8 @@ struct vfile {
     ino_t inode;
 
     int dev;
+
+    struct mount_entry *mount;
 };
 
 #endif /* !VFS_VFILE_H */
