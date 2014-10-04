@@ -17,5 +17,6 @@ int strcmp(const char *str1, const char *str2);
 char *strtok_r(char *str, const char *delim, char **saveptr);
 
 char *strchr(const char *s, int c);
+char *strcat(char *dest, const char *src);
 
 #endif /* !STRING_H */
