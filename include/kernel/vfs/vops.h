@@ -15,8 +15,8 @@ int vfs_lookup(const char *path, int uid, int gid, struct resp_lookup *res,
                struct mount_entry **mount_pt);
 int vfs_mkdir(const char *path, int uid, int gid, mode_t mode);
 int vfs_mknod(const char *path, int uid, int gid, mode_t mode, uint16_t dev);
+int vfs_open(const char *path, int uid, int gid, int flags, mode_t mode);
 
-int vfs_open(const char *pathname, int flags, int mode);
 int vfs_read(int fd, void *buf, size_t count);
 int vfs_write(int fd, const void *buf, size_t count);
 int vfs_close(int fd);

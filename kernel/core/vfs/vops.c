@@ -12,28 +12,6 @@
 #include <kernel/vfs/vchannel.h>
 #include <kernel/vfs/message.h>
 
-static int vfs_open_extract_channel(struct vtree_node *node,
-                                    struct vchannel **channel)
-{
-    struct vdevice *device;
-
-    if (!(node->vnode->type & VFS_TYPE_DEVICE))
-    {
-        kernel_panic("vfs_open: Need implem of open() for non device files");
-
-        return 0;
-    }
-    else
-    {
-        if (!(device = device_get(node->vnode->dev)))
-            return -ENODEV;
-
-        *channel = device->channel;
-    }
-
-    return 0;
-}
-
 static int vfs_send_recv(struct vchannel *channel, struct message *message,
                          struct message **response)
 {
@@ -54,93 +32,6 @@ static int vfs_send_recv(struct vchannel *channel, struct message *message,
         return res;
 
     return 0;
-}
-
-int vfs_open(const char *pathname, int flags, int mode)
-{
-    (void) flags;
-    (void) mode;
-
-    int res;
-    int fd;
-    struct vtree_node *node;
-    const char *remaining;
-    struct message *message = NULL;
-    struct message *response = NULL;
-    struct vchannel *channel;
-    struct process *process = thread_current()->parent;
-
-    /* Identify the node in the vtree */
-    if ((res = vtree_lookup(pathname, &remaining, &node)) < 0)
-        return res;
-
-    if (*remaining)
-        kernel_panic("vfs_open: Need implem of non populated path");
-
-    /* TODO: Check access rights */
-
-    /* Cannot open a directory */
-    if (node->vnode->type & VFS_TYPE_DIR)
-        return -EISDIR;
-
-    /* Get the communication channel for our request */
-    if ((res = vfs_open_extract_channel(node, &channel)) < 0)
-        return res;
-
-    /* Allocate a new message for the request */
-    if (!(message = message_alloc(sizeof (struct open_msg))))
-        return -ENOMEM;
-
-    /* Get a file descriptor */
-    if ((fd = process_new_fd(process)) < 0)
-    {
-        message_free(message);
-
-        return fd;
-    }
-
-    /* Message id contains the request type as well */
-    message->mid = (message->mid & ~0xFF) | VFS_OPS_OPEN;
-
-    /*
-     * TODO: Format request, only some drivers can ignore the content of the
-     * request some other need it
-     */
-
-    if ((res = vfs_send_recv(channel, message, &response)) < 0)
-    {
-        message_free(message);
-        process_free_fd(process, fd);
-
-        return res;
-    }
-
-    message_free(message);
-
-    /* Process the response */
-    struct msg_response *mresponse = (void *)(response + 1);
-
-    if (mresponse->ret)
-    {
-        process_free_fd(process, fd);
-
-        res = mresponse->ret;
-
-        message_free(response);
-
-        return res;
-    }
-
-    /* TODO: Set the rest */
-    process->files[fd].offset = 0;
-    process->files[fd].vnode = node->vnode;
-
-    ++node->vnode->ref_count;
-
-    /* Delete the response message */
-    message_free(response);
-
-    return fd;
 }
 
 static int check_fd(struct process *process, int fd, int op,

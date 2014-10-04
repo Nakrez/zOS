@@ -54,11 +54,12 @@ int sys_vfs_device_send_response(struct syscall *interface)
 int sys_vfs_open(struct syscall *interface)
 {
     /* FIXME: Check pathname */
+    struct thread *thread = thread_current();
     const char *pathname = (void *)interface->arg1;
     int flags = interface->arg2;
     int mode = interface->arg3;
 
-    return vfs_open(pathname, flags, mode);
+    return vfs_open(pathname, thread->uid, thread->gid, flags, mode);
 }
 
 int sys_vfs_read(struct syscall *interface)
