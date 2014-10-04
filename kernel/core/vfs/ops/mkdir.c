@@ -9,10 +9,10 @@ int vfs_mkdir(const char *path, int uid, int gid, mode_t mode)
 {
     int ret;
     int path_size = strlen(path);
-    ino_t inode;
+    struct resp_lookup res;
     struct mount_entry *mount_pt;
 
-    if ((ret = vfs_lookup(path, uid, gid, &inode, &mount_pt)) < 0)
+    if ((ret = vfs_lookup(path, uid, gid, &res, &mount_pt)) < 0)
         return ret;
 
     if (!mount_pt->ops->mkdir)
@@ -21,5 +21,6 @@ int vfs_mkdir(const char *path, int uid, int gid, mode_t mode)
     if (ret == path_size)
         return -EEXIST;
 
-    return mount_pt->ops->mkdir(mount_pt, path + ret, inode, uid, gid, mode);
+    return mount_pt->ops->mkdir(mount_pt, path + ret, res.inode, uid, gid,
+                                mode);
 }

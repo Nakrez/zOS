@@ -74,12 +74,12 @@ static int do_mount(const char *mount_path, int mount_pt_nb)
 {
     int ret;
     int path_size;
-    ino_t inode;
+    struct resp_lookup res;
     struct mount_entry *mount_pt;
 
     path_size = strlen(mount_path);
 
-    ret = vfs_lookup(mount_path, 0, 0, &inode, &mount_pt);
+    ret = vfs_lookup(mount_path, 0, 0, &res, &mount_pt);
 
     if (!mount_pt->ops->mount)
         return -ENOSYS;
@@ -91,9 +91,9 @@ static int do_mount(const char *mount_path, int mount_pt_nb)
         return -ENOENT;
 
     if (!strcmp(mount_pt->path, "/"))
-        return mount_pt->ops->mount(mount_pt, inode, mount_pt_nb);
+        return mount_pt->ops->mount(mount_pt, res.inode, mount_pt_nb);
     else
-        return mount_pt->ops->mount(mount_pt, inode, mount_pt_nb);
+        return mount_pt->ops->mount(mount_pt, res.inode, mount_pt_nb);
 }
 
 int vfs_mount(const char *mount_path, int dev)

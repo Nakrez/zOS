@@ -3,13 +3,15 @@
 
 # include <kernel/types.h>
 
+# include <kernel/vfs/message.h>
+
 # define VFS_SEEK_SET (1 << 0)
 # define VFS_SEEK_CUR (1 << 1)
 # define VFS_SEEK_END (1 << 2)
 
 struct mount_entry;
 
-int vfs_lookup(const char *path, int uid, int gid, ino_t *inode,
+int vfs_lookup(const char *path, int uid, int gid, struct resp_lookup *res,
                struct mount_entry **mount_pt);
 int vfs_mkdir(const char *path, int uid, int gid, mode_t mode);
 int vfs_mknod(const char *path, int uid, int gid, mode_t mode, uint16_t dev);
