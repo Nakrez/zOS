@@ -132,9 +132,6 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
 static int tmpfs_mkdir(struct mount_entry *root, const char *path, ino_t inode,
                        uint16_t uid, uint16_t gid, mode_t mode)
 {
-    (void)uid;
-    (void)gid;
-
     struct tmpfs_root *sb = root->private;
     struct tmpfs_node *new_node;
 
@@ -176,6 +173,49 @@ static int tmpfs_mkdir(struct mount_entry *root, const char *path, ino_t inode,
     return 0;
 }
 
+static int tmpfs_mknod(struct mount_entry *root, const char *path, ino_t inode,
+                       uint16_t uid, uint16_t gid, mode_t mode, uint16_t dev)
+{
+    struct tmpfs_root *sb = root->private;
+    struct tmpfs_node *new_node;
+
+    if (!*path)
+        return -EEXIST;
+
+    if (strchr(path, '/'))
+        return -ENOENT;
+
+    if (!(new_node = kmalloc(sizeof (struct tmpfs_node))))
+        return -ENOMEM;
+
+    if (!(new_node->name = kmalloc(strlen(path) + 1)))
+    {
+        kfree(new_node);
+
+        return -ENOMEM;
+    }
+
+    strcpy(new_node->name, path);
+
+    new_node->inode = sb->inode_current++;
+    new_node->type = TMPFS_TYPE_DEV;
+    new_node->uid = uid;
+    new_node->gid = gid;
+    new_node->perm = mode;
+    new_node->dev = dev;
+    new_node->content = NULL;
+
+    klist_head_init(&new_node->sons);
+
+    sb->inode_table[new_node->inode] = new_node;
+
+    if (inode == 0)
+        klist_add(&sb->root_sons, &new_node->brothers);
+    else
+        klist_add(&sb->inode_table[inode]->sons, &new_node->brothers);
+    return 0;
+}
+
 static int tmpfs_mount(struct mount_entry *root, ino_t inode, int mount_pt_nb)
 {
     struct tmpfs_root *sb = root->private;
@@ -212,6 +252,7 @@ struct fs_ops tmpfs_ops = {
     .init = tmpfs_initialize,
     .lookup = tmpfs_lookup,
     .mkdir = tmpfs_mkdir,
+    .mknod = tmpfs_mknod,
     .mount = tmpfs_mount,
     .open = tmpfs_open,
     .cleanup = tmpfs_cleanup,
