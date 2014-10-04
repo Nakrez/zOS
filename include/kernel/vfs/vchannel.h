@@ -11,6 +11,8 @@ struct msg_list
 {
     struct message *msg;
 
+    uint32_t req_id;
+
     struct klist list;
 };
 
@@ -56,7 +58,8 @@ int channel_recv_request(struct vchannel *chan, char *buf, size_t size);
  *          0: Success
  *          -ENOMEM: Cannot allocate necessary memory
  */
-int channel_send_response(struct vchannel *chan, struct message *msg);
+int channel_send_response(struct vchannel *chan, uint32_t req_id,
+                          struct message *msg);
 
 /*
  * Receive a response to a request

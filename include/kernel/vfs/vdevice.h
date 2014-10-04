@@ -37,7 +37,7 @@ int device_recv_request(int dev, char *buf, size_t size);
  *          -ENODEV: Device id does not belong to an active device
  *          -ENOMEM: Cannot allocate necessary memory
  */
-int device_send_response(int dev, char *buf, size_t size);
+int device_send_response(int dev, uint32_t req_id, char *buf, size_t size);
 
 int device_destroy(int pid, int dev);
 

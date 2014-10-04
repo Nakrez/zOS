@@ -41,13 +41,14 @@ int sys_vfs_device_send_response(struct syscall *interface)
 {
     /* FIXME: Check buf */
     int dev = interface->arg1;
-    char *buf = (void *)interface->arg2;
-    size_t size = interface->arg3;
+    uint32_t req_id = interface->arg2;
+    char *buf = (void *)interface->arg3;
+    size_t size = interface->arg4;
 
     if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf, size))
         return -EFAULT;
 
-    return device_send_response(dev, buf, size);
+    return device_send_response(dev, req_id, buf, size);
 }
 
 int sys_vfs_open(struct syscall *interface)

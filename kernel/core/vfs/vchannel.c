@@ -103,14 +103,15 @@ int channel_recv_request(struct vchannel *chan, char *buf, size_t size)
     return -ENODATA;
 }
 
-int channel_send_response(struct vchannel *chan, struct message *msg)
+int channel_send_response(struct vchannel *chan, uint32_t req_id,
+                          struct message *msg)
 {
-    uint32_t req_id = ((struct msg_response *)(msg + 1))->req_id;
     struct msg_list *list;
 
     if (!(list = kmalloc(sizeof (struct msg_list))))
         return -ENOMEM;
 
+    list->req_id = req_id;
     list->msg = msg;
 
     spinlock_lock(&chan->outbox_lock);
@@ -132,7 +133,7 @@ static int outbox_msg_pop(struct klist *outbox_head, uint32_t req_id,
     {
         struct msg_list *list = klist_elem(mlist, struct msg_list, list);
 
-        if (((struct msg_response *)(list->msg + 1))->req_id == req_id)
+        if (list->req_id == req_id)
         {
             klist_del(&list->list);
 

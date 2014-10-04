@@ -106,7 +106,7 @@ int device_recv_request(int dev, char *buf, size_t size)
     return channel_recv_request(devices[dev].channel, buf, size);
 }
 
-int device_send_response(int dev, char *buf, size_t size)
+int device_send_response(int dev, uint32_t req_id, char *buf, size_t size)
 {
     int res;
     int pid = thread_current()->parent->pid;
