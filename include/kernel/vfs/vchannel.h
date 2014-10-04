@@ -68,6 +68,10 @@ int channel_send_response(struct vchannel *chan, struct message *msg);
 int channel_recv_response(struct vchannel *chan, uint32_t req_id,
                           struct message **msg);
 
+/* Send a request to a channel and wait for response */
+int channel_send_recv(struct vchannel *channel, struct message *message,
+                      struct message **response);
+
 /*
  * Destroy a channel
  */

@@ -160,21 +160,25 @@ int channel_recv_response(struct vchannel *chan, uint32_t req_id,
         return 0;
     }
 
-    thread_block(thread_current(), SCHED_EV_RESP, req_id, &chan->outbox_lock);
-
-    spinlock_lock(&chan->outbox_lock);
-
-    if (!klist_empty(&chan->outbox) &&
-        outbox_msg_pop(&chan->outbox, req_id, msg))
-    {
-        spinlock_unlock(&chan->outbox_lock);
-
-        return 0;
-    }
-
-    spinlock_unlock(&chan->outbox_lock);
-
     return -ENODATA;
+}
+
+int channel_send_recv(struct vchannel *channel, struct message *message,
+                      struct message **response)
+{
+    int res;
+
+    if ((res = channel_send_request(channel, message)) < 0)
+        return res;
+
+    /* Block the current thread until we have our answer */
+    thread_block(thread_current(), SCHED_EV_RESP, message->mid, NULL);
+
+    /* Get our response, thanks to the request id saved */
+    if ((res = channel_recv_response(channel, message->mid, response)) < 0)
+        return res;
+
+    return 0;
 }
 
 void channel_destroy(struct vchannel *chan)
