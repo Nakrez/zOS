@@ -151,8 +151,8 @@ static int check_fd(struct process *process, int fd, int op,
     if (!process->files[fd].used)
         return -EBADF;
 
-    if (!(device = device_get(process->files[fd].vnode->dev)))
-        return -ENODEV;
+    /* if (!(device = device_get(process->files[fd].vnode->dev))) */
+    /*     return -ENODEV; */
 
     if (!(device->ops & op))
         return -EINVAL;
@@ -181,7 +181,7 @@ int vfs_read(int fd, void *buf, size_t count)
     request = (void *)(message + 1);
 
     /* This index has been returned by open and only matters to filesystem */
-    request->index = process->files[fd].vnode->index;
+    /* request->index = process->files[fd].vnode->index; */
     request->size = count;
     request->off = process->files[fd].offset;
 
@@ -246,7 +246,7 @@ int vfs_write(int fd, const void *buf, size_t count)
     request = (void *)(message + 1);
 
     /* This index has been returned by open and only matters to filesystem */
-    request->index = process->files[fd].vnode->index;
+    /* request->index = process->files[fd].vnode->index; */
     request->size = count;
     request->off = process->files[fd].offset;
 
@@ -305,7 +305,7 @@ int vfs_close(int fd)
 
     request = (void *)(message + 1);
 
-    request->index = process->files[fd].vnode->index;
+    /* request->index = process->files[fd].vnode->index; */
 
     message->mid = (message->mid & ~0xFF) | VFS_OPS_CLOSE;
 

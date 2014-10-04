@@ -213,8 +213,8 @@ int process_fork(struct process *process, struct irq_regs *regs)
     /* Increase reference count on vnode associated to open file descriptors */
     for (int i = 0; i < PROCESS_MAX_OPEN_FD; ++i)
     {
-        if (child->files[i].mode != VFS_MODE_UNUSED)
-            ++child->files[i].vnode->ref_count;
+        /* if (child->files[i].mode != VFS_MODE_UNUSED) */
+        /*     ++child->files[i].vnode->ref_count; */
     }
 
     klist_add(&processes, &child->list);

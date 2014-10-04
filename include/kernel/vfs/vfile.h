@@ -20,8 +20,9 @@ struct vfile {
     /* Current offset in the file */
     size_t offset;
 
-    /* Associated vnode */
-    struct vnode *vnode;
+    ino_t inode;
+
+    int dev;
 };
 
 #endif /* !VFS_VFILE_H */
