@@ -82,4 +82,20 @@ struct resp_open {
     ino_t inode;
 };
 
+struct req_rdwr {
+    ino_t inode;
+
+    size_t size;
+
+    size_t off;
+
+    void *data;
+};
+
+struct resp_rdwr {
+    int ret;
+
+    size_t size;
+};
+
 #endif /* !VFS_MESSAGE_H */
