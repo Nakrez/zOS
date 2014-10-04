@@ -13,8 +13,8 @@
 # define ALIGN_SUP(a, b) ((a + b - 1) & (~(b - 1)))
 # define ALIGN_INF(a, b) (a % b ? ALIGN_SUP(a, b) - b : a)
 
-static size_t read_with_offset(struct driver *driver, int mid,
-                               struct rdwr_msg *msg, uint64_t *lba)
+static int read_with_offset(struct driver *driver, struct req_rdwr *msg,
+                            uint64_t *lba, size_t *read)
 {
     char buf[ATA_SECTOR_SIZE];
     size_t read_size = 0;
@@ -22,34 +22,30 @@ static size_t read_with_offset(struct driver *driver, int mid,
     struct ide_device *device = private_data->device;
 
     if (!ata_rdwr(device, ATA_OP_READ, *lba, buf, ATA_SECTOR_SIZE, 1))
-    {
-        driver_send_response(driver, mid, -1);
-
         return 0;
-    }
 
     read_size = (ATA_SECTOR_SIZE - msg->off % ATA_SECTOR_SIZE);
 
     memcpy(msg->data, buf + ATA_SECTOR_SIZE - read_size,
            MIN(read_size, msg->size));
 
-    if (read_size >= msg->size)
-    {
-        driver_send_response(driver, mid, msg->size);
+    *read = msg->size;
 
+    if (read_size >= msg->size)
         return 0;
-    }
+
+    *read = read_size;
 
     msg->data += read_size;
     msg->size -= read_size;
 
     ++(*lba);
 
-    return read_size;
+    return 1;
 }
 
-static size_t read_blocks(struct driver *driver, struct rdwr_msg *msg,
-                          uint64_t *lba)
+static int read_blocks(struct driver *driver, struct req_rdwr *msg,
+                       uint64_t *lba, size_t *read)
 {
     size_t read_size;
     struct ata_private *private_data = driver->private;
@@ -64,14 +60,15 @@ static size_t read_blocks(struct driver *driver, struct rdwr_msg *msg,
     msg->size -= read_size;
     msg->data += read_size;
 
-    return read_size;
+    *read += read_size;
+
+    return 1;
 }
 
-static size_t read_end(struct driver *driver, struct rdwr_msg *msg,
-                       uint64_t lba)
+static int read_end(struct driver *driver, struct req_rdwr *msg, uint64_t lba,
+                    size_t *read)
 {
     char buf[ATA_SECTOR_SIZE];
-    size_t read_size;
     struct ata_private *private_data = driver->private;
     struct ide_device *device = private_data->device;
 
@@ -79,14 +76,16 @@ static size_t read_end(struct driver *driver, struct rdwr_msg *msg,
         return 0;
 
     memcpy(msg->data, buf, msg->size);
-    read_size = msg->size;
+    *read += msg->size;
 
-    return read_size;
+    return 1;
 }
 
-static void ata_global_read(struct driver *driver, int mid,
-                            struct rdwr_msg *msg)
+static int ata_global_read(struct driver *driver, int mid,
+                           struct req_rdwr *msg, size_t *size_read)
 {
+    (void) mid;
+
     size_t read_size = 0;
     size_t ret;
     struct ata_private *private_data = driver->private;
@@ -98,7 +97,7 @@ static void ata_global_read(struct driver *driver, int mid,
         lba = private_data->device->partitions[private_data->partition].start;
 
     if (private_data->device->infos.configuration.is_atapi)
-        driver_send_response(driver, mid, -1);
+        return -1;
     else
     {
         lba += msg->off / ATA_SECTOR_SIZE;
@@ -109,40 +108,38 @@ static void ata_global_read(struct driver *driver, int mid,
          */
         if (msg->off % ATA_SECTOR_SIZE)
         {
-            if (!(ret = read_with_offset(driver, mid, msg, &lba)))
-                return;
-
-            read_size += ret;
+            if (!(ret = read_with_offset(driver, msg, &lba, &read_size)))
+                goto error;
         }
 
         /* Read blocks directly in the buffer */
         if (msg->size / ATA_SECTOR_SIZE > 0)
         {
-            if (!(ret = read_blocks(driver, msg, &lba)))
+            if (!(ret = read_blocks(driver, msg, &lba, &read_size)))
                 goto error;
-
-            read_size += ret;
         }
 
         /* Data left to read but < ATA_SECTOR_SIZE */
         if (msg->size % ATA_SECTOR_SIZE)
         {
-            if (!(ret = read_end(driver, msg, lba)))
+            if (!(ret = read_end(driver, msg, lba, &read_size)))
                 goto error;
-
-            read_size += ret;
         }
 
-        driver_send_response(driver, mid, read_size);
+        *size_read = read_size;
     }
 
-    return;
+    return 0;
 
 error:
     if (read_size)
-        driver_send_response(driver, mid, read_size);
-    else
-        driver_send_response(driver, mid, -1);
+    {
+        *size_read = read_size;
+
+        return 0;
+    }
+
+    return -1;
 }
 
 static struct driver_ops ata_ops = {

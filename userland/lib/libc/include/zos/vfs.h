@@ -62,6 +62,22 @@ struct req_open {
 struct resp_open {
     int ret;
     ino_t inode;
-};;
+};
+
+struct req_rdwr {
+    ino_t inode;
+
+    size_t size;
+
+    size_t off;
+
+    void *data;
+};
+
+struct resp_rdwr {
+    int ret;
+
+    size_t size;
+};
 
 #endif /* !ZOS_VFS_H */

@@ -35,17 +35,17 @@ static int kbd_open(struct driver *driver, int mid, struct req_open *request,
     return -1;
 }
 
-static void kbd_read(struct driver *driver, int mid, struct rdwr_msg *msg)
+static int kbd_read(struct driver *driver, int mid, struct req_rdwr *msg,
+                    size_t *size_read)
 {
+    (void) driver;
+    (void) mid;
+
     struct input_event result;
 
+    /* TODO: EINVAL */
     if (msg->size < sizeof (struct input_event))
-    {
-        /* TODO: EINVAL */
-        driver_send_response(driver, mid, -1);
-
-        return;
-    }
+        return -1;
 
     while (buffer_empty())
         ;
@@ -54,7 +54,9 @@ static void kbd_read(struct driver *driver, int mid, struct rdwr_msg *msg)
 
     memcpy(msg->data, &result, sizeof (struct input_event));
 
-    driver_send_response(driver, mid, sizeof (struct input_event));
+    *size_read = sizeof (struct input_event);
+
+    return 0;
 }
 
 static void kbd_close(struct driver *driver, int mid, struct close_msg *msg)
