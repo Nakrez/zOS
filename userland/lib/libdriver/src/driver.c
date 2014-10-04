@@ -9,8 +9,9 @@ static void driver_base_open(struct driver *driver, int mid,
                              struct open_msg *msg)
 {
     (void) msg;
+    (void) driver;
+    (void) mid;
 
-    driver_send_response(driver, mid, 0);
 }
 
 static void driver_base_close(struct driver *driver, int mid,
@@ -110,13 +111,16 @@ int driver_loop(struct driver *driver)
 
 int driver_send_response(struct driver *driver, int mid, int ret)
 {
-    struct msg_response resp;
-
-    resp.req_id = mid;
-    resp.ret = ret;
-
-    if (device_send_response(driver->dev_id, (void *)&resp, sizeof (resp)) < 0)
-        return -1;
+    (void) driver;
+    (void) mid;
+    (void) ret;
+    /* struct msg_response resp; */
+    /*  */
+    /* resp.req_id = mid; */
+    /* resp.ret = ret; */
+    /*  */
+    /* if (device_send_response(driver->dev_id, (void *)&resp, sizeof (resp)) < 0) */
+    /*     return -1; */
 
     return 0;
 }

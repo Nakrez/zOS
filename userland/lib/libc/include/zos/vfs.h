@@ -2,6 +2,7 @@
 # define ZOS_VFS_H
 
 # include <stdint.h>
+# include <sys/types.h>
 
 # define VFS_OPS_OPEN (1 << 0)
 # define VFS_OPS_READ (1 << 1)
@@ -32,5 +33,35 @@ struct rdwr_msg {
 struct close_msg {
     uint32_t index;
 };
+
+/* Lookup request */
+struct req_lookup {
+    char *path;
+    uint16_t path_size;
+    uint16_t uid;
+    uint16_t gid;
+};
+
+struct resp_lookup {
+    int ret;
+    ino_t inode;
+    int processed;
+    int dev;
+};
+
+/* Open request */
+struct req_open {
+    ino_t inode;
+    uint16_t uid;
+    uint16_t gid;
+    int flags;
+    int mode;
+};
+
+/* Open response */
+struct resp_open {
+    int ret;
+    ino_t inode;
+};;
 
 #endif /* !ZOS_VFS_H */

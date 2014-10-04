@@ -17,15 +17,13 @@ static int kbd_opened = 0;
 static void kbd_open(struct driver *driver, int mid, struct open_msg *msg)
 {
     (void) msg;
+    (void) driver;
+    (void) mid;
 
     if (!kbd_opened)
     {
-        driver_send_response(driver, mid, 0);
         kbd_opened = 1;
     }
-    else
-        /* TODO: EBUSY */
-        driver_send_response(driver, mid, -1);
 }
 
 static void kbd_read(struct driver *driver, int mid, struct rdwr_msg *msg)
