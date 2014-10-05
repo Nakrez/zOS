@@ -17,6 +17,7 @@ struct fs_ops {
     int (*mount)(struct mount_entry *, ino_t, int);
     int (*open)(struct mount_entry *, ino_t, uint16_t, uint16_t, int, mode_t);
     int (*read)(struct mount_entry *, struct req_rdwr *, void *buf);
+    int (*close)(struct mount_entry *, ino_t);
     void (*cleanup)(void *);
 };
 

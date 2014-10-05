@@ -82,6 +82,7 @@ struct resp_open {
     ino_t inode;
 };
 
+/* Read/Write request */
 struct req_rdwr {
     ino_t inode;
 
@@ -92,10 +93,21 @@ struct req_rdwr {
     void *data;
 };
 
+/* Read/Write response */
 struct resp_rdwr {
     int ret;
 
     size_t size;
+};
+
+/* Close request */
+struct req_close {
+    ino_t inode;
+};
+
+/* Close response */
+struct resp_close {
+    int ret;
 };
 
 #endif /* !VFS_MESSAGE_H */
