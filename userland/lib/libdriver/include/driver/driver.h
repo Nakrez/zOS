@@ -21,7 +21,7 @@ struct driver {
 struct driver_ops {
     int (*open)(struct driver *, int, struct req_open *, ino_t *);
     int (*read)(struct driver *, int, struct req_rdwr *, size_t *);
-    void (*write)(struct driver *, int, struct rdwr_msg *);
+    int (*write)(struct driver *, int, struct rdwr_msg *, size_t *);
     int (*close)(struct driver *, int, struct req_close *);
 };
 

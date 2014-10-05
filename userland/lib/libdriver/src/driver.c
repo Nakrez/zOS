@@ -98,7 +98,15 @@ static void dispatch(struct driver *driver, int mid, char *buf)
             }
             break;
         case VFS_OPS_WRITE:
-            driver->dev_ops->write(driver, mid, (void *)buf);
+            {
+                struct resp_rdwr response;
+
+                response.ret = driver->dev_ops->write(driver, mid, (void *)buf,
+                                                      &response.size);
+
+                device_send_response(driver->dev_id, mid, &response,
+                                     sizeof (struct resp_rdwr));
+            }
             break;
         case VFS_OPS_CLOSE:
             {
