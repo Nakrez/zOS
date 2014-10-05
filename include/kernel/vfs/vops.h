@@ -17,9 +17,9 @@ int vfs_mkdir(const char *path, int uid, int gid, mode_t mode);
 int vfs_mknod(const char *path, int uid, int gid, mode_t mode, uint16_t dev);
 int vfs_open(const char *path, int uid, int gid, int flags, mode_t mode);
 int vfs_read(int fd, void *buf, size_t count);
+int vfs_close(int fd);
 int vfs_lseek(int fd, int offset, int whence);
 
 int vfs_write(int fd, const void *buf, size_t count);
-int vfs_close(int fd);
 
 #endif /* !VFS_VOPS_H */
