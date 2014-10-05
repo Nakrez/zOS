@@ -256,6 +256,44 @@ end:
     return res;
 }
 
+int device_close(int dev, ino_t inode)
+{
+    int res;
+    struct vdevice *device;
+    struct message *message;
+    struct message *response;
+    struct req_close *request;
+    struct resp_close *answer;
+
+    if (!(device = device_get(dev)))
+        return -ENODEV;
+
+    if (!(message = message_alloc(sizeof (struct req_close))))
+        return -ENOMEM;
+
+    request = MESSAGE_EXTRACT(struct req_close, message);
+
+    request->inode = inode;
+
+    message->mid = (message->mid & ~0xFF) | VFS_OPS_CLOSE;
+
+    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
+    {
+        message_free(message);
+
+        return res;
+    }
+
+    answer = MESSAGE_EXTRACT(struct resp_close, message);
+
+    res = answer->ret;
+
+    message_free(message);
+    message_free(response);
+
+    return res;
+}
+
 int device_destroy(int pid, int dev)
 {
     if (dev < 0 || dev >= VFS_MAX_DEVICE)
