@@ -2,6 +2,7 @@
 
 #include <kernel/errno.h>
 #include <kernel/thread.h>
+#include <kernel/panic.h>
 
 #include <kernel/vfs/vops.h>
 #include <kernel/vfs/fs.h>
