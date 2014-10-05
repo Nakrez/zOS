@@ -59,13 +59,15 @@ static int kbd_read(struct driver *driver, int mid, struct req_rdwr *msg,
     return 0;
 }
 
-static void kbd_close(struct driver *driver, int mid, struct close_msg *msg)
+static int kbd_close(struct driver *driver, int mid, struct req_close *msg)
 {
+    (void) driver;
+    (void) mid;
     (void) msg;
 
     kbd_opened = 0;
 
-    driver_send_response(driver, mid, 0);
+    return 0;
 }
 
 static struct driver_ops kbd_ops = {

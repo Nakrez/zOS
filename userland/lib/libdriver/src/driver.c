@@ -17,12 +17,14 @@ static int driver_base_open(struct driver *driver, int mid,
     return 0;
 }
 
-static void driver_base_close(struct driver *driver, int mid,
-                              struct close_msg *msg)
+static int driver_base_close(struct driver *driver, int mid,
+                             struct req_close *request)
 {
-    (void) msg;
+    (void) driver;
+    (void) mid;
+    (void) request;
 
-    driver_send_response(driver, mid, 0);
+    return 0;
 }
 
 int driver_create(const char *dev_name, int uid, int gid, int perm,
@@ -99,7 +101,15 @@ static void dispatch(struct driver *driver, int mid, char *buf)
             driver->dev_ops->write(driver, mid, (void *)buf);
             break;
         case VFS_OPS_CLOSE:
-            driver->dev_ops->close(driver, mid, (void *)buf);
+            {
+                struct resp_close response;
+
+                response.ret = driver->dev_ops->close(driver, mid,
+                                                      (void *)buf);
+
+                device_send_response(driver->dev_id, mid, &response,
+                                     sizeof (struct resp_close));
+            }
             break;
     }
 }
