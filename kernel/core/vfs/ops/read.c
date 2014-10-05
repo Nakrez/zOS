@@ -4,6 +4,7 @@
 #include <kernel/thread.h>
 
 #include <kernel/vfs/vops.h>
+#include <kernel/vfs/vfs.h>
 #include <kernel/vfs/fs.h>
 #include <kernel/vfs/vdevice.h>
 
@@ -21,7 +22,7 @@ int vfs_read(int fd, void *buf, size_t count)
     request.off = p->files[fd].offset;
 
     if (p->files[fd].dev >= 0)
-        ret = device_read(p->files[fd].dev, &request, buf);
+        ret = device_read_write(p->files[fd].dev, &request, buf, VFS_OPS_READ);
     else
     {
         if (!p->files[fd].mount->ops->read)

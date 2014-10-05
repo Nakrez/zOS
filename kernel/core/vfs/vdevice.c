@@ -187,21 +187,21 @@ int device_open(int dev, ino_t inode, uint16_t uid, uint16_t gid, int flags,
     return ret;
 }
 
-int device_read(int dev, struct req_rdwr *req, char *buf)
+int device_read_write(int dev, struct req_rdwr *req, char *buf, int op)
 {
     int res;
     struct vdevice *device;
     struct process *pdevice;
-    struct message *message;
+    struct message *message = NULL;
     struct req_rdwr *request;
-    struct message *response;
+    struct message *response = NULL;
     struct resp_rdwr *answer;
     struct process *process = thread_current()->parent;
 
     if (!(device = device_get(dev)))
         return -ENODEV;
 
-    if (!(device->ops & VFS_OPS_READ))
+    if (!(device->ops & op))
         return -ENOSYS;
 
     if (!(message = message_alloc(sizeof (struct rdwr_msg))))
@@ -225,7 +225,16 @@ int device_read(int dev, struct req_rdwr *req, char *buf)
         return -ENOMEM;
     }
 
-    message->mid = (message->mid & ~0xFF) | VFS_OPS_READ;
+    if (op & VFS_OPS_WRITE)
+    {
+        res = as_copy(process->as, pdevice->as, buf, request->data,
+                      request->size);
+
+        if (res < 0)
+            goto end;
+    }
+
+    message->mid = (message->mid & ~0xFF) | op;
 
     if ((res = channel_send_recv(device->channel, message, &response)) < 0)
         goto end;
@@ -239,7 +248,9 @@ int device_read(int dev, struct req_rdwr *req, char *buf)
         goto end;
     }
 
-    res = as_copy(pdevice->as, process->as, request->data, buf, request->size);
+    if (op & VFS_OPS_READ)
+        res = as_copy(pdevice->as, process->as, request->data, buf,
+                      request->size);
 
     if (res == 0)
     {
