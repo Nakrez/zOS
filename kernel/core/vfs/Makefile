@@ -1,7 +1,6 @@
 CURDIR := kernel/core/vfs/
 
-OBJ := vfs.o vnode.o path_tree.o vchannel.o vdevice.o message.o mount.o fs.o \
-		tmpfs.o
+OBJ := vfs.o vchannel.o vdevice.o message.o mount.o fs.o tmpfs.o
 
 BINSUBDIRS := ops/
 

@@ -204,7 +204,7 @@ int device_read_write(int dev, struct req_rdwr *req, char *buf, int op)
     if (!(device->ops & op))
         return -ENOSYS;
 
-    if (!(message = message_alloc(sizeof (struct rdwr_msg))))
+    if (!(message = message_alloc(sizeof (struct req_rdwr))))
         return -ENOMEM;
 
     request = MESSAGE_EXTRACT(struct req_rdwr, message);

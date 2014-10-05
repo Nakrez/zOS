@@ -8,7 +8,6 @@
 #include <kernel/vfs/vfs.h>
 #include <kernel/vfs/vops.h>
 #include <kernel/vfs/vdevice.h>
-#include <kernel/vfs/path_tree.h>
 #include <kernel/vfs/fs.h>
 #include <kernel/vfs/tmpfs.h>
 #include <kernel/vfs/mount.h>

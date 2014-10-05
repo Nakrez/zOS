@@ -4,7 +4,6 @@
 # include <kernel/zos.h>
 
 # include <kernel/vfs/vchannel.h>
-# include <kernel/vfs/vnode.h>
 # include <kernel/vfs/message.h>
 
 # define VFS_MAX_DEVICE 255
@@ -19,8 +18,6 @@ struct vdevice {
     int pid;
 
     int ops;
-
-    struct vnode *node;
 
     struct vchannel *channel;
 };

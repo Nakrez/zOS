@@ -4,6 +4,15 @@
 # include <kernel/types.h>
 # include <kernel/klist.h>
 
+# define MESSAGE_EXTRACT(type, msg) ((type *)(msg + 1))
+
+# define RES_OK 0
+# define RES_ENTER_MOUNT 1
+# define RES_KO 2
+
+struct message *message_alloc(size_t size);
+void message_free(struct message *msg);
+
 struct free_msg {
     struct message *msg;
 
@@ -17,40 +26,6 @@ struct message {
 
     size_t max_size;
 };
-
-struct msg_response {
-    uint32_t req_id;
-
-    int ret;
-};
-
-/* Read/Write related message */
-struct rdwr_msg {
-    uint32_t index;
-
-    size_t size;
-
-    size_t off;
-
-    void *data;
-};
-
-/* Close related message */
-struct close_msg {
-    uint32_t index;
-};
-
-struct message *message_alloc(size_t size);
-void message_free(struct message *msg);
-
-
-/* New messages */
-
-# define MESSAGE_EXTRACT(type, msg) ((type *)(msg + 1))
-
-# define RES_OK 0
-# define RES_ENTER_MOUNT 1
-# define RES_KO 2
 
 /* Lookup request */
 struct req_lookup {

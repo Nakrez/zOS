@@ -6,17 +6,12 @@
 #include <kernel/vfs/vfs.h>
 #include <kernel/vfs/tmpfs.h>
 #include <kernel/vfs/vops.h>
-#include <kernel/vfs/path_tree.h>
 #include <kernel/vfs/vdevice.h>
-#include <kernel/vfs/vnode.h>
 
 #include <kernel/kmalloc.h>
 
 int vfs_initialize(void)
 {
-    if (vtree_initialize())
-        return -1;
-
     if (vfs_mount("/", TMPFS_DEV_ID) < 0)
     {
         console_message(T_ERR, "Fail to mount tmpfs on /");
