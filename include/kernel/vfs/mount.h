@@ -15,7 +15,7 @@ struct mount_entry {
     void *private;
 };
 
-int vfs_mount(const char *mount_path, int dev);
+int vfs_mount(int dev, const char *mount_path);
 struct mount_entry *vfs_root_get(void);
 struct mount_entry *vfs_mount_pt_get(const char *path);
 

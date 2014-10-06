@@ -12,7 +12,7 @@
 
 int vfs_initialize(void)
 {
-    if (vfs_mount("/", TMPFS_DEV_ID) < 0)
+    if (vfs_mount(TMPFS_DEV_ID, "/") < 0)
     {
         console_message(T_ERR, "Fail to mount tmpfs on /");
 
@@ -28,7 +28,7 @@ int vfs_initialize(void)
         return -1;
     }
 
-    if (vfs_mount("/dev", TMPFS_DEV_ID) < 0)
+    if (vfs_mount(TMPFS_DEV_ID, "/dev") < 0)
     {
         console_message(T_ERR, "Fail to mount tmpfs on /dev");
 
