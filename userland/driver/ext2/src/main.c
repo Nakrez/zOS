@@ -1,9 +1,49 @@
 #include <zos/print.h>
 
+#include <fiu/fiu.h>
+
 #include "fs.h"
+
+static void ext2_root_remount(struct req_root_remount *req)
+{
+    (void) req;
+}
+
+static int ext2_lookup(struct req_lookup *req, struct resp_lookup *response)
+{
+    (void) req;
+    (void) response;
+
+    return 0;
+}
+
+static int ext2_open(struct req_open *req, struct resp_open *response)
+{
+    (void) req;
+    (void) response;
+
+    return 0;
+}
+
+static int ext2_close(struct req_close *req)
+{
+    (void) req;
+
+    return 0;
+}
+
+static struct fiu_ops ext2_ops = {
+    .root_remount = ext2_root_remount,
+    .lookup = ext2_lookup,
+    .open = ext2_open,
+    .close = ext2_close,
+};
 
 int main(void)
 {
+    int ret;
+    struct fiu_internal fiu;
+
     if (!ext2fs_initialize("/dev/ata-disk0"))
     {
         uprint("EXT2: an error occured in initialization. Bye!");
@@ -11,7 +51,25 @@ int main(void)
         return 1;
     }
 
-    uprint("EXT2: ready");
+    ret = fiu_create("ext2-ata-disk0", 0, 0, 0755, &ext2_ops, &fiu);
 
-    return 0;
+    if (ret < 0)
+    {
+        uprint("EXT2: fiu_create() failed");
+
+        return 1;
+    }
+
+    uprint("EXT2: Mounting /dev/ata-disk0 on /");
+
+    ret = fiu_main(&fiu, "/");
+
+    if (ret < 0)
+    {
+        uprint("EXT2: fiu_main() failed");
+
+        return 1;
+    }
+
+    return ret;
 }
