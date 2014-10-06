@@ -14,6 +14,16 @@
 # define VFS_OPS_MKDIR (1 << 7)
 # define VFS_OPS_MKNOD (1 << 8)
 
+/*
+ * Special request emitted by the kernel when remounting root with userland
+ * file system driver
+ */
+struct req_root_remount {
+    int mount_pt;
+
+    char path[100];
+};
+
 /* Lookup request */
 struct req_lookup {
     char *path;
