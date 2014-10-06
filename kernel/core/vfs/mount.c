@@ -47,7 +47,7 @@ static int vfs_check_mount_pts(int dev, const char *mount_path)
             /* Remounting root with regular fs when its tmpfs is allowed */
             if (dev != -1 && mount_points[i].dev == -1
                 && !strcmp(mount_path, "/"))
-                continue;
+                return 0;
 
             spinlock_unlock(&mount_lock);
 
@@ -89,13 +89,35 @@ static int do_mount(const char *mount_path, int mount_pt_nb)
     if (ret != path_size)
         return -ENOENT;
 
-    if (!strcmp(mount_pt->path, "/"))
-        return mount_pt->ops->mount(mount_pt, res.inode, mount_pt_nb);
-    else
-        return mount_pt->ops->mount(mount_pt, res.inode, mount_pt_nb);
+    return mount_pt->ops->mount(mount_pt, res.inode, mount_pt_nb);
 }
 
-int vfs_mount(const char *mount_path, int dev)
+static void vfs_remount_root_message(int dev, const char *path, int mount_nb)
+{
+    struct vdevice *device;
+    struct message *message;
+    struct req_root_remount *request;
+
+    if (!(device = device_get(dev)))
+        return;
+
+    if (!(message = message_alloc(sizeof (struct req_root_remount))))
+        return;
+
+    request = MESSAGE_EXTRACT(struct req_root_remount, message);
+
+    request->mount_pt = mount_nb;
+
+    strcpy(request->path, path);
+
+    message->mid = message->mid & ~0xFF;
+
+    channel_send_request(device->channel, message);
+
+    message_free(message);
+}
+
+int vfs_mount(int dev, const char *mount_path)
 {
     int ret;
     int mount_nb;
@@ -115,7 +137,15 @@ int vfs_mount(const char *mount_path, int dev)
     if (mount_nb == 0)
     {
         if (dev != -1)
-            kernel_panic("Remount root implem needed");
+        {
+            for (int i = 1; i < MAX_MOUNTED_PATH; ++i)
+            {
+                if (!mount_points[i].used)
+                    continue;
+
+                vfs_remount_root_message(dev, mount_points[i].path, i);
+            }
+        }
     }
     else if ((ret = do_mount(mount_path, mount_nb)) < 0)
         return ret;
