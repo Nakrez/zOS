@@ -10,7 +10,7 @@ USERLAND_LDFLAGS := -T $(SRCDIR)userland/lib/libc/src/arch/$(ZOS_ARCH)/bin.ld
 
 INSTALL_BIN :=
 ALL_BIN :=
-EXTRA_FILE :=
+EXTRA_FILE := rootfs/etc/init_conf
 
 all: zos-${ZOS_TARGET}-image.img
 
@@ -21,6 +21,9 @@ boot: zos-${ZOS_TARGET}-image.img
 boot-gdb: zos-${ZOS_TARGET}-image.img
 	$(call run,QEMU-GDB,)
 	@qemu-system-i386 $< -S -s
+
+rootfs/%: ${SRCDIR}/userland/root/%
+	$(call run,CP,cp $^ $@)
 
 include ${SRCDIR}/mk/subdirs.mk
 
