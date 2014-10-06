@@ -4,29 +4,36 @@
 
 #include "fs.h"
 
-static void ext2_root_remount(struct req_root_remount *req)
+static void ext2_root_remount(struct fiu_internal *fiu,
+                              struct req_root_remount *req)
 {
+    (void) fiu;
     (void) req;
 }
 
-static int ext2_lookup(struct req_lookup *req, struct resp_lookup *response)
+static int ext2_lookup(struct fiu_internal *fiu, struct req_lookup *req,
+                       struct resp_lookup *response)
 {
-    (void) req;
-    (void) response;
-
-    return 0;
-}
-
-static int ext2_open(struct req_open *req, struct resp_open *response)
-{
+    (void) fiu;
     (void) req;
     (void) response;
 
     return 0;
 }
 
-static int ext2_close(struct req_close *req)
+static int ext2_open(struct fiu_internal *fiu, struct req_open *req,
+                     struct resp_open *response)
 {
+    (void) fiu;
+    (void) req;
+    (void) response;
+
+    return 0;
+}
+
+static int ext2_close(struct fiu_internal *fiu, struct req_close *req)
+{
+    (void) fiu;
     (void) req;
 
     return 0;

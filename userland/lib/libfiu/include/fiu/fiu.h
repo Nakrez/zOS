@@ -11,13 +11,15 @@ struct fiu_internal {
     struct fiu_ops *ops;
 
     int capabilities;
+
+    void *private;
 };
 
 struct fiu_ops {
-    void (*root_remount)(struct req_root_remount *);
-    int (*lookup)(struct req_lookup *, struct resp_lookup *);
-    int (*open)(struct req_open *, struct resp_open *);
-    int (*close)(struct req_close *);
+    void (*root_remount)(struct fiu_internal *, struct req_root_remount *);
+    int (*lookup)(struct fiu_internal *, struct req_lookup *, struct resp_lookup *);
+    int (*open)(struct fiu_internal *, struct req_open *, struct resp_open *);
+    int (*close)(struct fiu_internal *, struct req_close *);
 };
 
 int fiu_create(const char *name, uint16_t uid, uint16_t gid, int perm,

@@ -50,7 +50,7 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
         if (op == 0)
         {
             if (fiu->ops->root_remount)
-                fiu->ops->root_remount((void *)buf);
+                fiu->ops->root_remount(fiu, (void *)buf);
             else
                 uprint("root_remount() was issued but not catched");
 
@@ -68,7 +68,7 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
             {
                 struct resp_lookup resp;
 
-                resp.ret = fiu->ops->lookup((void *)buf, &resp);
+                resp.ret = fiu->ops->lookup(fiu, (void *)buf, &resp);
 
                 device_send_response(fiu->dev_id, mid, &resp,
                                      sizeof (struct resp_lookup));
@@ -78,7 +78,7 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
             {
                 struct resp_open resp;
 
-                resp.ret = fiu->ops->open((void *)buf, &resp);
+                resp.ret = fiu->ops->open(fiu, (void *)buf, &resp);
 
                 device_send_response(fiu->dev_id, mid, &resp,
                                      sizeof (struct resp_open));
@@ -88,7 +88,7 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
             {
                 struct resp_close resp;
 
-                resp.ret = fiu->ops->close((void *)buf);
+                resp.ret = fiu->ops->close(fiu, (void *)buf);
 
                 device_send_response(fiu->dev_id, mid, &resp,
                                      sizeof (struct resp_close));
