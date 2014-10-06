@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <zos/print.h>
 
 #include <fiu/fiu.h>
@@ -49,9 +51,17 @@ static struct fiu_ops ext2_ops = {
 int main(void)
 {
     int ret;
+    struct ext2fs *ext2;
     struct fiu_internal fiu;
 
-    if (!ext2fs_initialize("/dev/ata-disk0"))
+    if (!(ext2 = malloc(sizeof (struct ext2fs))))
+    {
+        uprint("EXT2: Cannot allocate memory");
+
+        return 1;
+    }
+
+    if (!ext2fs_initialize(ext2, "/dev/ata-disk0"))
     {
         uprint("EXT2: an error occured in initialization. Bye!");
 
@@ -68,6 +78,8 @@ int main(void)
     }
 
     uprint("EXT2: Mounting /dev/ata-disk0 on /");
+
+    fiu.private = ext2;
 
     ret = fiu_main(&fiu, "/");
 

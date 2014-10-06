@@ -59,6 +59,6 @@ struct ext2fs {
     struct ext2_superblock sb;
 };
 
-int ext2fs_initialize(const char *disk);
+int ext2fs_initialize(struct ext2fs *ext2, const char *disk);
 
 #endif /* !EXT2_FS_H */
