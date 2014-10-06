@@ -53,10 +53,22 @@ struct ext2_superblock {
     char pad[788];
 } __attribute__ ((packed));
 
+struct ext2_group_descriptor {
+    uint32_t addr_block_usage_bitmap;
+    uint32_t addr_inode_usage_bitmap;
+    uint32_t inode_table;
+    uint16_t unallocated_blocks;
+    uint16_t unallocated_inodes;
+    uint16_t directories_in_grp;
+    char unused[14];
+} __attribute__ ((packed));
+
 struct ext2fs {
     int fd;
 
     struct ext2_superblock sb;
+
+    struct ext2_group_descriptor *grp_table;
 };
 
 int ext2fs_initialize(struct ext2fs *ext2, const char *disk);
