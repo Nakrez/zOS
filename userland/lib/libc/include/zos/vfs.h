@@ -9,6 +9,10 @@
 # define VFS_OPS_WRITE (1 << 2)
 # define VFS_OPS_CLOSE (1 << 3)
 # define VFS_OPS_UMOUNT (1 << 4)
+# define VFS_OPS_MOUNT (1 << 5)
+# define VFS_OPS_LOOKUP (1 << 6)
+# define VFS_OPS_MKDIR (1 << 7)
+# define VFS_OPS_MKNOD (1 << 8)
 
 /* Lookup request */
 struct req_lookup {
