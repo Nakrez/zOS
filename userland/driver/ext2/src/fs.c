@@ -35,7 +35,10 @@ static int ext2fs_load_group_table(struct ext2fs *ext2)
     ret = read(ext2->fd, ext2->grp_table,
                sizeof (struct ext2_group_descriptor) * gt_size);
 
-    return ret == sizeof (struct ext2_group_descriptor) * gt_size;
+    if (ret < 0)
+        return 0;
+
+    return (size_t)ret == sizeof (struct ext2_group_descriptor) * gt_size;
 }
 
 int ext2fs_initialize(struct ext2fs *ext2, const char *disk)
