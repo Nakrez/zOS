@@ -108,8 +108,14 @@ struct ext2_inode {
     uint16_t os_specific2[6];
 };
 
+struct ext2_cinode;
+
 struct ext2fs {
     int fd;
+
+    size_t block_size;
+
+    struct ext2_cinode *inode_cache;
 
     struct ext2_superblock sb;
 

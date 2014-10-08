@@ -1,6 +1,6 @@
 CURDIR := userland/driver/ext2/src/
 
-OBJ := main.o fs.o
+OBJ := main.o fs.o inode_cache.o
 
 BINSUBDIRS :=
 

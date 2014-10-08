@@ -3,6 +3,7 @@
 #include <fcntl.h>
 
 #include "fs.h"
+#include "inode_cache.h"
 
 # define EXT2FS_OPEN_TIMEOUT 1000
 # define EXT2FS_OPEN_RETRY 50
@@ -28,7 +29,7 @@ static int ext2fs_load_group_table(struct ext2fs *ext2)
     if (!ext2->grp_table)
         return 0;
 
-    offset = ext2->sb.block_size == 1024 ? 2048 : ext2->sb.block_size;
+    offset = ext2->block_size == 1024 ? 2048 : ext2->sb.block_size;
 
     lseek(ext2->fd, offset, SEEK_SET);
 
@@ -82,5 +83,10 @@ int ext2fs_initialize(struct ext2fs *ext2, const char *disk)
     if (ext2->sb.magic != EXT2_SB_MAGIC)
         return 0;
 
-    return ext2fs_load_group_table(ext2);
+    ext2->block_size = 1024 << ext2->sb.block_size;
+
+    if (!ext2fs_load_group_table(ext2))
+        return 0;
+
+    return ext2_icache_initialize(ext2);
 }
