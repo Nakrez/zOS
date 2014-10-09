@@ -4,6 +4,7 @@
 
 #include "fs.h"
 #include "inode_cache.h"
+#include "block.h"
 
 # define EXT2FS_OPEN_TIMEOUT 1000
 # define EXT2FS_OPEN_RETRY 50
@@ -88,5 +89,9 @@ int ext2fs_initialize(struct ext2fs *ext2, const char *disk)
     if (!ext2fs_load_group_table(ext2))
         return 0;
 
-    return ext2_icache_initialize(ext2);
+    if (!ext2_icache_initialize(ext2))
+        return 0;
+
+    return (fiu_cache_initialize(&ext2->fiu, 64, ext2->block_size,
+                                 ext2_block_fetch, ext2_block_flush) == 0);
 }

@@ -2,8 +2,6 @@
 
 #include <zos/print.h>
 
-#include <fiu/fiu.h>
-
 #include "fs.h"
 
 static void ext2_root_remount(struct fiu_internal *fiu,
@@ -52,7 +50,6 @@ int main(void)
 {
     int ret;
     struct ext2fs *ext2;
-    struct fiu_internal fiu;
 
     if (!(ext2 = malloc(sizeof (struct ext2fs))))
     {
@@ -61,6 +58,8 @@ int main(void)
         return 1;
     }
 
+    ext2->fiu.private = ext2;
+
     if (!ext2fs_initialize(ext2, "/dev/ata-disk0"))
     {
         uprint("EXT2: an error occured in initialization. Bye!");
@@ -68,7 +67,7 @@ int main(void)
         return 1;
     }
 
-    ret = fiu_create("ext2-ata-disk0", 0, 0, 0755, &ext2_ops, &fiu);
+    ret = fiu_create("ext2-ata-disk0", 0, 0, 0755, &ext2_ops, &ext2->fiu);
 
     if (ret < 0)
     {
@@ -79,9 +78,7 @@ int main(void)
 
     uprint("EXT2: Mounting /dev/ata-disk0 on /");
 
-    fiu.private = ext2;
-
-    ret = fiu_main(&fiu, "/");
+    ret = fiu_main(&ext2->fiu, "/");
 
     if (ret < 0)
     {

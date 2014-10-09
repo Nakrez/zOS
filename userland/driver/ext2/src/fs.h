@@ -3,6 +3,8 @@
 
 # include <stdint.h>
 
+# include <fiu/fiu.h>
+
 # define EXT2_SB_MAGIC 0xEF53
 
 struct ext2_superblock {
@@ -112,6 +114,8 @@ struct ext2_cinode;
 
 struct ext2fs {
     int fd;
+
+    struct fiu_internal fiu;
 
     size_t block_size;
 
