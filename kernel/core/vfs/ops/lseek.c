@@ -11,8 +11,8 @@ int vfs_lseek(int fd, int offset, int whence)
 {
     struct process *process = thread_current()->parent;
 
-    if (!(whence & VFS_SEEK_SET) && !(whence && VFS_SEEK_CUR) &&
-        !(whence && VFS_SEEK_END))
+    if (!(whence & VFS_SEEK_SET) && !(whence & VFS_SEEK_CUR) &&
+        !(whence & VFS_SEEK_END))
         return -EINVAL;
 
     if (fd < 0 || fd > PROCESS_MAX_OPEN_FD)

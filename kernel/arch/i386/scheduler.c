@@ -27,7 +27,7 @@ void i386_switch(struct irq_regs *regs, struct thread *new,
     fs_set(new->regs.fs);
     gs_set(new->regs.gs);
 
-    __asm__ __volatile__("cmp %5, %1\n"
+    __asm__ __volatile__("cmpb %5, %1\n"
                          "jz 1f\n"
                          "push %4\n"
                          "push %3\n"

@@ -226,7 +226,7 @@ int process_new_fd(struct process *process)
 {
     spinlock_lock(&process->files_lock);
 
-    for (int i; i < PROCESS_MAX_OPEN_FD; ++i)
+    for (int i = 0; i < PROCESS_MAX_OPEN_FD; ++i)
     {
         if (!process->files[i].used)
         {
