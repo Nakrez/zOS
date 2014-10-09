@@ -42,10 +42,16 @@ done
 
 if [ -z $CC ]; then
     CC=${PREFIX}gcc
+fi
 
-    if [[ "`uname -m`" = "x86_64" && "$ZOS_ARCH" = "i386" ]]; then
-        CC="$CC -m32"
-    fi
+if [ -z $LD ]; then
+    LD=${PREFIX}gcc
+fi
+
+if [[ "`uname -m`" = "x86_64" && "$ZOS_ARCH" = "i386" ]]; then
+    CFLAGS="$CFLAGS -m32"
+    ASFLAGS="$ASFLAGS -m32"
+    LDFLAGS="$LDFLAGS -m32"
 fi
 
 echo -n "Checking CC = $CC ... "
@@ -58,7 +64,6 @@ fi
 echo "OK"
 
 AS=${PREFIX}as
-LD=$CC
 
 echo ""
 echo "zOS configuration"
