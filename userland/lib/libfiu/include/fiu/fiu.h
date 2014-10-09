@@ -3,6 +3,8 @@
 
 # include <zos/vfs.h>
 
+# include <fiu/block_cache.h>
+
 struct fiu_internal {
     int dev_id;
 
@@ -11,6 +13,8 @@ struct fiu_internal {
     struct fiu_ops *ops;
 
     int capabilities;
+
+    struct fiu_cache *block_cache;
 
     void *private;
 };
