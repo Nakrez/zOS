@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include <zos/device.h>
+#include <zos/print.h>
 
 #include <driver/driver.h>
 

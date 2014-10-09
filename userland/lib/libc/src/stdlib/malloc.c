@@ -24,7 +24,7 @@ static struct malloc_chunk *request_memory(size_t size)
 {
     struct malloc_chunk *chunk;
 
-    size = ALIGN_UP(size, PAGE_SIZE);
+    size = ALIGN_UP(size + sizeof (struct malloc_chunk), PAGE_SIZE);
 
     if (!(chunk = mmap(0, size, PROT_WRITE, 0, 0, 0)))
         return NULL;
@@ -66,6 +66,8 @@ void *malloc(size_t size)
 
     if (!size)
         return NULL;
+
+    size = ALIGN_UP(size, sizeof (char *));
 
     spinlock_lock(&malloc_lock);
 

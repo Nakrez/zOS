@@ -1,3 +1,8 @@
+#include <zos/device.h>
+#include <zos/print.h>
+
+#include <sys/mount.h>
+
 #include <fiu/fiu.h>
 
 static int fiu_capabilities(struct fiu_internal *fiu)
@@ -119,6 +124,8 @@ static int fiu_loop(struct fiu_internal *fiu)
 
         fiu_dispatch(fiu, res, buf);
     }
+
+    return res;
 }
 
 int fiu_main(struct fiu_internal *fiu, const char *mount_path)
