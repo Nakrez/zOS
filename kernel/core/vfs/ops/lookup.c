@@ -12,8 +12,9 @@ int vfs_lookup(const char *path, int uid, int gid, struct resp_lookup *res,
 {
     int ret;
     int processed = 0;
+    int path_len = strlen(path);
     struct mount_entry *root = vfs_root_get();
-    char *copied_path = kmalloc(strlen(path) + 1);
+    char *copied_path = kmalloc(path_len + 1);
 
     if (!copied_path)
         return -ENOMEM;
@@ -46,6 +47,9 @@ int vfs_lookup(const char *path, int uid, int gid, struct resp_lookup *res,
         }
 
         processed += res->processed;
+
+        if (!processed || processed > path_len)
+            return -EBADE;
 
         if (res->ret == RES_OK || res->ret == RES_KO)
             break;

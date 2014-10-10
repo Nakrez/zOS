@@ -15,6 +15,7 @@
 # define EMFILE 24 /* Too many open files */
 # define ENAMETOOLONG 36 /* File name too long */
 # define ENOSYS 38 /* Function not implemented */
+# define EBADE 52 /* Invalid exchange */
 # define ENODATA 61 /* No data available */
 
 #endif /* !ERRNO_H */
