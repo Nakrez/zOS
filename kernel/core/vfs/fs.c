@@ -23,7 +23,7 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uint16_t uid,
     if (!(device = device_get(root->dev)))
         return -ENODEV;
 
-    if (!(message = message_alloc(sizeof (struct req_close))))
+    if (!(message = message_alloc(sizeof (struct req_lookup))))
         return -ENOMEM;
 
     request = MESSAGE_EXTRACT(struct req_lookup, message);
@@ -54,7 +54,7 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uint16_t uid,
     }
 
     request->uid = uid;
-    request->gid = gid;;
+    request->gid = gid;
 
     message->mid = (message->mid & ~0xFF) | VFS_OPS_LOOKUP;
 
@@ -67,12 +67,12 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uint16_t uid,
         return res;
     }
 
-    answer = MESSAGE_EXTRACT(struct resp_lookup, message);
+    answer = MESSAGE_EXTRACT(struct resp_lookup, response);
 
     ret->ret = answer->ret;
     ret->inode = answer->inode;
     ret->processed = answer->processed;
-    ret->dev = answer->ret;
+    ret->dev = answer->dev;
 
     message_free(message);
     message_free(response);
@@ -94,7 +94,7 @@ static int fiu_open(struct mount_entry *root, ino_t inode, uint16_t uid,
     (void)flags;
     (void)mode;
 
-    return 0;
+    return -1;
 }
 
 struct fs_ops fiu_ops = {
