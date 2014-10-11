@@ -49,9 +49,9 @@ if [ -z $LD ]; then
 fi
 
 if [[ "`uname -m`" = "x86_64" && "$ZOS_ARCH" = "i386" ]]; then
-    CFLAGS="$CFLAGS -m32"
-    ASFLAGS="$ASFLAGS -m32"
-    LDFLAGS="$LDFLAGS -m32"
+    CFLAGS="$CFLAGS -m32 -march=i586"
+    ASFLAGS="$ASFLAGS -m32 -march=i586"
+    LDFLAGS="$LDFLAGS -m32 -march=i586"
 fi
 
 echo -n "Checking CC = $CC ... "

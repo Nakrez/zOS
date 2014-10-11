@@ -1,6 +1,6 @@
 #include <arch/compiler.h>
 
-uint64_t __udivmoddi4(uint64_t num, uint64_t den, uint32_t *rem_p)
+__libgcc uint64_t __udivmoddi4(uint64_t num, uint64_t den, uint32_t *rem_p)
 {
     uint64_t quot = 0;
     uint64_t qbit = 1;
