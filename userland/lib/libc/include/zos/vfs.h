@@ -32,6 +32,11 @@ struct req_lookup {
     uint16_t gid;
 };
 
+# define LOOKUP_RES_OK 0
+# define LOOKUP_RES_ENTER_MOUNT 1
+# define LOOKUP_RES_KO 2
+
+/* Lookup response */
 struct resp_lookup {
     int ret;
     ino_t inode;
