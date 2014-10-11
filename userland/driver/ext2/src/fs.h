@@ -92,4 +92,7 @@ struct ext2fs {
 
 int ext2fs_initialize(struct ext2fs *ext2, const char *disk);
 
+int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
+                  struct resp_lookup *response);
+
 #endif /* !EXT2_FS_H */

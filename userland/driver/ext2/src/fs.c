@@ -1,6 +1,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <string.h>
+
+#include <zos/print.h>
 
 #include "fs.h"
 #include "inode_cache.h"
@@ -94,4 +97,129 @@ int ext2fs_initialize(struct ext2fs *ext2, const char *disk)
 
     return (fiu_cache_initialize(&ext2->fiu, 64, ext2->block_size,
                                  ext2_block_fetch, ext2_block_flush) == 0);
+}
+
+uint32_t inode_find_in_dir(struct ext2fs *ext2, struct ext2_inode *inode,
+                           const char *name)
+{
+    uint32_t offset = 0;
+    uint32_t offset_block = 0;
+    uint32_t block_num = 0;
+    uint32_t res = 0;
+    void *block = NULL;
+    struct ext2_dirent *dirent;
+    char *dirent_name;
+
+    if (!inode_block_data(ext2, inode, 0, &block_num))
+        return 0;
+
+    if (!(block = fiu_cache_request(&ext2->fiu, block_num)))
+        return 0;
+
+    dirent = block;
+
+    while (offset < inode->lower_size)
+    {
+        dirent_name = (char *)dirent + sizeof (struct ext2_dirent);
+
+        if (dirent->size + offset_block > ext2->block_size)
+        {
+            uprint("Dirent overlap between 2 blocks");
+
+            return 0;
+        }
+
+        if (!strcmp(dirent_name, name))
+        {
+            res = dirent->inode;
+
+            break;
+        }
+
+        offset_block += dirent->size;
+        offset += dirent->size;
+
+        if (offset_block >= ext2->block_size)
+        {
+            offset_block = offset % ext2->block_size;
+
+            fiu_cache_release(&ext2->fiu, block_num);
+
+            if (!inode_block_data(ext2, inode, offset, &block_num))
+                return 0;
+
+            if (!(block = fiu_cache_request(&ext2->fiu, block_num)))
+                return 0;
+        }
+
+        dirent = (void *)((char *)block + offset_block);
+    }
+
+    fiu_cache_release(&ext2->fiu, block_num);
+
+    return res;
+}
+
+int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
+                  struct resp_lookup *response)
+{
+    struct ext2fs *ext2 = fiu->private;
+    struct ext2_inode *inode = ext2_icache_request(ext2, 2);
+    uint32_t inode_nb = 2;
+    uint32_t tmp;
+    char *part;
+    char *path_left;
+
+    response->ret = -1;
+    response->processed = 0;
+
+    while (*req->path == '/')
+    {
+        ++req->path;
+        ++response->processed;
+    }
+
+    part = strtok_r(req->path, "/", &path_left);
+
+    while (1)
+    {
+        if (!(inode->type_perm & EXT2_TYPE_DIRECTORY))
+            break;
+
+        if (!(tmp = inode_find_in_dir(ext2, inode, part)))
+        {
+            ext2_icache_release(ext2, inode_nb);
+
+            break;
+        }
+
+        ext2_icache_release(ext2, inode_nb);
+
+        inode_nb = tmp;
+
+        if (!(inode = ext2_icache_request(ext2, inode_nb)))
+            break;
+
+        response->processed += path_left - part;
+
+        if (!(part = strtok_r(NULL, "/", &path_left)))
+        {
+            ext2_icache_release(ext2, inode_nb);
+
+            break;
+        }
+    }
+
+    response->inode = inode_nb;
+    response->dev = -1;
+
+    if (response->ret == -1)
+    {
+        if (response->processed == req->path_size)
+            return LOOKUP_RES_OK;
+        else
+            return LOOKUP_RES_KO;
+    }
+
+    return response->ret;
 }

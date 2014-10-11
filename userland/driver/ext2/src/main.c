@@ -3,6 +3,7 @@
 #include <zos/print.h>
 
 #include "fs.h"
+#include "file.h"
 
 static void ext2_root_remount(struct fiu_internal *fiu,
                               struct req_root_remount *req)
@@ -11,39 +12,13 @@ static void ext2_root_remount(struct fiu_internal *fiu,
     (void) req;
 }
 
-static int ext2_lookup(struct fiu_internal *fiu, struct req_lookup *req,
-                       struct resp_lookup *response)
-{
-    (void) fiu;
-    (void) req;
-    (void) response;
 
-    return 0;
-}
-
-static int ext2_open(struct fiu_internal *fiu, struct req_open *req,
-                     struct resp_open *response)
-{
-    (void) fiu;
-    (void) req;
-    (void) response;
-
-    return 0;
-}
-
-static int ext2_close(struct fiu_internal *fiu, struct req_close *req)
-{
-    (void) fiu;
-    (void) req;
-
-    return 0;
-}
 
 static struct fiu_ops ext2_ops = {
     .root_remount = ext2_root_remount,
-    .lookup = ext2_lookup,
-    .open = ext2_open,
-    .close = ext2_close,
+    .lookup = ext2fs_lookup,
+    .open = ext2fs_open,
+    .close = ext2fs_close,
 };
 
 int main(void)
