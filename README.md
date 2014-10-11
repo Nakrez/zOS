@@ -5,7 +5,7 @@ November of 2013. It has been totally rewritten from scratch since
 August 2014.
 
 zOS is based on a micro kernel (named zKernel), that has the particularity of
-having the Virtual File System embedded with the kernel.
+having the Virtual File System embedded within the kernel.
 
 ## Features ##
 
@@ -16,7 +16,7 @@ having the Virtual File System embedded with the kernel.
   * ELF loader (static ELF only)
   * Round robin scheduler
   * Thread support
-  * fork()
+  * fork() using Copy-On-Write
 * VFS
   * Driver interface and communication
   * Filesystem Driver interface (WIP)
@@ -25,7 +25,14 @@ having the Virtual File System embedded with the kernel.
 
 * C library
   * Provide syscall interface
-* Drivers are a work in progress
+* Driver library (libdriver)
+  * Easy implementation of drivers
+  * Only provide device information and operation, the library do everything
+    else
+* Filesystem In Userland library (libfiu)
+  * Easy filesystem implementation
+  * Only provide filesystem operation and information, the library do
+    everything else
 
 ## Build instruction ##
 
