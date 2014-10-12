@@ -5,6 +5,7 @@
 
 # include <kernel/vfs/mount.h>
 # include <kernel/vfs/message.h>
+# include <kernel/vfs/vops.h>
 
 struct fs_ops {
     void *(*init)(void);
@@ -14,6 +15,7 @@ struct fs_ops {
                  mode_t);
     int (*mknod)(struct mount_entry *, const char *, ino_t, uint16_t, uint16_t,
                  mode_t, uint16_t);
+    int (*stat)(struct mount_entry *, uid_t, gid_t, ino_t, struct stat *);
     int (*mount)(struct mount_entry *, ino_t, int);
     int (*open)(struct mount_entry *, ino_t, uint16_t, uint16_t, int, mode_t);
     int (*read)(struct mount_entry *, struct req_rdwr *, void *buf);
