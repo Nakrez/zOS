@@ -7,8 +7,6 @@
 # define SEEK_CUR (1 << 1)
 # define SEEK_END (1 << 2)
 
-typedef int pid_t;
-
 int usleep(size_t mseconds);
 int sleep(size_t seconds);
 int fork(void);

@@ -13,5 +13,6 @@ typedef __i64 int64_t;
 typedef __u64 uint64_t;
 
 typedef __size size_t;
+typedef __uptr uintptr_t;
 
 #endif /* !LIBC_STDINT_H */
