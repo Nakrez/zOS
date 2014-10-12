@@ -30,5 +30,7 @@ int main(void)
 
     uprint("Init configuration file open with sucess");
 
+    close(conf_fd);
+
     return 0;
 }

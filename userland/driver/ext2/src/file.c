@@ -22,8 +22,9 @@ int ext2fs_open(struct fiu_internal *fiu, struct req_open *req,
 
 int ext2fs_close(struct fiu_internal *fiu, struct req_close *req)
 {
-    (void) fiu;
-    (void) req;
+    struct ext2fs *ext2 = fiu->private;
+
+    ext2_icache_release(ext2, req->inode);
 
     return 0;
 }
