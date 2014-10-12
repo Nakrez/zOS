@@ -48,7 +48,7 @@ int vfs_open(const char *path, int uid, int gid, int flags, mode_t mode)
     if (res.dev < 0)
     {
         process->files[fd].mount = mount_pt;
-        process->files[fd].dev = mount_pt->dev;
+        process->files[fd].dev = -1;
     }
     else
     {

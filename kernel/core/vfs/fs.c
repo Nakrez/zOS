@@ -90,6 +90,11 @@ static int fiu_open(struct mount_entry *root, ino_t inode, uint16_t uid,
     return device_open(root->dev, inode, uid, gid, flags, mode);
 }
 
+static int fiu_read(struct mount_entry *root, struct req_rdwr *req, void *buf)
+{
+    return device_read_write(root->dev, req, buf, VFS_OPS_READ);
+}
+
 static int fiu_close(struct mount_entry *root, ino_t inode)
 {
     return device_close(root->dev, inode);
@@ -98,5 +103,6 @@ static int fiu_close(struct mount_entry *root, ino_t inode)
 struct fs_ops fiu_ops = {
     .lookup = fiu_lookup,
     .open = fiu_open,
+    .read = fiu_read,
     .close = fiu_close,
 };
