@@ -90,7 +90,13 @@ static int fiu_open(struct mount_entry *root, ino_t inode, uint16_t uid,
     return device_open(root->dev, inode, uid, gid, flags, mode);
 }
 
+static int fiu_close(struct mount_entry *root, ino_t inode)
+{
+    return device_close(root->dev, inode);
+}
+
 struct fs_ops fiu_ops = {
     .lookup = fiu_lookup,
     .open = fiu_open,
+    .close = fiu_close,
 };
