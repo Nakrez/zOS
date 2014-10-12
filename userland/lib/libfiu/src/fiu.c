@@ -20,6 +20,9 @@ static int fiu_capabilities(struct fiu_internal *fiu)
     else
         return -1;
 
+    if (fiu->ops->read)
+        fiu->capabilities |= VFS_OPS_READ;
+
     if (fiu->ops->close)
         fiu->capabilities |= VFS_OPS_CLOSE;
     else
@@ -87,6 +90,16 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
 
                 device_send_response(fiu->dev_id, mid, &resp,
                                      sizeof (struct resp_open));
+            }
+            break;
+        case VFS_OPS_READ:
+            {
+                struct resp_rdwr resp;
+
+                resp.ret = fiu->ops->read(fiu, (void *)buf, &resp.size);
+
+                device_send_response(fiu->dev_id, mid, &resp,
+                                     sizeof (struct resp_rdwr));
             }
             break;
         case VFS_OPS_CLOSE:

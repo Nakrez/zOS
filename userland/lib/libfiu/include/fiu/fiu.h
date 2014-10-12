@@ -21,8 +21,10 @@ struct fiu_internal {
 
 struct fiu_ops {
     void (*root_remount)(struct fiu_internal *, struct req_root_remount *);
-    int (*lookup)(struct fiu_internal *, struct req_lookup *, struct resp_lookup *);
+    int (*lookup)(struct fiu_internal *, struct req_lookup *,
+                  struct resp_lookup *);
     int (*open)(struct fiu_internal *, struct req_open *, struct resp_open *);
+    int (*read)(struct fiu_internal *, struct req_rdwr *, size_t *);
     int (*close)(struct fiu_internal *, struct req_close *);
 };
 
