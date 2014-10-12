@@ -3,12 +3,11 @@
 
 # include <kernel/types.h>
 
-# include <kernel/vfs/message.h>
-
 # define VFS_SEEK_SET (1 << 0)
 # define VFS_SEEK_CUR (1 << 1)
 # define VFS_SEEK_END (1 << 2)
 
+struct resp_lookup;
 struct mount_entry;
 struct thread;
 
@@ -33,6 +32,7 @@ int vfs_lookup(const char *path, int uid, int gid, struct resp_lookup *res,
 int vfs_mkdir(const char *path, int uid, int gid, mode_t mode);
 int vfs_mknod(const char *path, int uid, int gid, mode_t mode, uint16_t dev);
 int vfs_stat(struct thread *t, const char *path, struct stat *buf);
+int vfs_fstat(struct thread *t, int fd, struct stat *buf);
 int vfs_open(const char *path, int uid, int gid, int flags, mode_t mode);
 int vfs_read(int fd, void *buf, size_t count);
 int vfs_write(int fd, const void *buf, size_t count);
