@@ -33,14 +33,26 @@ typedef __u32 uint32_t;
 typedef __i64 int64_t;
 typedef __u64 uint64_t;
 
-typedef uint32_t size_t;
+typedef __u32 size_t;
 
 typedef __uptr uintptr_t;
 typedef __uptr paddr_t;
 typedef __uptr vaddr_t;
 
-typedef int pid_t;
-typedef uint32_t ino_t;
-typedef uint32_t mode_t;
+typedef __i32 pid_t;
+
+typedef __u32 ino_t;
+typedef __u32 mode_t;
+typedef __u32 dev_t;
+typedef __u32 nlink_t;
+typedef __u32 time_t;
+
+typedef __u16 uid_t;
+typedef __u16 gid_t;
+
+typedef __i32 blksize_t;
+typedef __u64 blkcnt_t;
+
+typedef __i32 off_t;
 
 #endif /* !TYPES_H */
