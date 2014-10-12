@@ -87,14 +87,7 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uint16_t uid,
 static int fiu_open(struct mount_entry *root, ino_t inode, uint16_t uid,
                     uint16_t gid, int flags, mode_t mode)
 {
-    (void)root;
-    (void)inode;
-    (void)uid;
-    (void)gid;
-    (void)flags;
-    (void)mode;
-
-    return -1;
+    return device_open(root->dev, inode, uid, gid, flags, mode);
 }
 
 struct fs_ops fiu_ops = {
