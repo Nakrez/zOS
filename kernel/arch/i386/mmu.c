@@ -1,9 +1,10 @@
 #include <string.h>
 
 #include <kernel/panic.h>
-#include <kernel/as.h>
-#include <kernel/segment.h>
-#include <kernel/region.h>
+
+#include <kernel/mem/as.h>
+#include <kernel/mem/segment.h>
+#include <kernel/mem/region.h>
 
 #include <kernel/proc/thread.h>
 

@@ -1,6 +1,7 @@
-#include <kernel/region.h>
-#include <kernel/kmalloc.h>
 #include <kernel/console.h>
+
+#include <kernel/mem/region.h>
+#include <kernel/mem/kmalloc.h>
 
 #include <arch/mmu.h>
 

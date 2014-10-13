@@ -2,7 +2,8 @@
 
 #include <kernel/errno.h>
 #include <kernel/panic.h>
-#include <kernel/kmalloc.h>
+
+#include <kernel/mem/kmalloc.h>
 
 #include <kernel/proc/thread.h>
 

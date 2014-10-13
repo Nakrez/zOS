@@ -1,5 +1,6 @@
-#include <kernel/as.h>
 #include <kernel/panic.h>
+
+#include <kernel/mem/as.h>
 
 #include <glue/as.h>
 

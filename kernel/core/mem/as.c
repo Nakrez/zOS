@@ -1,12 +1,13 @@
 #include <string.h>
 
-#include <kernel/as.h>
 #include <kernel/zos.h>
-#include <kernel/kmalloc.h>
-#include <kernel/region.h>
-#include <kernel/segment.h>
 #include <kernel/panic.h>
 #include <kernel/errno.h>
+
+#include <kernel/mem/segment.h>
+#include <kernel/mem/region.h>
+#include <kernel/mem/as.h>
+#include <kernel/mem/kmalloc.h>
 
 #include <arch/mmu.h>
 

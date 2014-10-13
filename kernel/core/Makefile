@@ -1,8 +1,8 @@
 CURDIR := kernel/core/
 
-OBJ := main.o string.o console.o kmalloc.o segment.o panic.o as.o region.o \
-		interrupt.o timer.o cpu.o syscall.o module.o
+OBJ := main.o string.o console.o panic.o interrupt.o timer.o cpu.o syscall.o \
+		module.o
 
-BINSUBDIRS := proc/ scheduler/ vfs/ syscall/
+BINSUBDIRS := mem/ proc/ scheduler/ vfs/ syscall/
 
 include ${SRCDIR}mk/binsubdirs.mk

@@ -1,8 +1,9 @@
 #include <kernel/zos.h>
-#include <kernel/segment.h>
 #include <kernel/panic.h>
-#include <kernel/kmalloc.h>
 #include <kernel/console.h>
+
+#include <kernel/mem/segment.h>
+#include <kernel/mem/kmalloc.h>
 
 #include <arch/spinlock.h>
 #include <arch/mmu.h>

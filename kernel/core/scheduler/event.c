@@ -1,5 +1,6 @@
-#include <kernel/kmalloc.h>
 #include <kernel/scheduler.h>
+
+#include <kernel/mem/kmalloc.h>
 
 #include <kernel/proc/thread.h>
 

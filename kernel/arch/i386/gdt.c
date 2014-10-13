@@ -1,10 +1,11 @@
-#include <arch/gdt.h>
-#include <arch/pm.h>
-
 #include <string.h>
 
-#include <kernel/kmalloc.h>
 #include <kernel/console.h>
+
+#include <kernel/mem/kmalloc.h>
+
+#include <arch/gdt.h>
+#include <arch/pm.h>
 
 struct gdt_entry *gdt_entries;
 

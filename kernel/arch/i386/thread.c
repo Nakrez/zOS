@@ -1,6 +1,7 @@
 #include <kernel/zos.h>
-#include <kernel/region.h>
 #include <kernel/panic.h>
+
+#include <kernel/mem/region.h>
 
 #include <arch/thread.h>
 #include <arch/pm.h>

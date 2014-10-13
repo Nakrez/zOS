@@ -3,7 +3,8 @@
 #include <kernel/zos.h>
 #include <kernel/panic.h>
 #include <kernel/console.h>
-#include <kernel/segment.h>
+
+#include <kernel/mem/segment.h>
 
 #include <kernel/proc/thread.h>
 #include <kernel/proc/process.h>

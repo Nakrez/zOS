@@ -1,9 +1,10 @@
 #include <kernel/zos.h>
-#include <kernel/timer.h>
 #include <kernel/panic.h>
-#include <kernel/kmalloc.h>
-#include <kernel/scheduler.h>
+#include <kernel/timer.h>
 #include <kernel/cpu.h>
+#include <kernel/scheduler.h>
+
+#include <kernel/mem/kmalloc.h>
 
 static struct timer_entry timers[TIMER_NUM];
 spinlock_t timer_lock;

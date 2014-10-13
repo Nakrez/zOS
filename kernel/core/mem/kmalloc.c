@@ -1,8 +1,9 @@
-#include <kernel/kmalloc.h>
 #include <kernel/zos.h>
+#include <kernel/panic.h>
 #include <kernel/console.h>
 #include <kernel/klist.h>
-#include <kernel/panic.h>
+
+#include <kernel/mem/kmalloc.h>
 
 #include <arch/spinlock.h>
 

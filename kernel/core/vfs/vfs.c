@@ -3,14 +3,14 @@
 #include <kernel/errno.h>
 #include <kernel/console.h>
 
+#include <kernel/mem/kmalloc.h>
+
 #include <kernel/proc/thread.h>
 
 #include <kernel/vfs/vfs.h>
 #include <kernel/vfs/tmpfs.h>
 #include <kernel/vfs/vops.h>
 #include <kernel/vfs/vdevice.h>
-
-#include <kernel/kmalloc.h>
 
 int vfs_initialize(void)
 {

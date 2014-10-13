@@ -3,7 +3,8 @@
 
 # include <kernel/types.h>
 # include <kernel/klist.h>
-# include <kernel/as.h>
+
+# include <kernel/mem/as.h>
 
 struct region
 {

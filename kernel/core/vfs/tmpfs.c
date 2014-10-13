@@ -1,7 +1,8 @@
 #include <string.h>
 
-#include <kernel/kmalloc.h>
 #include <kernel/errno.h>
+
+#include <kernel/mem/kmalloc.h>
 
 #include <kernel/vfs/tmpfs.h>
 

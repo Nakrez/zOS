@@ -1,6 +1,7 @@
-#include <kernel/syscall.h>
 #include <kernel/errno.h>
-#include <kernel/as.h>
+#include <kernel/syscall.h>
+
+#include <kernel/mem/as.h>
 
 #include <kernel/proc/thread.h>
 

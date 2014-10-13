@@ -1,4 +1,4 @@
-#include <kernel/kmalloc.h>
+#include <kernel/mem/kmalloc.h>
 
 #include <kernel/vfs/message.h>
 

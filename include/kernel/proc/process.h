@@ -2,7 +2,9 @@
 # define PROCESS_H
 
 # include <kernel/types.h>
-# include <kernel/as.h>
+
+# include <kernel/mem/as.h>
+
 # include <kernel/vfs/vfile.h>
 
 # include <arch/cpu.h>
