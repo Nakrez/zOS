@@ -22,8 +22,8 @@ struct thread
 
     struct process *parent;
 
-    size_t uid;
-    size_t gid;
+    uid_t uid;
+    gid_t gid;
 
     int tid;
 
