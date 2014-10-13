@@ -2,7 +2,9 @@
 # define ZOS_VFS_H
 
 # include <stdint.h>
+
 # include <sys/types.h>
+# include <sys/stat.h>
 
 # define VFS_OPEN 1
 # define VFS_READ 2
@@ -54,6 +56,20 @@ struct resp_lookup {
     ino_t inode;
     int processed;
     int dev;
+};
+
+/* Stat request */
+struct req_stat {
+    ino_t inode;
+    uid_t uid;
+    gid_t gid;
+};
+
+/* Stat response */
+struct resp_stat {
+    int ret;
+
+    struct stat stat;
 };
 
 /* Open request */
