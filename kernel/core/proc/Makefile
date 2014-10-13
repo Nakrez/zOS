@@ -1,6 +1,6 @@
 CURDIR := kernel/core/proc/
 
-OBJ := process.o thread.o
+OBJ := process.o thread.o execve.o
 
 BINSUBDIRS :=
 
