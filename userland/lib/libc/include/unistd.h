@@ -3,6 +3,10 @@
 
 # include <stdint.h>
 
+# ifndef NULL
+#  define NULL ((void *)0)
+# endif /* !NULL */
+
 # define SEEK_SET (1 << 0)
 # define SEEK_CUR (1 << 1)
 # define SEEK_END (1 << 2)
@@ -12,6 +16,8 @@ int sleep(size_t seconds);
 int fork(void);
 pid_t getpid(void);
 pid_t gettid(void);
+
+int execve(const char *filename, char *const argv[], char *const envp[]);
 
 int read(int fd, void *buf, size_t count);
 int write(int fd, const void *buf, size_t count);
