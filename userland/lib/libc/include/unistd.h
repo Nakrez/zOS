@@ -18,4 +18,8 @@ int write(int fd, const void *buf, size_t count);
 int close(int fd);
 int lseek(int fd, off_t off, int whence);
 
+struct stat;
+
+int stat(const char *path, struct stat *buf);
+
 #endif /* !LIBC_UNISTD_H */
