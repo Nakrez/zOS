@@ -1,8 +1,9 @@
 #include <kernel/types.h>
-#include <kernel/module.h>
-#include <kernel/panic.h>
-#include <kernel/process.h>
 #include <kernel/console.h>
+#include <kernel/panic.h>
+#include <kernel/module.h>
+
+#include <kernel/proc/process.h>
 
 void module_initialize(struct boot_info *boot)
 {

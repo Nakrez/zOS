@@ -1,10 +1,11 @@
 #include <string.h>
 
-#include <kernel/syscall.h>
+#include <kernel/zos.h>
 #include <kernel/panic.h>
 #include <kernel/console.h>
-#include <kernel/zos.h>
-#include <kernel/thread.h>
+#include <kernel/syscall.h>
+
+#include <kernel/proc/thread.h>
 
 static int syscall_max;
 

@@ -1,9 +1,10 @@
-#include <kernel/cpu.h>
-#include <kernel/kmalloc.h>
-#include <kernel/panic.h>
-#include <kernel/console.h>
-#include <kernel/process.h>
 #include <kernel/zos.h>
+#include <kernel/console.h>
+#include <kernel/panic.h>
+#include <kernel/kmalloc.h>
+#include <kernel/cpu.h>
+
+#include <kernel/proc/process.h>
 
 static struct cpu *cpus;
 static struct process *idle;

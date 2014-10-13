@@ -3,9 +3,10 @@
 #include <kernel/zos.h>
 #include <kernel/panic.h>
 #include <kernel/console.h>
-#include <kernel/thread.h>
-#include <kernel/process.h>
 #include <kernel/segment.h>
+
+#include <kernel/proc/thread.h>
+#include <kernel/proc/process.h>
 
 #include <arch/page_fault.h>
 #include <arch/mmu.h>

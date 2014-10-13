@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boot/boot.h>
 #include <boot/multiboot.h>
 
-#include <kernel/elf.h>
+#include <kernel/proc/elf.h>
 
 #include <arch/mmu.h>
 #include <arch/cpu.h>

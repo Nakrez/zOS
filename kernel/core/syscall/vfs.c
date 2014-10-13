@@ -1,6 +1,7 @@
 #include <kernel/syscall.h>
 #include <kernel/errno.h>
-#include <kernel/thread.h>
+
+#include <kernel/proc/thread.h>
 
 #include <kernel/vfs/vfs.h>
 #include <kernel/vfs/mount.h>

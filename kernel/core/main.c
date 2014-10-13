@@ -6,12 +6,13 @@
 #include <kernel/as.h>
 #include <kernel/interrupt.h>
 #include <kernel/timer.h>
-#include <kernel/process.h>
 #include <kernel/syscall.h>
 #include <kernel/module.h>
-#include <kernel/vfs/vfs.h>
 #include <kernel/cpu.h>
 #include <kernel/panic.h>
+
+#include <kernel/proc/process.h>
+#include <kernel/vfs/vfs.h>
 
 void kernel_main(struct boot_info *boot)
 {

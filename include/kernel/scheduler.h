@@ -1,9 +1,10 @@
 #ifndef SCHEDULER_H
 # define SCHEDULER_H
 
-# include <kernel/thread.h>
 # include <kernel/timer.h>
 # include <kernel/klist.h>
+
+# include <kernel/proc/thread.h>
 
 # include <arch/cpu.h>
 # include <arch/spinlock.h>

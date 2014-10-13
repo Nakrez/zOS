@@ -1,10 +1,11 @@
 #include <string.h>
 
-#include <kernel/thread.h>
 #include <kernel/kmalloc.h>
 #include <kernel/console.h>
-#include <kernel/cpu.h>
 #include <kernel/panic.h>
+#include <kernel/cpu.h>
+
+#include <kernel/proc/thread.h>
 
 #include <arch/mmu.h>
 

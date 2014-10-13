@@ -1,9 +1,10 @@
 #include <string.h>
 
 #include <kernel/errno.h>
-#include <kernel/kmalloc.h>
 #include <kernel/panic.h>
-#include <kernel/thread.h>
+#include <kernel/kmalloc.h>
+
+#include <kernel/proc/thread.h>
 
 #include <kernel/scheduler/event.h>
 

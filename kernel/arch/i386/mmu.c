@@ -1,10 +1,11 @@
 #include <string.h>
 
+#include <kernel/panic.h>
 #include <kernel/as.h>
 #include <kernel/segment.h>
-#include <kernel/panic.h>
-#include <kernel/thread.h>
 #include <kernel/region.h>
+
+#include <kernel/proc/thread.h>
 
 #include <arch/mmu.h>
 #include <arch/cpu.h>

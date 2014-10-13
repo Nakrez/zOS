@@ -1,6 +1,7 @@
-#include <kernel/thread.h>
-#include <kernel/scheduler.h>
 #include <kernel/kmalloc.h>
+#include <kernel/scheduler.h>
+
+#include <kernel/proc/thread.h>
 
 #include <arch/spinlock.h>
 #include <arch/cpu.h>

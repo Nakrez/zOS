@@ -1,7 +1,8 @@
 #include <kernel/syscall.h>
-#include <kernel/as.h>
-#include <kernel/thread.h>
 #include <kernel/errno.h>
+#include <kernel/as.h>
+
+#include <kernel/proc/thread.h>
 
 #include <arch/mmu.h>
 

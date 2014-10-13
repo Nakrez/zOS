@@ -1,16 +1,18 @@
 #include <string.h>
 
-#include <kernel/errno.h>
 #include <kernel/zos.h>
-#include <kernel/process.h>
+#include <kernel/errno.h>
 #include <kernel/panic.h>
 #include <kernel/kmalloc.h>
-#include <kernel/thread.h>
-#include <kernel/elf.h>
+#include <kernel/cpu.h>
+
 #include <kernel/region.h>
 #include <kernel/segment.h>
 #include <kernel/as.h>
-#include <kernel/cpu.h>
+
+#include <kernel/proc/process.h>
+#include <kernel/proc/thread.h>
+#include <kernel/proc/elf.h>
 
 #include <arch/mmu.h>
 

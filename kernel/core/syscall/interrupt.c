@@ -1,6 +1,8 @@
 #include <kernel/syscall.h>
-#include <kernel/thread.h>
 #include <kernel/interrupt.h>
+
+#include <kernel/proc/thread.h>
+
 #include <kernel/scheduler/event.h>
 
 static struct thread *interrupts[IRQ_USER_SIZE];

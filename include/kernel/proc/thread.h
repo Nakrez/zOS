@@ -1,11 +1,12 @@
 #ifndef THREAD_H
 # define THREAD_H
 
+# include <kernel/zos.h>
 # include <kernel/types.h>
 # include <kernel/klist.h>
-# include <kernel/process.h>
-# include <kernel/zos.h>
 # include <kernel/interrupt.h>
+
+# include <kernel/proc/process.h>
 # include <kernel/scheduler/event.h>
 
 # include <arch/cpu.h>

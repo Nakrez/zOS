@@ -1,6 +1,7 @@
 #include <kernel/syscall.h>
-#include <kernel/process.h>
-#include <kernel/thread.h>
+
+#include <kernel/proc/process.h>
+#include <kernel/proc/thread.h>
 
 int sys_usleep(struct syscall *interface)
 {

@@ -1,7 +1,7 @@
 #ifndef ARCH_I386_THREAD_H
 # define ARCH_I386_THREAD_H
 
-# include <kernel/thread.h>
+# include <kernel/proc/thread.h>
 
 # define THREAD_MAX_STACK_SIZE (0x10 * PAGE_SIZE)
 # define THREAD_STACK_BASE 0xBFFFE000

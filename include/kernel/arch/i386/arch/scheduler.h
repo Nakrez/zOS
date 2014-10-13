@@ -1,7 +1,7 @@
 #ifndef ARCH_I386_SCHEDULER_H
 # define ARCH_I386_SCHEDULER_H
 
-# include <kernel/thread.h>
+# include <kernel/proc/thread.h>
 
 # include <arch/cpu.h>
 

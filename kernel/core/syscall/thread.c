@@ -1,6 +1,7 @@
 #include <kernel/syscall.h>
-#include <kernel/thread.h>
 #include <kernel/cpu.h>
+
+#include <kernel/proc/thread.h>
 
 int sys_thread_create(struct syscall *interface)
 {
