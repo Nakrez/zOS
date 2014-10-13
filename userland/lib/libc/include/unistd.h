@@ -21,5 +21,6 @@ int lseek(int fd, off_t off, int whence);
 struct stat;
 
 int stat(const char *path, struct stat *buf);
+int fstat(int fd, struct stat *buf);
 
 #endif /* !LIBC_UNISTD_H */

@@ -24,6 +24,7 @@
 # define SYS_LSEEK 21
 # define SYS_MOUNT 22
 # define SYS_STAT 23
+# define SYS_FSTAT 24
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \
