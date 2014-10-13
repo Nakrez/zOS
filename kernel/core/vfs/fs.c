@@ -83,6 +83,58 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uint16_t uid,
     return 0;
 }
 
+static int fiu_stat(struct mount_entry *root, uid_t uid, gid_t gid,
+                    ino_t inode, struct stat *buf)
+{
+    int res;
+    struct vdevice *device;
+    struct message *message;
+    struct message *response;
+    struct req_stat *request;
+    struct resp_stat *answer;
+
+    if (!(device = device_get(root->dev)))
+        return -ENODEV;
+
+    if (!(device->ops & VFS_OPS_STAT))
+        return -ENOSYS;
+
+    if (!(message = message_alloc(sizeof (struct req_stat))))
+        return -ENOMEM;
+
+    request = MESSAGE_EXTRACT(struct req_stat, message);
+
+    request->uid = uid;
+    request->gid = gid;
+    request->inode = inode;
+
+    message->mid = (message->mid & ~0xFF) | VFS_STAT;
+
+    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
+    {
+        message_free(message);
+
+        return res;
+    }
+
+    answer = MESSAGE_EXTRACT(struct resp_stat, response);
+
+    if (answer->ret < 0)
+    {
+        message_free(message);
+        message_free(response);
+
+        return answer->ret;
+    }
+
+    memcpy(buf, &answer->stat, sizeof (struct stat));
+
+    message_free(message);
+    message_free(response);
+
+    return answer->ret;
+}
+
 static int fiu_open(struct mount_entry *root, ino_t inode, uint16_t uid,
                     uint16_t gid, int flags, mode_t mode)
 {
@@ -101,6 +153,7 @@ static int fiu_close(struct mount_entry *root, ino_t inode)
 
 struct fs_ops fiu_ops = {
     .lookup = fiu_lookup,
+    .stat = fiu_stat,
     .open = fiu_open,
     .read = fiu_read,
     .close = fiu_close,

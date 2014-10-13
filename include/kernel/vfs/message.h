@@ -55,6 +55,20 @@ struct resp_lookup {
     int dev;
 };
 
+/* Stat request */
+struct req_stat {
+    ino_t inode;
+    uid_t uid;
+    gid_t gid;
+};
+
+/* Stat response */
+struct resp_stat {
+    int ret;
+
+    struct stat stat;
+};
+
 /* Open request */
 struct req_open {
     ino_t inode;
