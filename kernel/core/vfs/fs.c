@@ -8,8 +8,8 @@
 #include <kernel/vfs/vdevice.h>
 #include <kernel/vfs/fs.h>
 
-static int fiu_lookup(struct mount_entry *root, const char *path, uint16_t uid,
-                      uint16_t gid, struct resp_lookup *ret)
+static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
+                      gid_t gid, struct resp_lookup *ret)
 {
     int res;
     struct vdevice *device;
@@ -135,8 +135,8 @@ static int fiu_stat(struct mount_entry *root, uid_t uid, gid_t gid,
     return answer->ret;
 }
 
-static int fiu_open(struct mount_entry *root, ino_t inode, uint16_t uid,
-                    uint16_t gid, int flags, mode_t mode)
+static int fiu_open(struct mount_entry *root, ino_t inode, uid_t uid,
+                    gid_t gid, int flags, mode_t mode)
 {
     return device_open(root->dev, inode, uid, gid, flags, mode);
 }

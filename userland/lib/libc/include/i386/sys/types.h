@@ -18,7 +18,7 @@ typedef __i32 pid_t;
 
 typedef __u32 ino_t;
 typedef __u32 mode_t;
-typedef __u32 dev_t;
+typedef __i32 dev_t;
 typedef __u32 nlink_t;
 typedef __u32 time_t;
 

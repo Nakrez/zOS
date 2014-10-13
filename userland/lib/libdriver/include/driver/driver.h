@@ -6,11 +6,11 @@
 struct driver {
     char *dev_name;
 
-    int dev_id;
+    dev_t dev_id;
 
     int running;
 
-    int ops;
+    vop_t ops;
 
     /* Private data that the driver can use */
     void *private;

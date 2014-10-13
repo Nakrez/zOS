@@ -34,7 +34,7 @@ void *tmpfs_initialize(void)
 }
 
 static int tmpfs_lookup(struct mount_entry *root, const char *path,
-                        uint16_t uid, uint16_t gid, struct resp_lookup *ret)
+                        uid_t uid, gid_t gid, struct resp_lookup *ret)
 {
     (void)uid;
     (void)gid;
@@ -130,7 +130,7 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
 }
 
 static int tmpfs_mkdir(struct mount_entry *root, const char *path, ino_t inode,
-                       uint16_t uid, uint16_t gid, mode_t mode)
+                       uid_t uid, gid_t gid, mode_t mode)
 {
     struct tmpfs_root *sb = root->private;
     struct tmpfs_node *new_node;
@@ -174,7 +174,7 @@ static int tmpfs_mkdir(struct mount_entry *root, const char *path, ino_t inode,
 }
 
 static int tmpfs_mknod(struct mount_entry *root, const char *path, ino_t inode,
-                       uint16_t uid, uint16_t gid, mode_t mode, uint16_t dev)
+                       uid_t uid, gid_t gid, mode_t mode, dev_t dev)
 {
     struct tmpfs_root *sb = root->private;
     struct tmpfs_node *new_node;
@@ -230,8 +230,8 @@ static int tmpfs_mount(struct mount_entry *root, ino_t inode, int mount_pt_nb)
     return 0;
 }
 
-static int tmpfs_open(struct mount_entry *root, ino_t inode, uint16_t uid,
-                      uint16_t gid, int flags, mode_t mode)
+static int tmpfs_open(struct mount_entry *root, ino_t inode, uid_t uid,
+                      gid_t gid, int flags, mode_t mode)
 {
     (void)root;
     (void)inode;

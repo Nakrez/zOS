@@ -2,7 +2,7 @@
 
 #include <arch/syscall.h>
 
-int device_send_response(int dev, uint32_t req_id, void *buf, size_t size)
+int device_send_response(dev_t dev, uint32_t req_id, void *buf, size_t size)
 {
     int ret;
 

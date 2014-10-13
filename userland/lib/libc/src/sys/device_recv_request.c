@@ -2,7 +2,7 @@
 
 #include <arch/syscall.h>
 
-int device_recv_request(int dev, char *buf, size_t size)
+int device_recv_request(dev_t dev, char *buf, size_t size)
 {
     int ret;
 

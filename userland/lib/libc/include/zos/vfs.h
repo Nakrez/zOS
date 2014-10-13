@@ -42,8 +42,8 @@ struct req_root_remount {
 struct req_lookup {
     char *path;
     uint16_t path_size;
-    uint16_t uid;
-    uint16_t gid;
+    uid_t uid;
+    gid_t gid;
 };
 
 # define LOOKUP_RES_OK 0
@@ -54,8 +54,8 @@ struct req_lookup {
 struct resp_lookup {
     int ret;
     ino_t inode;
-    int processed;
-    int dev;
+    int16_t processed;
+    dev_t dev;
 };
 
 /* Stat request */
@@ -75,10 +75,10 @@ struct resp_stat {
 /* Open request */
 struct req_open {
     ino_t inode;
-    uint16_t uid;
-    uint16_t gid;
+    uid_t uid;
+    gid_t gid;
     int flags;
-    int mode;
+    mode_t mode;
 };
 
 /* Open response */

@@ -41,7 +41,7 @@ int vfs_initialize(void)
     return 0;
 }
 
-int vfs_device_create(const char *name, int pid, int perm, int ops)
+dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops)
 {
     int res;
     struct vdevice *device = NULL;

@@ -11,7 +11,7 @@ int sys_vfs_device_create(struct syscall *interface)
 {
     /* FIXME: Check name */
     char *name = (void *)interface->arg1;
-    int pid = thread_current()->parent->pid;
+    pid_t pid = thread_current()->parent->pid;
     int perm = interface->arg2;
     int ops = interface->arg3;
 
@@ -25,7 +25,7 @@ int sys_vfs_device_create(struct syscall *interface)
 int sys_vfs_device_recv_request(struct syscall *interface)
 {
     /* FIXME: Check buf */
-    int dev = interface->arg1;
+    dev_t dev = interface->arg1;
     char *buf = (void *)interface->arg2;
     size_t size = interface->arg3;
 
@@ -38,7 +38,7 @@ int sys_vfs_device_recv_request(struct syscall *interface)
 int sys_vfs_device_send_response(struct syscall *interface)
 {
     /* FIXME: Check buf */
-    int dev = interface->arg1;
+    dev_t dev = interface->arg1;
     uint32_t req_id = interface->arg2;
     char *buf = (void *)interface->arg3;
     size_t size = interface->arg4;
@@ -101,10 +101,10 @@ int sys_vfs_lseek(struct syscall *interface)
 
 int sys_vfs_mount(struct syscall *interface)
 {
-    int fd = interface->arg1;
+    dev_t dev = interface->arg1;
     const char *path = (char *)interface->arg2;
 
-    return vfs_mount(thread_current(), fd, path);
+    return vfs_mount(thread_current(), dev, path);
 }
 
 int sys_vfs_stat(struct syscall *interface)

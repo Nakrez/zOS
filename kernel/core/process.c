@@ -21,11 +21,11 @@ void process_initialize(void)
     klist_head_init(&processes);
 }
 
-static int process_new_pid(void)
+static pid_t process_new_pid(void)
 {
     struct process *process;
     int used;
-    int pid = 0;
+    pid_t pid = 0;
 
     for (; pid < PROCESS_MAX_PID; ++pid)
     {
@@ -107,7 +107,7 @@ static uintptr_t process_load_elf(struct process *p, uintptr_t elf)
 struct process *process_create(int type, uintptr_t code, int flags)
 {
     struct process *process;
-    int pid;
+    pid_t pid;
 
     if ((pid = process_new_pid()) < 0)
         return NULL;
@@ -162,7 +162,7 @@ error:
     return NULL;
 }
 
-struct process *process_get(int pid)
+struct process *process_get(pid_t pid)
 {
     struct process *process;
 
@@ -178,9 +178,7 @@ struct process *process_get(int pid)
 int process_fork(struct process *process, struct irq_regs *regs)
 {
     struct process *child;
-    int pid;
-
-    pid = process_new_pid();
+    pid_t pid = process_new_pid();
 
     if (!pid)
         return -1;

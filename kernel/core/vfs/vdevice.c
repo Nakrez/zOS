@@ -12,8 +12,8 @@
 static struct vdevice devices[VFS_MAX_DEVICE];
 static spinlock_t device_lock = SPINLOCK_INIT;
 
-int device_create(int pid, const char __user* name, vop_t ops,
-                  struct vdevice **device)
+dev_t device_create(pid_t pid, const char __user* name, vop_t ops,
+                    struct vdevice **device)
 {
     int found = 0;
 
@@ -79,7 +79,7 @@ int device_create(int pid, const char __user* name, vop_t ops,
     return (*device)->id;
 }
 
-struct vdevice *device_get(int dev)
+struct vdevice *device_get(dev_t dev)
 {
     if (dev < 0 || dev >= VFS_MAX_DEVICE)
         return NULL;
@@ -90,7 +90,7 @@ struct vdevice *device_get(int dev)
     return &devices[dev];
 }
 
-int device_recv_request(int dev, char *buf, size_t size)
+int device_recv_request(dev_t dev, char *buf, size_t size)
 {
     int pid = thread_current()->parent->pid;
 
@@ -106,7 +106,7 @@ int device_recv_request(int dev, char *buf, size_t size)
     return channel_recv_request(devices[dev].channel, buf, size);
 }
 
-int device_send_response(int dev, uint32_t req_id, char *buf, size_t size)
+int device_send_response(dev_t dev, uint32_t req_id, char *buf, size_t size)
 {
     int res;
     int pid = thread_current()->parent->pid;
@@ -136,7 +136,7 @@ int device_send_response(int dev, uint32_t req_id, char *buf, size_t size)
     return res;
 }
 
-int device_open(int dev, ino_t inode, uint16_t uid, uint16_t gid, int flags,
+int device_open(dev_t dev, ino_t inode, uid_t uid, gid_t gid, int flags,
                 mode_t mode)
 {
     int ret = 0;
@@ -187,7 +187,7 @@ int device_open(int dev, ino_t inode, uint16_t uid, uint16_t gid, int flags,
     return ret;
 }
 
-int device_read_write(int dev, struct req_rdwr *req, char *buf, int op)
+int device_read_write(dev_t dev, struct req_rdwr *req, char *buf, int op)
 {
     int res;
     struct vdevice *device;
@@ -267,7 +267,7 @@ end:
     return res;
 }
 
-int device_close(int dev, ino_t inode)
+int device_close(dev_t dev, ino_t inode)
 {
     int res;
     struct vdevice *device;
@@ -305,7 +305,7 @@ int device_close(int dev, ino_t inode)
     return res;
 }
 
-int device_destroy(int pid, int dev)
+int device_destroy(pid_t pid, dev_t dev)
 {
     if (dev < 0 || dev >= VFS_MAX_DEVICE)
         return -EINVAL;

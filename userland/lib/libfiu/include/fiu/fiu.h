@@ -6,7 +6,7 @@
 # include <fiu/block_cache.h>
 
 struct fiu_internal {
-    int dev_id;
+    dev_t dev_id;
 
     int running;
 

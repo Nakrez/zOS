@@ -14,7 +14,7 @@ struct vdevice {
 
     int active;
 
-    int id;
+    dev_t id;
 
     int pid;
 
@@ -36,8 +36,8 @@ struct vdevice {
  *          -ENOMEM: Cannot allocate memory
  *          -EEXIST: Device already exists
  */
-int device_create(int pid, const char __user* name, vop_t ops,
-                  struct vdevice **device);
+dev_t device_create(pid_t pid, const char __user* name, vop_t ops,
+                    struct vdevice **device);
 
 /* Get device structure from device id
  *
@@ -47,7 +47,7 @@ int device_create(int pid, const char __user* name, vop_t ops,
  *          NULL: error
  *          struct vdevice *: corresponding to device id
  */
-struct vdevice *device_get(int dev);
+struct vdevice *device_get(dev_t dev);
 
 /* Receive a buffer from device inbox
  *
@@ -61,7 +61,7 @@ struct vdevice *device_get(int dev);
  *                   process
  *          -ENODEV: Device does not exists
  */
-int device_recv_request(int dev, char *buf, size_t size);
+int device_recv_request(dev_t dev, char *buf, size_t size);
 
 /* Send a response
  *
@@ -71,14 +71,14 @@ int device_recv_request(int dev, char *buf, size_t size);
  *          -ENODEV: Device id does not belong to an active device
  *          -ENOMEM: Cannot allocate necessary memory
  */
-int device_send_response(int dev, uint32_t req_id, char *buf, size_t size);
+int device_send_response(dev_t dev, uint32_t req_id, char *buf, size_t size);
 
-int device_open(int dev, ino_t inode, uint16_t uid, uint16_t gid, int flags,
+int device_open(dev_t dev, ino_t inode, uid_t uid, gid_t gid, int flags,
                 mode_t mode);
-int device_read_write(int dev, struct req_rdwr *, char *buf, int op);
+int device_read_write(dev_t dev, struct req_rdwr *, char *buf, int op);
 
-int device_close(int dev, ino_t inode);
+int device_close(dev_t dev, ino_t inode);
 
-int device_destroy(int pid, int dev);
+int device_destroy(pid_t pid, dev_t dev);
 
 #endif /* !VFS_VDEVICE_H */

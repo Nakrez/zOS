@@ -19,7 +19,7 @@
 static struct mount_entry mount_points[MAX_MOUNTED_PATH];
 static spinlock_t mount_lock = SPINLOCK_INIT;
 
-static int vfs_check_mount_pts(int dev, const char *mount_path)
+static int vfs_check_mount_pts(dev_t dev, const char *mount_path)
 {
     int mount_nb = -1;
 
@@ -92,7 +92,7 @@ static int do_mount(struct thread *t, const char *mount_path, int mount_pt_nb)
     return mount_pt->ops->mount(mount_pt, res.inode, mount_pt_nb);
 }
 
-static void vfs_remount_root_message(int dev, const char *path, int mount_nb)
+static void vfs_remount_root_message(dev_t dev, const char *path, int mount_nb)
 {
     struct vdevice *device;
     struct message *message;
@@ -117,7 +117,7 @@ static void vfs_remount_root_message(int dev, const char *path, int mount_nb)
     message_free(message);
 }
 
-int vfs_mount(struct thread *t, int dev, const char *mount_path)
+int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
 {
     int ret;
     int mount_nb;

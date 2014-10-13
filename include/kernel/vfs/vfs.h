@@ -26,6 +26,6 @@
 # define VFS_OPS_STAT (1 << 9)
 
 int vfs_initialize(void);
-int vfs_device_create(const char *name, int pid, int perm, int ops);
+dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops);
 
 #endif /* !VFS_H */

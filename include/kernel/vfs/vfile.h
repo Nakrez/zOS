@@ -23,7 +23,7 @@ struct vfile {
 
     ino_t inode;
 
-    int dev;
+    dev_t dev;
 
     struct mount_entry *mount;
 };

@@ -2,7 +2,7 @@
 
 #include <arch/syscall.h>
 
-int device_create(const char *name, int perm, vop_t ops)
+dev_t device_create(const char *name, int perm, vop_t ops)
 {
     int ret;
 
