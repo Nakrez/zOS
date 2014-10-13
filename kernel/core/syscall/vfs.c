@@ -109,3 +109,15 @@ int sys_vfs_mount(struct syscall *interface)
 
     return vfs_mount(fd, path);
 }
+
+int sys_vfs_stat(struct syscall *interface)
+{
+    const char *path = (char *)interface->arg1;
+    struct stat *buf = (void *)interface->arg2;
+
+    if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf,
+                      sizeof (struct stat)))
+        return -EFAULT;
+
+    return vfs_stat(thread_current(), path, buf);
+}

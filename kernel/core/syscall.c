@@ -53,6 +53,8 @@ static syscall_callback syscalls[] =
     sys_vfs_lseek,
 
     sys_vfs_mount,
+
+    sys_vfs_stat,
 };
 
 void syscall_handler(struct irq_regs *regs)
