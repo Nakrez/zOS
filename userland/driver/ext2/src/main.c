@@ -15,6 +15,7 @@ static void ext2_root_remount(struct fiu_internal *fiu,
 static struct fiu_ops ext2_ops = {
     .root_remount = ext2_root_remount,
     .lookup = ext2fs_lookup,
+    .stat = ext2fs_stat,
     .open = ext2fs_open,
     .read = ext2fs_read,
     .close = ext2fs_close,

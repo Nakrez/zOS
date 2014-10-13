@@ -223,3 +223,36 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
 
     return response->ret;
 }
+
+int ext2fs_stat(struct fiu_internal *fiu, struct req_stat *req,
+                struct stat *response)
+{
+    struct ext2fs *ext2 = fiu->private;
+    struct ext2_inode *inode;
+
+    if (!(inode = ext2_icache_request(ext2, req->inode)))
+        return -1;
+
+    response->st_dev = fiu->dev_id;
+    response->st_ino = req->inode;
+    response->st_mode = inode->type_perm;
+    response->st_nlink = inode->hardlinks_count;
+    response->st_uid = inode->uid;
+    response->st_gid = inode->gid;
+    response->st_rdev = 0;
+    response->st_size = inode->lower_size;
+
+    if (ext2->sb.minor > 0 || ext2->sb.major > 0)
+    {
+        if (!(inode->type_perm & EXT2_TYPE_DIRECTORY))
+            response->st_size |= ((uint64_t)inode->directory_acl) << 32;
+    }
+
+    response->st_blksize = ext2->block_size;
+    response->st_blocks = inode->disk_sector_size;
+    response->st_atime = inode->last_access;
+    response->st_mtime = inode->last_modification;
+    response->st_ctime = inode->last_access;
+
+    return 0;
+}
