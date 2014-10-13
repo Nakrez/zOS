@@ -121,3 +121,15 @@ int sys_vfs_stat(struct syscall *interface)
 
     return vfs_stat(thread_current(), path, buf);
 }
+
+int sys_vfs_fstat(struct syscall *interface)
+{
+    int fd = interface->arg1;
+    struct stat *buf = (void *)interface->arg2;
+
+    if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf,
+                      sizeof (struct stat)))
+        return -EFAULT;
+
+    return vfs_fstat(thread_current(), fd, buf);
+}
