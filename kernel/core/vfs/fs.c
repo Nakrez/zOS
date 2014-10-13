@@ -55,7 +55,7 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uint16_t uid,
     request->uid = uid;
     request->gid = gid;
 
-    message->mid = (message->mid & ~0xFF) | VFS_OPS_LOOKUP;
+    message->mid = (message->mid & ~0xFF) | VFS_LOOKUP;
 
     if ((res = channel_send_recv(device->channel, message, &response)) < 0)
     {
@@ -91,7 +91,7 @@ static int fiu_open(struct mount_entry *root, ino_t inode, uint16_t uid,
 
 static int fiu_read(struct mount_entry *root, struct req_rdwr *req, void *buf)
 {
-    return device_read_write(root->dev, req, buf, VFS_OPS_READ);
+    return device_read_write(root->dev, req, buf, VFS_READ);
 }
 
 static int fiu_close(struct mount_entry *root, ino_t inode)

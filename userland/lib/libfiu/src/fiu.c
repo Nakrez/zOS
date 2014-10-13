@@ -51,28 +51,17 @@ int fiu_create(const char *name, uint16_t uid, uint16_t gid, int perm,
 
 static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
 {
-    int op = mid & 0xFF;
+    uint8_t op = mid & 0xFF;
 
-    if (!(fiu->capabilities & op))
+    switch (op)
     {
-        if (op == 0)
-        {
+        case 0:
             if (fiu->ops->root_remount)
                 fiu->ops->root_remount(fiu, (void *)buf);
             else
                 uprint("root_remount() was issued but not catched");
-
-            return;
-        }
-
-        uprint("fiu_dispatch(): Unsupported operation");
-
-        return;
-    }
-
-    switch (op)
-    {
-        case VFS_OPS_LOOKUP:
+            break;
+        case VFS_LOOKUP:
             {
                 struct resp_lookup resp;
 
@@ -82,7 +71,7 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
                                      sizeof (struct resp_lookup));
             }
             break;
-        case VFS_OPS_OPEN:
+        case VFS_OPEN:
             {
                 struct resp_open resp;
 
@@ -92,7 +81,7 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
                                      sizeof (struct resp_open));
             }
             break;
-        case VFS_OPS_READ:
+        case VFS_READ:
             {
                 struct resp_rdwr resp;
 
@@ -102,7 +91,7 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
                                      sizeof (struct resp_rdwr));
             }
             break;
-        case VFS_OPS_CLOSE:
+        case VFS_CLOSE:
             {
                 struct resp_close resp;
 
@@ -111,6 +100,9 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
                 device_send_response(fiu->dev_id, mid, &resp,
                                      sizeof (struct resp_close));
             }
+            break;
+        default:
+            uprint("fiu_dispatch(): Unsupported operation");
             break;
     }
 }

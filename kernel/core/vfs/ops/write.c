@@ -23,7 +23,7 @@ int vfs_write(int fd, const void *buf, size_t count)
 
     if (p->files[fd].dev >= 0)
         ret = device_read_write(p->files[fd].dev, &request, (void *)buf,
-                                VFS_OPS_WRITE);
+                                VFS_WRITE);
     else
     {
         if (!p->files[fd].mount->ops->write)

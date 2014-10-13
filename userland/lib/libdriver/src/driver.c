@@ -66,13 +66,7 @@ int driver_create(const char *dev_name, int uid, int gid, int perm,
 
 static void dispatch(struct driver *driver, int mid, char *buf)
 {
-    int op = mid & 0xFF;
-
-    if (!(op & driver->ops))
-    {
-        /* TODO */
-        uprint("Not supported");
-    }
+    uint8_t op = mid & 0xFF;
 
     switch (op)
     {
@@ -120,6 +114,9 @@ static void dispatch(struct driver *driver, int mid, char *buf)
                                      sizeof (struct resp_close));
             }
             break;
+        default:
+            uprint("Not supported");
+            break;
     }
 }
 
@@ -143,22 +140,6 @@ int driver_loop(struct driver *driver)
 
         dispatch(driver, res, buf);
     }
-
-    return 0;
-}
-
-int driver_send_response(struct driver *driver, int mid, int ret)
-{
-    (void) driver;
-    (void) mid;
-    (void) ret;
-    /* struct msg_response resp; */
-    /*  */
-    /* resp.req_id = mid; */
-    /* resp.ret = ret; */
-    /*  */
-    /* if (device_send_response(driver->dev_id, (void *)&resp, sizeof (resp)) < 0) */
-    /*     return -1; */
 
     return 0;
 }

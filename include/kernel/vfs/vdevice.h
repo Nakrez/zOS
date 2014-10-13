@@ -1,6 +1,7 @@
 #ifndef VFS_VDEVICE_H
 # define VFS_VDEVICE_H
 
+# include <kernel/types.h>
 # include <kernel/zos.h>
 
 # include <kernel/vfs/vchannel.h>
@@ -17,7 +18,7 @@ struct vdevice {
 
     int pid;
 
-    int ops;
+    vop_t ops;
 
     struct vchannel *channel;
 };
@@ -35,7 +36,7 @@ struct vdevice {
  *          -ENOMEM: Cannot allocate memory
  *          -EEXIST: Device already exists
  */
-int device_create(int pid, const char __user* name, int ops,
+int device_create(int pid, const char __user* name, vop_t ops,
                   struct vdevice **device);
 
 /* Get device structure from device id

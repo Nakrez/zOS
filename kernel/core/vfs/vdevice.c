@@ -12,7 +12,7 @@
 static struct vdevice devices[VFS_MAX_DEVICE];
 static spinlock_t device_lock = SPINLOCK_INIT;
 
-int device_create(int pid, const char __user* name, int ops,
+int device_create(int pid, const char __user* name, vop_t ops,
                   struct vdevice **device)
 {
     int found = 0;
@@ -160,7 +160,7 @@ int device_open(int dev, ino_t inode, uint16_t uid, uint16_t gid, int flags,
     request->flags = flags;
     request->mode = mode;
 
-    message->mid = (message->mid & ~0xFF) | VFS_OPS_OPEN;
+    message->mid = (message->mid & ~0xFF) | VFS_OPEN;
 
     if ((ret = channel_send_recv(device->channel, message, &response)) < 0)
     {
@@ -225,7 +225,7 @@ int device_read_write(int dev, struct req_rdwr *req, char *buf, int op)
         return -ENOMEM;
     }
 
-    if (op & VFS_OPS_WRITE)
+    if (op == VFS_WRITE)
     {
         res = as_copy(process->as, pdevice->as, buf, request->data,
                       request->size);
@@ -248,7 +248,7 @@ int device_read_write(int dev, struct req_rdwr *req, char *buf, int op)
         goto end;
     }
 
-    if (op & VFS_OPS_READ)
+    if (op == VFS_READ)
         res = as_copy(pdevice->as, process->as, request->data, buf,
                       request->size);
 
@@ -286,7 +286,7 @@ int device_close(int dev, ino_t inode)
 
     request->inode = inode;
 
-    message->mid = (message->mid & ~0xFF) | VFS_OPS_CLOSE;
+    message->mid = (message->mid & ~0xFF) | VFS_CLOSE;
 
     if ((res = channel_send_recv(device->channel, message, &response)) < 0)
     {

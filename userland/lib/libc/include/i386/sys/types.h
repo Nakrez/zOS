@@ -30,4 +30,6 @@ typedef __u64 blkcnt_t;
 
 typedef __i32 off_t;
 
+typedef __u32 vop_t;
+
 #endif /* !I386_SYS_TYPES_H */
