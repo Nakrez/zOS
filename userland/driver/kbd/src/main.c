@@ -89,7 +89,7 @@ int main(void)
         return 1;
     }
 
-    if (driver_create("kbd", 0, 0, 0444, &kbd_ops, &kbd_driver) < 0)
+    if (driver_create("kbd", 0444, &kbd_ops, &kbd_driver) < 0)
     {
         uprint("Cannot register \"kbd\" device");
         return 2;

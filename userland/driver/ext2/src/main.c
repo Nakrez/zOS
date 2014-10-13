@@ -42,7 +42,7 @@ int main(void)
         return 1;
     }
 
-    ret = fiu_create("ext2-ata-disk0", 0, 0, 0755, &ext2_ops, &ext2->fiu);
+    ret = fiu_create("ext2-ata-disk0", 0755, &ext2_ops, &ext2->fiu);
 
     if (ret < 0)
     {

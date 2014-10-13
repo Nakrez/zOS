@@ -7,9 +7,15 @@
 #include <kernel/vfs/vops.h>
 #include <kernel/vfs/fs.h>
 
-int vfs_lseek(int fd, int offset, int whence)
+int vfs_lseek(struct thread *t, int fd, int offset, int whence)
 {
-    struct process *process = thread_current()->parent;
+    struct process *process;
+
+    /* Kernel request */
+    if (!t)
+        process = process_get(0);
+    else
+        process = t->parent;
 
     if (!(whence & VFS_SEEK_SET) && !(whence & VFS_SEEK_CUR) &&
         !(whence & VFS_SEEK_END))

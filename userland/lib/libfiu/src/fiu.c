@@ -34,8 +34,8 @@ static int fiu_capabilities(struct fiu_internal *fiu)
     return 0;
 }
 
-int fiu_create(const char *name, uint16_t uid, uint16_t gid, int perm,
-               struct fiu_ops *ops, struct fiu_internal *fiu)
+int fiu_create(const char *name, int perm, struct fiu_ops *ops,
+               struct fiu_internal *fiu)
 {
     fiu->ops = ops;
     fiu->dev_id = -1;
@@ -44,7 +44,7 @@ int fiu_create(const char *name, uint16_t uid, uint16_t gid, int perm,
     if (fiu_capabilities(fiu) < 0)
         return -1;
 
-    fiu->dev_id = device_create(name, uid, gid, perm, fiu->capabilities);
+    fiu->dev_id = device_create(name, perm, fiu->capabilities);
 
     if (fiu->dev_id < 0)
         return fiu->dev_id;

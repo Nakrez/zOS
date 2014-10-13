@@ -2,12 +2,13 @@
 
 #include <kernel/errno.h>
 #include <kernel/kmalloc.h>
+#include <kernel/thread.h>
 
 #include <kernel/vfs/vops.h>
 #include <kernel/vfs/fs.h>
 #include <kernel/vfs/mount.h>
 
-int vfs_lookup(const char *path, int uid, int gid, struct resp_lookup *res,
+int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
                struct mount_entry **mount_pt)
 {
     int ret;
@@ -15,6 +16,20 @@ int vfs_lookup(const char *path, int uid, int gid, struct resp_lookup *res,
     int path_len = strlen(path);
     struct mount_entry *root = vfs_root_get();
     char *copied_path = kmalloc(path_len + 1);
+    uid_t uid;
+    gid_t gid;
+
+    /* Kernel request */
+    if (!t)
+    {
+        uid = 0;
+        gid = 0;
+    }
+    else
+    {
+        uid = t->uid;
+        gid = t->gid;
+    }
 
     if (!copied_path)
         return -ENOMEM;

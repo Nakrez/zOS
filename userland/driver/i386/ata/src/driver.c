@@ -176,7 +176,7 @@ void driver_device_thread(void *param)
 
     device_driver.private = &device_private;
 
-    if (driver_create(ata_name, 0, 0, 0600, &ata_ops, &device_driver) < 0)
+    if (driver_create(ata_name, 0600, &ata_ops, &device_driver) < 0)
     {
         uprint("Cannot spawn ata device driver");
 

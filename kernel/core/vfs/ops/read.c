@@ -8,11 +8,17 @@
 #include <kernel/vfs/fs.h>
 #include <kernel/vfs/vdevice.h>
 
-int vfs_read(int fd, void *buf, size_t count)
+int vfs_read(struct thread *t, int fd, void *buf, size_t count)
 {
     int ret;
-    struct process *p = thread_current()->parent;
+    struct process *p;
     struct req_rdwr request;
+
+    /* Kernel request */
+    if (!t)
+        p = process_get(0);
+    else
+        p = t->parent;
 
     if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
         return -EINVAL;

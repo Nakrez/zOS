@@ -29,8 +29,8 @@ struct fiu_ops {
     int (*close)(struct fiu_internal *, struct req_close *);
 };
 
-int fiu_create(const char *name, uint16_t uid, uint16_t gid, int perm,
-               struct fiu_ops *ops, struct fiu_internal *fiu);
+int fiu_create(const char *name, int perm, struct fiu_ops *ops,
+               struct fiu_internal *fiu);
 
 int fiu_main(struct fiu_internal *fiu, const char *mount_path);
 

@@ -2,6 +2,7 @@
 
 #include <kernel/errno.h>
 #include <kernel/console.h>
+#include <kernel/thread.h>
 
 #include <kernel/vfs/vfs.h>
 #include <kernel/vfs/tmpfs.h>
@@ -12,7 +13,7 @@
 
 int vfs_initialize(void)
 {
-    if (vfs_mount(TMPFS_DEV_ID, "/") < 0)
+    if (vfs_mount(NULL, TMPFS_DEV_ID, "/") < 0)
     {
         console_message(T_ERR, "Fail to mount tmpfs on /");
 
@@ -21,14 +22,14 @@ int vfs_initialize(void)
 
     console_message(T_OK, "Tmpfs mounted on /");
 
-    if (vfs_mkdir("/dev", 0, 0, 0755) < 0)
+    if (vfs_mkdir(NULL, "/dev", 0755) < 0)
     {
         console_message(T_ERR, "Fail to create /dev");
 
         return -1;
     }
 
-    if (vfs_mount(TMPFS_DEV_ID, "/dev") < 0)
+    if (vfs_mount(NULL, TMPFS_DEV_ID, "/dev") < 0)
     {
         console_message(T_ERR, "Fail to mount tmpfs on /dev");
 
@@ -40,8 +41,7 @@ int vfs_initialize(void)
     return 0;
 }
 
-int vfs_device_create(const char *name, int pid, int uid, int gid, int perm,
-                      int ops)
+int vfs_device_create(const char *name, int pid, int perm, int ops)
 {
     int res;
     struct vdevice *device = NULL;
@@ -65,7 +65,7 @@ int vfs_device_create(const char *name, int pid, int uid, int gid, int perm,
 
     strcat(node_path, name);
 
-    vfs_mknod(node_path, uid, gid, perm, device->id);
+    vfs_mknod(thread_current(), node_path, perm, device->id);
 
     return device->id;
 }

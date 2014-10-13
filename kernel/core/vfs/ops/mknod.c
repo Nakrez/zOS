@@ -1,18 +1,33 @@
 #include <string.h>
 
 #include <kernel/errno.h>
+#include <kernel/thread.h>
 
 #include <kernel/vfs/vops.h>
 #include <kernel/vfs/fs.h>
 
-int vfs_mknod(const char *path, int uid, int gid, mode_t mode, uint16_t dev)
+int vfs_mknod(struct thread *t, const char *path, mode_t mode, uint16_t dev)
 {
     int ret;
     int path_size = strlen(path);
     struct resp_lookup res;
     struct mount_entry *mount_pt;
+    uid_t uid;
+    gid_t gid;
 
-    if ((ret = vfs_lookup(path, uid, gid, &res, &mount_pt)) < 0)
+    /* Kernel request */
+    if (!t)
+    {
+        uid = 0;
+        gid = 0;
+    }
+    else
+    {
+        uid = t->uid;
+        gid = t->gid;
+    }
+
+    if ((ret = vfs_lookup(t, path, &res, &mount_pt)) < 0)
         return ret;
 
     if (!mount_pt->ops->mknod)

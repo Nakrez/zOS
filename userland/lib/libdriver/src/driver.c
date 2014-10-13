@@ -28,8 +28,8 @@ static int driver_base_close(struct driver *driver, int mid,
     return 0;
 }
 
-int driver_create(const char *dev_name, int uid, int gid, int perm,
-                  struct driver_ops *dev_ops, struct driver *result)
+int driver_create(const char *dev_name, int perm, struct driver_ops *dev_ops,
+                  struct driver *result)
 {
     int dev_id;
 
@@ -47,7 +47,7 @@ int driver_create(const char *dev_name, int uid, int gid, int perm,
     if (!(result->dev_name = malloc(strlen(dev_name) + 1)))
         return -1;
 
-    dev_id = device_create(dev_name, uid, gid, perm, result->ops);
+    dev_id = device_create(dev_name, perm, result->ops);
 
     if (dev_id < 0)
     {

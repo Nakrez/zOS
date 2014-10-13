@@ -12,16 +12,14 @@ int sys_vfs_device_create(struct syscall *interface)
     /* FIXME: Check name */
     char *name = (void *)interface->arg1;
     int pid = thread_current()->parent->pid;
-    int uid = interface->arg2;
-    int gid = interface->arg3;
-    int perm = interface->arg4;
-    int ops = interface->arg5;
+    int perm = interface->arg2;
+    int ops = interface->arg3;
 
     /* If thread is not root don't event think about creating the device */
     if (thread_current()->uid != 0)
         return -EPERM;
 
-    return vfs_device_create(name, pid, uid, gid, perm, ops);
+    return vfs_device_create(name, pid, perm, ops);
 }
 
 int sys_vfs_device_recv_request(struct syscall *interface)
@@ -54,12 +52,11 @@ int sys_vfs_device_send_response(struct syscall *interface)
 int sys_vfs_open(struct syscall *interface)
 {
     /* FIXME: Check pathname */
-    struct thread *thread = thread_current();
     const char *pathname = (void *)interface->arg1;
     int flags = interface->arg2;
     int mode = interface->arg3;
 
-    return vfs_open(pathname, thread->uid, thread->gid, flags, mode);
+    return vfs_open(thread_current(), pathname, flags, mode);
 }
 
 int sys_vfs_read(struct syscall *interface)
@@ -71,7 +68,7 @@ int sys_vfs_read(struct syscall *interface)
     if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf, count))
         return -EFAULT;
 
-    return vfs_read(fd, buf, count);
+    return vfs_read(thread_current(), fd, buf, count);
 }
 
 int sys_vfs_write(struct syscall *interface)
@@ -83,14 +80,14 @@ int sys_vfs_write(struct syscall *interface)
     if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf, count))
         return -EFAULT;
 
-    return vfs_write(fd, buf, count);
+    return vfs_write(thread_current(), fd, buf, count);
 }
 
 int sys_vfs_close(struct syscall *interface)
 {
     int fd = interface->arg1;
 
-    return vfs_close(fd);
+    return vfs_close(thread_current(), fd);
 }
 
 int sys_vfs_lseek(struct syscall *interface)
@@ -99,7 +96,7 @@ int sys_vfs_lseek(struct syscall *interface)
     int off = interface->arg2;
     int whence = interface->arg3;
 
-    return vfs_lseek(fd, off, whence);
+    return vfs_lseek(thread_current(), fd, off, whence);
 }
 
 int sys_vfs_mount(struct syscall *interface)
@@ -107,7 +104,7 @@ int sys_vfs_mount(struct syscall *interface)
     int fd = interface->arg1;
     const char *path = (char *)interface->arg2;
 
-    return vfs_mount(fd, path);
+    return vfs_mount(thread_current(), fd, path);
 }
 
 int sys_vfs_stat(struct syscall *interface)

@@ -25,8 +25,8 @@ struct driver_ops {
     int (*close)(struct driver *, int, struct req_close *);
 };
 
-int driver_create(const char *dev_name, int uid, int gid, int perm,
-                  struct driver_ops *dev_ops, struct driver *result);
+int driver_create(const char *dev_name, int perm, struct driver_ops *dev_ops,
+                  struct driver *result);
 
 int driver_loop(struct driver *driver);
 

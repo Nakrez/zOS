@@ -69,7 +69,7 @@ static int vfs_check_mount_pts(int dev, const char *mount_path)
     return mount_nb;
 }
 
-static int do_mount(const char *mount_path, int mount_pt_nb)
+static int do_mount(struct thread *t, const char *mount_path, int mount_pt_nb)
 {
     int ret;
     int path_size;
@@ -78,7 +78,7 @@ static int do_mount(const char *mount_path, int mount_pt_nb)
 
     path_size = strlen(mount_path);
 
-    ret = vfs_lookup(mount_path, 0, 0, &res, &mount_pt);
+    ret = vfs_lookup(t, mount_path, &res, &mount_pt);
 
     if (!mount_pt->ops->mount)
         return -ENOSYS;
@@ -117,7 +117,7 @@ static void vfs_remount_root_message(int dev, const char *path, int mount_nb)
     message_free(message);
 }
 
-int vfs_mount(int dev, const char *mount_path)
+int vfs_mount(struct thread *t, int dev, const char *mount_path)
 {
     int ret;
     int mount_nb;
@@ -147,7 +147,7 @@ int vfs_mount(int dev, const char *mount_path)
             }
         }
     }
-    else if ((ret = do_mount(mount_path, mount_nb)) < 0)
+    else if ((ret = do_mount(t, mount_path, mount_nb)) < 0)
         return ret;
 
     if (ops->init)

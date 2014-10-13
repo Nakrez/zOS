@@ -14,8 +14,22 @@ int vfs_stat(struct thread *t, const char *path, struct stat *buf)
     int path_size = strlen(path);
     struct mount_entry *mount_pt;
     struct resp_lookup lookup;
+    uid_t uid;
+    gid_t gid;
 
-    if ((ret = vfs_lookup(path, t->uid, t->gid, &lookup, &mount_pt)) < 0)
+    /* Kernel request */
+    if (!t)
+    {
+        uid = 0;
+        gid = 0;
+    }
+    else
+    {
+        uid = t->uid;
+        gid = t->gid;
+    }
+
+    if ((ret = vfs_lookup(t, path, &lookup, &mount_pt)) < 0)
         return ret;
 
     if (path_size != lookup.processed)
@@ -24,12 +38,18 @@ int vfs_stat(struct thread *t, const char *path, struct stat *buf)
     if (!mount_pt->ops->stat)
         return -ENOSYS;
 
-    return mount_pt->ops->stat(mount_pt, t->uid, t->gid, lookup.inode, buf);
+    return mount_pt->ops->stat(mount_pt, uid, gid, lookup.inode, buf);
 }
 
 int vfs_fstat(struct thread *t, int fd, struct stat *buf)
 {
-    struct process *p = t->parent;
+    struct process *p;
+
+    /* Kernel request */
+    if (!t)
+        p = process_get(0);
+    else
+        p = t->parent;
 
     if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
         return -EINVAL;

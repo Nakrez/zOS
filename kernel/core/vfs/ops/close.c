@@ -7,10 +7,16 @@
 #include <kernel/vfs/fs.h>
 #include <kernel/vfs/vdevice.h>
 
-int vfs_close(int fd)
+int vfs_close(struct thread *t, int fd)
 {
     int ret;
-    struct process *p = thread_current()->parent;
+    struct process *p;
+
+    /* Kernel request */
+    if (!t)
+        p = process_get(0);
+    else
+        p = thread_current()->parent;
 
     if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
         return -EINVAL;

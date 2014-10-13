@@ -7,16 +7,34 @@
 #include <kernel/vfs/fs.h>
 #include <kernel/vfs/vdevice.h>
 
-int vfs_open(const char *path, int uid, int gid, int flags, mode_t mode)
+int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
 {
     int ret;
     int fd;
     int path_size = strlen(path);
     struct resp_lookup res;
     struct mount_entry *mount_pt;
-    struct process *process = thread_current()->parent;
+    struct process *process;
+    uid_t uid;
+    gid_t gid;
 
-    if ((ret = vfs_lookup(path, uid, gid, &res, &mount_pt)) < 0)
+    /* Kernel request */
+    if (!t)
+    {
+        uid = 0;
+        gid = 0;
+
+        process = process_get(0);
+    }
+    else
+    {
+        uid = t->uid;
+        gid = t->gid;
+
+        process = t->parent;
+    }
+
+    if ((ret = vfs_lookup(t, path, &res, &mount_pt)) < 0)
         return ret;
 
     if (!mount_pt->ops->open)
