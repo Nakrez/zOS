@@ -36,6 +36,8 @@ int ext2fs_read(struct fiu_internal *fiu, struct req_rdwr *req, size_t *size)
     if (!inode)
         return -1;
 
+    *size = 0;
+
     file_size = inode->lower_size;
 
     if (ext2->sb.minor > 0 || ext2->sb.major > 0)
