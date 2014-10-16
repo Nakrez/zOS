@@ -142,7 +142,7 @@ static int install_pt_if_needed(uint32_t *pd, uint32_t pd_index, int flags)
 }
 
 static int map_mirror(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
-                int flags)
+                      int flags)
 {
     uint32_t pd_index = (vaddr >> 22) & 0x3FF;
     uint32_t pt_index = (vaddr >> 12) & 0x3FF;
@@ -221,7 +221,7 @@ int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
 
 void clean_if_needed(uint32_t *pt, uint32_t *pd, uint32_t pd_index)
 {
-    for (size_t i = 0; i < PAGE_SIZE; ++i)
+    for (size_t i = 0; i < PAGE_SIZE / sizeof (uint32_t); ++i)
         if (pt[i])
             return;
 
@@ -248,8 +248,6 @@ int unmap_mirror(struct as *as, vaddr_t vaddr, size_t size)
     while (1)
     {
         pt[pt_index] = 0;
-
-        cpu_flush_tlb();
 
         vaddr += PAGE_SIZE;
 
@@ -278,6 +276,8 @@ int unmap_mirror(struct as *as, vaddr_t vaddr, size_t size)
 
     if (as != &kernel_as)
         clean_if_needed(pt, pd, pd_index);
+
+    cpu_flush_tlb();
 
     return 1;
 }
