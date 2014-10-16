@@ -252,7 +252,7 @@ int device_read_write(struct process *process, dev_t dev, struct req_rdwr *req,
 
     if (op == VFS_READ)
         res = as_copy(pdevice->as, process->as, request->data, buf,
-                      request->size);
+                      answer->size);
 
     if (res == 0)
     {
