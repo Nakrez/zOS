@@ -85,6 +85,16 @@ int thread_create(struct process *process, uintptr_t code, size_t arg_count,
     return thread->tid;
 }
 
+int thread_update_exec(struct thread *thread, uintptr_t eip)
+{
+    thread->tid = 0;
+
+    if (!glue_call(thread, create, thread->parent, thread, eip, 0, 0, 0))
+        return -1;
+
+    return 0;
+}
+
 int thread_duplicate(struct process *process, struct thread *thread,
                      struct irq_regs *regs)
 {

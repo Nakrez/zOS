@@ -65,6 +65,8 @@ extern struct thread_glue thread_glue_dispatcher;
 int thread_create(struct process *process, uintptr_t code, size_t arg_count,
                   uintptr_t arg1, uintptr_t arg2);
 
+int thread_update_exec(struct thread *thread, uintptr_t eip);
+
 int thread_duplicate(struct process *process, struct thread *thread,
                      struct irq_regs *regs);
 
