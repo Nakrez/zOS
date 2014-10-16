@@ -5,6 +5,7 @@
 # define ENOENT 2 /* No such file or directory */
 # define EBADF 9 /* Bad file number */
 # define ENOMEM 12 /* Out of memory */
+# define EACCES 13 /* Permission denied */
 # define EFAULT 14 /* Bad address */
 # define EBUSY 16 /* Device or resource busy */
 # define EEXIST 17 /* File exists */
