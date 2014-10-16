@@ -22,5 +22,18 @@ int inode_block_data(struct ext2fs *ext2, struct ext2_inode *inode,
         return 1;
     }
 
+    offset -= 12 * ext2->block_size;
+
+    /* Singly indirect block ptr */
+    if (offset < (ext2->block_size / sizeof (uint32_t)) * ext2->block_size)
+    {
+        uint32_t *blk = fiu_cache_request(&ext2->fiu, inode->singly_ibp);
+
+        if (!blk)
+            return 0;
+
+        return blk[offset / ext2->block_size];
+    }
+
     return 0;
 }
