@@ -45,9 +45,22 @@ void scheduler_update(struct irq_regs *regs)
     --cpu->scheduler.time;
 
     if (cpu->scheduler.time <= 0 ||
-        cpu->scheduler.running->state != THREAD_STATE_RUNNING)
+        cpu->scheduler.running->state != THREAD_STATE_RUNNING ||
+        !regs)
     {
-        struct thread *new_thread = scheduler_elect(&cpu->scheduler);
+        int state;
+        struct thread *new_thread;
+
+        if (cpu->scheduler.running)
+        {
+            state = cpu->scheduler.running->state;
+            cpu->scheduler.running->state = THREAD_STATE_BLOCKED;
+        }
+
+        new_thread = scheduler_elect(&cpu->scheduler);
+
+        if (cpu->scheduler.running)
+            cpu->scheduler.running->state = state;
 
         while (new_thread->state == THREAD_STATE_ZOMBIE)
         {
