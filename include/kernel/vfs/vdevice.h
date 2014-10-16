@@ -75,7 +75,8 @@ int device_send_response(dev_t dev, uint32_t req_id, char *buf, size_t size);
 
 int device_open(dev_t dev, ino_t inode, uid_t uid, gid_t gid, int flags,
                 mode_t mode);
-int device_read_write(dev_t dev, struct req_rdwr *, char *buf, int op);
+int device_read_write(struct process *process, dev_t dev, struct req_rdwr *req,
+                      char *buf, int op);
 
 int device_close(dev_t dev, ino_t inode);
 

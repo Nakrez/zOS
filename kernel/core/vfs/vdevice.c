@@ -189,7 +189,8 @@ int device_open(dev_t dev, ino_t inode, uid_t uid, gid_t gid, int flags,
     return ret;
 }
 
-int device_read_write(dev_t dev, struct req_rdwr *req, char *buf, int op)
+int device_read_write(struct process *process, dev_t dev, struct req_rdwr *req,
+                      char *buf, int op)
 {
     int res;
     struct vdevice *device;
@@ -198,7 +199,6 @@ int device_read_write(dev_t dev, struct req_rdwr *req, char *buf, int op)
     struct req_rdwr *request;
     struct message *response = NULL;
     struct resp_rdwr *answer;
-    struct process *process = thread_current()->parent;
 
     if (!(device = device_get(dev)))
         return -ENODEV;

@@ -3,6 +3,8 @@
 
 # include <kernel/types.h>
 
+# include <kernel/proc/process.h>
+
 # include <kernel/vfs/mount.h>
 # include <kernel/vfs/message.h>
 # include <kernel/vfs/vops.h>
@@ -18,8 +20,10 @@ struct fs_ops {
     int (*stat)(struct mount_entry *, uid_t, gid_t, ino_t, struct stat *);
     int (*mount)(struct mount_entry *, ino_t, int);
     int (*open)(struct mount_entry *, ino_t, uid_t, gid_t, int, mode_t);
-    int (*read)(struct mount_entry *, struct req_rdwr *, void *buf);
-    int (*write)(struct mount_entry *, struct req_rdwr *, const void *buf);
+    int (*read)(struct mount_entry *, struct process *, struct req_rdwr *,
+                void *buf);
+    int (*write)(struct mount_entry *, struct process *, struct req_rdwr *,
+                 const void *buf);
     int (*close)(struct mount_entry *, ino_t);
     void (*cleanup)(void *);
 };

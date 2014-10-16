@@ -142,9 +142,10 @@ static int fiu_open(struct mount_entry *root, ino_t inode, uid_t uid,
     return device_open(root->dev, inode, uid, gid, flags, mode);
 }
 
-static int fiu_read(struct mount_entry *root, struct req_rdwr *req, void *buf)
+static int fiu_read(struct mount_entry *root, struct process *process,
+                    struct req_rdwr *req, void *buf)
 {
-    return device_read_write(root->dev, req, buf, VFS_READ);
+    return device_read_write(process, root->dev, req, buf, VFS_READ);
 }
 
 static int fiu_close(struct mount_entry *root, ino_t inode)

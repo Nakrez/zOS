@@ -29,13 +29,14 @@ int vfs_read(struct thread *t, int fd, void *buf, size_t count)
     request.off = p->files[fd].offset;
 
     if (p->files[fd].dev >= 0)
-        ret = device_read_write(p->files[fd].dev, &request, buf, VFS_READ);
+        ret = device_read_write(p, p->files[fd].dev, &request, buf, VFS_READ);
     else
     {
         if (!p->files[fd].mount->ops->read)
             return -ENOSYS;
 
-        ret = p->files[fd].mount->ops->read(p->files[fd].mount, &request, buf);
+        ret = p->files[fd].mount->ops->read(p->files[fd].mount, p, &request,
+                                            buf);
     }
 
     if (ret < 0)
