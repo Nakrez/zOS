@@ -66,7 +66,7 @@ void page_fault_handler(struct irq_regs *regs)
         kernel_panic("");
     }
 
-    if (regs->irq_data & PAGE_FAULT_USER)
+    if (addr_fault < KERNEL_BEGIN || regs->irq_data & PAGE_FAULT_USER)
     {
         if (regs->irq_data & PAGE_FAULT_WRITE)
         {
@@ -82,18 +82,21 @@ void page_fault_handler(struct irq_regs *regs)
             }
         }
 
-        console_message(T_ERR, "Process %i: page fault (0x%x, 0x%x)",
-                        thread->parent->pid, addr_fault, regs->irq_data);
+        if (regs->irq_data & PAGE_FAULT_USER)
+        {
+            console_message(T_ERR, "Process %i: page fault (0x%x, 0x%x)",
+                            thread->parent->pid, addr_fault, regs->irq_data);
 
-        process_exit(thread->parent, PROCESS_CODE_SEGV);
+            process_exit(thread->parent, PROCESS_CODE_SEGV);
+
+            return;
+        }
     }
-    else
-    {
-        console_message(T_ERR, "KERNEL PAGE FAULT");
 
-        console_message(T_ERR, "Faulting address: 0x%x", addr_fault);
-        console_message(T_ERR, "Error code: 0x%x", regs->irq_data);
+    console_message(T_ERR, "KERNEL PAGE FAULT");
 
-        kernel_panic("");
-    }
+    console_message(T_ERR, "Faulting address: 0x%x", addr_fault);
+    console_message(T_ERR, "Error code: 0x%x", regs->irq_data);
+
+    kernel_panic("");
 }
