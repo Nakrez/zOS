@@ -18,5 +18,6 @@
 # define ENOSYS 38 /* Function not implemented */
 # define EBADE 52 /* Invalid exchange */
 # define ENODATA 61 /* No data available */
+# define ELIBBAD 80 /* Accessing a corrupted shared library */
 
 #endif /* !ERRNO_H */
