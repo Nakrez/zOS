@@ -3353,4 +3353,10 @@ typedef Elf32_Addr Elf32_Conflict;
 
 #define R_TILEGX_NUM		130
 
+struct process;
+
+int is_elf(void *elf);
+
+uintptr_t process_load_elf(struct process *p, uintptr_t elf);
+
 #endif	/* elf.h */
