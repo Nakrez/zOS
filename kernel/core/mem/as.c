@@ -338,26 +338,43 @@ int as_remap(struct as *as, struct as_mapping *map, int flags)
 int as_copy(struct as *src_as, struct as *dest_as, const void *src, void *dest,
             size_t size)
 {
-    /* Locate the mapping on address space 1 */
-    struct as_mapping *mapping_src = as_mapping_locate(src_as, (vaddr_t)src);
+    size_t offset_src;
+    size_t offset_dest;
+    vaddr_t kaddr_src;
+    vaddr_t kaddr_dest;
 
-    /* Locate the mapping on address space 2 */
-    struct as_mapping *mapping_dest = as_mapping_locate(dest_as,
-                                                        (vaddr_t)dest);
+    if (src_as == &kernel_as || src > (void *)KERNEL_BEGIN)
+    {
+        offset_src = 0;
+        kaddr_src = (vaddr_t)src;
+    }
+    else
+    {
+        struct as_mapping *mapping_src = as_mapping_locate(src_as,
+                                                           (vaddr_t)src);
+        offset_src = (vaddr_t)src - mapping_src->virt;
+        kaddr_src = as_map(&kernel_as, 0, mapping_src->phy->base, size,
+                           AS_MAP_WRITE);
+    }
 
-    /* Calculate offset from base */
-    size_t offset_src = (vaddr_t)src - mapping_src->virt;
-    size_t offset_dest = (vaddr_t)dest - mapping_dest->virt;
+    if (dest_as == &kernel_as || dest > (void *)KERNEL_BEGIN)
+    {
+        offset_dest = 0;
+        kaddr_dest = (vaddr_t)dest;
+    }
+    else
+    {
+        struct as_mapping *mapping_dest = as_mapping_locate(dest_as,
+                                                            (vaddr_t)dest);
+        offset_dest = (vaddr_t)dest - mapping_dest->virt;
+        kaddr_dest = as_map(&kernel_as, 0, mapping_dest->phy->base, size,
+                            AS_MAP_WRITE);
 
-    vaddr_t kaddr_src = as_map(&kernel_as, 0, mapping_src->phy->base, size,
-                               AS_MAP_WRITE);
-
-    vaddr_t kaddr_dest = as_map(&kernel_as, 0, mapping_dest->phy->base, size,
-                                AS_MAP_WRITE);
+    }
 
     if (!kaddr_src)
     {
-        if (kaddr_dest)
+        if (kaddr_dest && dest_as != &kernel_as)
             as_unmap(&kernel_as, kaddr_dest, AS_UNMAP_NORELEASE);
 
         return -ENOMEM;
@@ -365,7 +382,8 @@ int as_copy(struct as *src_as, struct as *dest_as, const void *src, void *dest,
 
     if (!kaddr_dest)
     {
-        as_unmap(&kernel_as, kaddr_src, AS_UNMAP_NORELEASE);
+        if (kaddr_src && src_as != &kernel_as)
+            as_unmap(&kernel_as, kaddr_src, AS_UNMAP_NORELEASE);
 
         return -ENOMEM;
     }
@@ -373,8 +391,10 @@ int as_copy(struct as *src_as, struct as *dest_as, const void *src, void *dest,
     memcpy((void *)(kaddr_dest + offset_dest),
            (void *)(kaddr_src + offset_src), size);
 
-    as_unmap(&kernel_as, kaddr_src, AS_UNMAP_NORELEASE);
-    as_unmap(&kernel_as, kaddr_dest, AS_UNMAP_NORELEASE);
+    if (src_as != &kernel_as && src < (void *)KERNEL_BEGIN)
+        as_unmap(&kernel_as, kaddr_src, AS_UNMAP_NORELEASE);
+    if (dest_as != &kernel_as && dest < (void *)KERNEL_BEGIN)
+        as_unmap(&kernel_as, kaddr_dest, AS_UNMAP_NORELEASE);
 
     return 0;
 }
