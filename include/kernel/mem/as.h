@@ -112,6 +112,7 @@ int as_copy(struct as *src_as, struct as *dest_as, const void *src, void *dest,
  */
 void as_unmap(struct as *as, vaddr_t vaddr, int flags);
 
+void as_clean(struct as *as);
 void as_destroy(struct as *as);
 
 #endif /* !AS_H */

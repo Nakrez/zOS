@@ -399,6 +399,17 @@ int as_copy(struct as *src_as, struct as *dest_as, const void *src, void *dest,
     return 0;
 }
 
+void as_clean(struct as *as)
+{
+    klist_for_each(&as->mapping, mlist, list)
+    {
+        struct as_mapping *map = klist_elem(mlist, struct as_mapping, list);
+
+        if (map->virt < KERNEL_BEGIN)
+            as_unmap(as, map->virt, AS_UNMAP_RELEASE);
+    }
+}
+
 void as_destroy(struct as *as)
 {
     klist_for_each(&as->mapping, mlist, list)
