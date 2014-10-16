@@ -42,7 +42,7 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
     }
 
     res = as_copy(thread_current()->parent->as, pdevice->as, path,
-                  request->path, request->path_size);
+                  request->path, request->path_size + 1);
 
     if (res < 0)
     {
