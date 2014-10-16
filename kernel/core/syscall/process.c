@@ -37,5 +37,5 @@ int sys_execve(struct syscall *interface)
     char **const argv = (void *)interface->arg2;
     char **const envp = (void *)interface->arg3;
 
-    return process_execve(thread_current()->parent, filename, argv, envp);
+    return process_execve(thread_current(), filename, argv, envp);
 }
