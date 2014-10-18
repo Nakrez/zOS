@@ -14,6 +14,28 @@ static inline void cs_set(uint32_t cs)
                          : "memory");
 }
 
+static inline uint32_t eflags_get(void)
+{
+    uint32_t ret;
+
+    __asm__ __volatile__("pushfl\n"
+                         "pop %%eax\n"
+                         "mov %%eax, %0\n"
+                         : "=r" (ret)
+                         :);
+
+    return ret;
+}
+
+static inline void eflags_set(uint32_t eflags)
+{
+    __asm__ __volatile__("pushl %0\n"
+                         "popfl\n"
+                         :
+                         : "g" (eflags)
+                         : "memory");
+}
+
 # define REG_SET(name)                              \
     static inline void name ## _set(uint16_t name)  \
     {                                               \
