@@ -174,8 +174,6 @@ void thread_block(struct thread *thread, int event, int data, spinlock_t *l)
         spinlock_unlock(l);
 
     scheduler_remove_thread(thread, &cpu->scheduler);
-
-    --cpu->scheduler.thread_num;
 }
 
 void thread_unblock(struct thread *thread)

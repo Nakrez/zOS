@@ -51,7 +51,7 @@ void scheduler_update(struct irq_regs *regs)
         int state;
         struct thread *new_thread;
 
-        if (cpu->scheduler.running)
+        if (!regs && cpu->scheduler.running)
         {
             state = cpu->scheduler.running->state;
             cpu->scheduler.running->state = THREAD_STATE_BLOCKED;
@@ -59,7 +59,7 @@ void scheduler_update(struct irq_regs *regs)
 
         new_thread = scheduler_elect(&cpu->scheduler);
 
-        if (cpu->scheduler.running)
+        if (!regs && cpu->scheduler.running)
             cpu->scheduler.running->state = state;
 
         while (new_thread->state == THREAD_STATE_ZOMBIE)
@@ -118,8 +118,14 @@ void scheduler_switch(struct scheduler *sched, struct thread *new_thread,
 
 void scheduler_remove_thread(struct thread *t, struct scheduler *sched)
 {
+    spinlock_lock(&sched->sched_lock);
+
     if (t == sched->running)
     {
+        --sched->thread_num;
+
+        spinlock_unlock(&sched->sched_lock);
+
         /* FIXME: Move that shit away ! */
         if (sched->running->state != THREAD_STATE_ZOMBIE)
         {
@@ -134,5 +140,11 @@ void scheduler_remove_thread(struct thread *t, struct scheduler *sched)
         scheduler_update(NULL);
     }
     else
+    {
+        --sched->thread_num;
+
         klist_del(&t->sched);
+
+        spinlock_unlock(&sched->sched_lock);
+    }
 }
