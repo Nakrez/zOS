@@ -32,6 +32,12 @@ struct usban_shift_out_of_bounds_data {
     struct ubsan_type_descriptor *rhs_type;
 };
 
+struct usban_out_of_bounds_data {
+    struct ubsan_source_location location;
+    struct ubsan_type_descriptor *array_type;
+    struct ubsan_type_descriptor *index_type;
+};
+
 static void ubsan_report(struct ubsan_source_location *location,
                          const char *reason)
 {
@@ -105,4 +111,12 @@ void __ubsan_handle_shift_out_of_bounds(
 
 
     ubsan_report(&data->location, "shift out of bound");
+}
+
+void __ubsan_handle_out_of_bounds(struct usban_out_of_bounds_data *data,
+                                  uintptr_t ptr)
+{
+    (void) ptr;
+
+    ubsan_report(&data->location, "out of bound");
 }
