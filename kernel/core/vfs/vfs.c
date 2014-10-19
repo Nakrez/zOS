@@ -68,5 +68,7 @@ dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops)
 
     vfs_mknod(thread_current(), node_path, perm, device->id);
 
+    kfree(node_path);
+
     return device->id;
 }

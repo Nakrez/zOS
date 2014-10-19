@@ -102,6 +102,8 @@ error:
     if (process->as != &kernel_as)
         kfree(process->as);
 
+    kfree(process);
+
     return NULL;
 }
 

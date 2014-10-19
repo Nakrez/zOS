@@ -66,7 +66,11 @@ int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
         processed += res->processed;
 
         if (!processed || processed > path_len)
+        {
+            kfree(copied_path);
+
             return -EBADE;
+        }
 
         if (res->ret == RES_OK || res->ret == RES_KO)
             break;

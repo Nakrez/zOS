@@ -63,6 +63,8 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
         ret->dev = -1;
         ret->ret = RES_KO;
 
+        kfree(path_copy);
+
         return 0;
     }
 
