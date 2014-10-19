@@ -16,7 +16,7 @@ struct partition_entry {
     uint32_t start_lba;
 
     uint32_t size;
-};
+} __attribute__ ((packed));
 
 void partition_initialize(struct partition *parts, void *mbr)
 {

@@ -123,7 +123,10 @@ static void dispatch(struct driver *driver, int mid, char *buf)
 int driver_loop(struct driver *driver)
 {
     int res;
-    char buf[255];
+    char *buf = malloc(255);
+
+    if (!buf)
+        return 1;
 
     while (driver->running)
     {

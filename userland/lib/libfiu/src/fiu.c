@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <zos/device.h>
 #include <zos/print.h>
 
@@ -123,7 +125,10 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
 static int fiu_loop(struct fiu_internal *fiu)
 {
     int res;
-    char buf[255];
+    char *buf = malloc(255);
+
+    if (!buf)
+        return 1;
 
     fiu->running = 1;
 
