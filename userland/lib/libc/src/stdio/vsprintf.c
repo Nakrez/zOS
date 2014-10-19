@@ -55,6 +55,16 @@ int vsprintf(char *str, const char *format, va_list ap)
                     break;
                 case 'x':
                     print_int(&str, va_arg(ap, unsigned), 16);
+                case 's':
+                    {
+                        char *s = va_arg(ap, char *);
+
+                        while (*s)
+                        {
+                            *(str++) = *(s++);
+                        }
+                    }
+                    break;
                 case '%':
                     *(str++) = '%';
                     break;
