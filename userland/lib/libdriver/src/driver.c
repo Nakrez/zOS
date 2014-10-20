@@ -43,6 +43,8 @@ int driver_create(const char *dev_name, int perm, struct driver_ops *dev_ops,
         result->ops |= VFS_OPS_READ;
     if (dev_ops->write != NULL)
         result->ops |= VFS_OPS_WRITE;
+    if (dev_ops->ioctl != NULL)
+        result->ops |= VFS_OPS_IOCTL;
 
     if (!(result->dev_name = malloc(strlen(dev_name) + 1)))
         return -1;
@@ -70,7 +72,7 @@ static void dispatch(struct driver *driver, int mid, char *buf)
 
     switch (op)
     {
-        case VFS_OPS_OPEN:
+        case VFS_OPEN:
             {
                 struct resp_open response;
 
@@ -81,7 +83,7 @@ static void dispatch(struct driver *driver, int mid, char *buf)
                                      sizeof (struct resp_open));
             }
             break;
-        case VFS_OPS_READ:
+        case VFS_READ:
             {
                 struct resp_rdwr response;
 
@@ -92,7 +94,7 @@ static void dispatch(struct driver *driver, int mid, char *buf)
                                      sizeof (struct resp_rdwr));
             }
             break;
-        case VFS_OPS_WRITE:
+        case VFS_WRITE:
             {
                 struct resp_rdwr response;
 
@@ -103,7 +105,7 @@ static void dispatch(struct driver *driver, int mid, char *buf)
                                      sizeof (struct resp_rdwr));
             }
             break;
-        case VFS_OPS_CLOSE:
+        case VFS_CLOSE:
             {
                 struct resp_close response;
 
@@ -114,6 +116,16 @@ static void dispatch(struct driver *driver, int mid, char *buf)
                                      sizeof (struct resp_close));
             }
             break;
+        case VFS_IOCTL:
+            {
+                struct resp_ioctl response;
+
+                response.ret = driver->dev_ops->ioctl(driver, mid, (void *)buf,
+                                                      &response);
+
+                device_send_response(driver->dev_id, mid, &response,
+                                     sizeof (struct resp_ioctl));
+            }
         default:
             uprint("Not supported");
             break;

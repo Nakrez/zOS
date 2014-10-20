@@ -23,6 +23,8 @@ struct driver_ops {
     int (*read)(struct driver *, int, struct req_rdwr *, size_t *);
     int (*write)(struct driver *, int, struct req_rdwr *, size_t *);
     int (*close)(struct driver *, int, struct req_close *);
+    int (*ioctl)(struct driver *, int, struct req_ioctl *,
+                 struct resp_ioctl *);
 };
 
 int driver_create(const char *dev_name, int perm, struct driver_ops *dev_ops,
