@@ -131,3 +131,12 @@ int sys_vfs_fstat(struct syscall *interface)
 
     return vfs_fstat(thread_current(), fd, buf);
 }
+
+int sys_vfs_ioctl(struct syscall *interface)
+{
+    int fd = interface->arg1;
+    int request = interface->arg2;
+    int *argp = (int *)interface->arg3;
+
+    return vfs_ioctl(thread_current(), fd, request, argp);
+}

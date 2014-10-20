@@ -74,4 +74,6 @@ int sys_vfs_mount(struct syscall *interface);
 int sys_vfs_stat(struct syscall *interface);
 int sys_vfs_fstat(struct syscall *interface);
 
+int sys_vfs_ioctl(struct syscall *interface);
+
 #endif /* !SYSCALL_H */
