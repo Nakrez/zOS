@@ -16,6 +16,7 @@
 # define VFS_MKDIR 8
 # define VFS_MKNOD 9
 # define VFS_STAT 10
+# define VFS_IOCTL 11
 
 # define VFS_OPS_OPEN (1 << 0)
 # define VFS_OPS_READ (1 << 1)
@@ -27,6 +28,7 @@
 # define VFS_OPS_MKDIR (1 << 7)
 # define VFS_OPS_MKNOD (1 << 8)
 # define VFS_OPS_STAT (1 << 9)
+# define VFS_OPS_IOCTL (1 << 10)
 
 /*
  * Special request emitted by the kernel when remounting root with userland
@@ -113,6 +115,26 @@ struct req_close {
 /* Close response */
 struct resp_close {
     int ret;
+};
+
+/* Ioctl request */
+struct req_ioctl {
+    ino_t inode;
+
+    int request;
+
+    int with_argp;
+
+    int argp;
+};
+
+/* Ioctl response */
+struct resp_ioctl {
+    int ret;
+
+    int modify_argp;
+
+    int argp;
 };
 
 #endif /* !ZOS_VFS_H */

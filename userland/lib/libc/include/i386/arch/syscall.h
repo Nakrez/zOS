@@ -26,6 +26,7 @@
 # define SYS_MOUNT 23
 # define SYS_STAT 24
 # define SYS_FSTAT 25
+# define SYS_IOCTL 26
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \
