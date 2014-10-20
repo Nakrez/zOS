@@ -14,9 +14,10 @@ int fiu_cache_initialize(struct fiu_internal *fiu, size_t cache_size,
     if (!(fiu->block_cache = malloc(sizeof (struct fiu_cache))))
         return -1;
 
-    fiu->block_cache->blocks_head = malloc(sizeof (struct fiu_block) *
-                                           cache_size + block_size *
-                                           cache_size);
+    block = malloc(sizeof (struct fiu_block) * cache_size + block_size *
+                   cache_size);
+
+    fiu->block_cache->blocks_head = block;
 
     if (!fiu->block_cache->blocks_head)
     {
