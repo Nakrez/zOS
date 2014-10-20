@@ -5,13 +5,6 @@
 #include "fs.h"
 #include "file.h"
 
-static void ext2_root_remount(struct fiu_internal *fiu,
-                              struct req_root_remount *req)
-{
-    (void) fiu;
-    (void) req;
-}
-
 static struct fiu_ops ext2_ops = {
     .root_remount = ext2_root_remount,
     .lookup = ext2fs_lookup,

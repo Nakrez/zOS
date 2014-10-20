@@ -160,6 +160,38 @@ uint32_t inode_find_in_dir(struct ext2fs *ext2, struct ext2_inode *inode,
     return res;
 }
 
+void ext2_root_remount(struct fiu_internal *fiu, struct req_root_remount *req)
+{
+    int ret;
+    struct ext2fs *ext2 = fiu->private;
+    struct req_lookup reql;
+    struct resp_lookup resp;
+    struct ext2_inode *inode;
+
+    reql.path = req->path;
+    reql.path_size = strlen(req->path);
+    reql.uid = 0;
+    reql.gid = 0;
+
+    ret = ext2fs_lookup(fiu, &reql, &resp);
+
+    if (ret != LOOKUP_RES_OK)
+        return;
+
+    if (!(inode = ext2_icache_request(ext2, resp.inode)))
+        return;
+
+    if ((inode->type_perm & EXT2_TYPE_DIRECTORY) != EXT2_TYPE_DIRECTORY)
+    {
+        ext2_icache_release(ext2, resp.inode);
+
+        return;
+    }
+
+    inode->type_perm |= EXT2_TYPE_MOUNT_PT;
+    inode->lower_size = req->mount_pt;
+}
+
 int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
                   struct resp_lookup *response)
 {
@@ -172,6 +204,7 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
 
     response->ret = -1;
     response->processed = 0;
+    response->dev = -1;
 
     while (*req->path == '/')
     {
@@ -183,8 +216,21 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
 
     while (1)
     {
-        if (!(inode->type_perm & EXT2_TYPE_DIRECTORY))
+        if ((inode->type_perm & EXT2_TYPE_DIRECTORY) != EXT2_TYPE_DIRECTORY)
+        {
+            ext2_icache_release(ext2, inode_nb);
+
             break;
+        }
+
+        if ((inode->type_perm & EXT2_TYPE_MOUNT_PT) == EXT2_TYPE_MOUNT_PT)
+        {
+            response->ret = LOOKUP_RES_ENTER_MOUNT;
+            response->dev = inode->lower_size;
+            ext2_icache_release(ext2, inode_nb);
+
+            break;
+        }
 
         if (!(tmp = inode_find_in_dir(ext2, inode, part)))
         {
@@ -211,7 +257,6 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
     }
 
     response->inode = inode_nb;
-    response->dev = -1;
 
     if (response->ret == -1)
     {

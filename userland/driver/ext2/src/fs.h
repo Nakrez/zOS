@@ -92,8 +92,11 @@ struct ext2fs {
 
 int ext2fs_initialize(struct ext2fs *ext2, const char *disk);
 
+void ext2_root_remount(struct fiu_internal *fiu, struct req_root_remount *req);
+
 int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
                   struct resp_lookup *response);
+
 int ext2fs_stat(struct fiu_internal *fiu, struct req_stat *req,
                 struct stat *response);
 
