@@ -112,4 +112,24 @@ struct resp_close {
     int ret;
 };
 
+/* Ioctl request */
+struct req_ioctl {
+    ino_t inode;
+
+    int request;
+
+    int with_argp;
+
+    int argp;
+};
+
+/* Ioctl response */
+struct resp_ioctl {
+    int ret;
+
+    int modify_argp;
+
+    int argp;
+};
+
 #endif /* !VFS_MESSAGE_H */

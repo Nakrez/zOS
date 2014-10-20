@@ -14,6 +14,7 @@
 # define EISDIR 21 /* Is a directory */
 # define EINVAL 22 /* Invalid argument */
 # define EMFILE 24 /* Too many open files */
+# define ENOTTY 25 /* Not a typewriter */
 # define ENAMETOOLONG 36 /* File name too long */
 # define ENOSYS 38 /* Function not implemented */
 # define EBADE 52 /* Invalid exchange */

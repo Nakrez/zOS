@@ -13,6 +13,7 @@
 # define VFS_MKDIR 8
 # define VFS_MKNOD 9
 # define VFS_STAT 10
+# define VFS_IOCTL 11
 
 # define VFS_OPS_OPEN (1 << 0)
 # define VFS_OPS_READ (1 << 1)
@@ -24,6 +25,7 @@
 # define VFS_OPS_MKDIR (1 << 7)
 # define VFS_OPS_MKNOD (1 << 8)
 # define VFS_OPS_STAT (1 << 9)
+# define VFS_OPS_IOCTL (1 << 10)
 
 int vfs_initialize(void);
 dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops);
