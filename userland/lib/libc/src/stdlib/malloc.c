@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include <sys/mman.h>
 #include <sys/spinlock.h>
@@ -112,6 +113,29 @@ void *malloc(size_t size)
     spinlock_unlock(&malloc_lock);
 
     return chunks + 1;
+}
+
+void *realloc(void *ptr, size_t size)
+{
+    struct malloc_chunk *tmp;
+    size_t copy_size;
+    void *new_block;
+
+    if (!ptr)
+        return malloc(size);
+
+    tmp = (void *)((char *)ptr - sizeof (struct malloc_chunk));
+
+    copy_size = (tmp->size < size) ? tmp->size : size;
+
+    if (!(new_block = malloc(size)))
+        return NULL;
+
+    memcpy(new_block, ptr, copy_size);
+
+    free(ptr);
+
+    return new_block;
 }
 
 void free(void *ptr)
