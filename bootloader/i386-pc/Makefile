@@ -34,8 +34,8 @@ rootfs/boot/grub/grub.cfg:
 	@echo "menuentry "zOS" {" >> $@
 	@echo "multiboot /boot/zboot" >> $@
 	@echo "module /boot/zkernel" >> $@
+	@echo "module /bin/init" >> $@
 	@echo "module /bin/ata" >> $@
 	@echo "module /bin/ext2" >> $@
-	@echo "module /bin/init" >> $@
 	@echo "boot" >> $@
 	@echo "}" >> $@

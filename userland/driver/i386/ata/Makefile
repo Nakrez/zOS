@@ -16,4 +16,3 @@ ata_LIBS := libdriver libc
 OBJ :=
 
 include ${SRCDIR}mk/bin.mk
-
