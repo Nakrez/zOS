@@ -28,4 +28,13 @@
 # define VBE_DIPSI_ID4 0xB0C4
 # define VBE_DIPSI_ID5 0xB0C5
 
+# define VBE_BANK_BASE 0xA0000
+# define VBE_BANK_SIZE 64 * 1024 /* 64Kb */
+
+struct vbe {
+    char *phy_mem;
+
+    char *buffer;
+};
+
 #endif /* !VBE_H */

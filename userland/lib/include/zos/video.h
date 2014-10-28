@@ -26,9 +26,9 @@ struct video {
     int (*read)(struct video *, struct req_rdwr *, size_t *);
     int (*write)(struct video *, int, struct req_rdwr *, size_t *);
 
-    int (*xres_set)(struct video *, int xres);
-    int (*yres_set)(struct video *, int yres);
-    int (*bpp_set)(struct video *, int bpp);
+    int (*xres_set)(struct video *, int);
+    int (*yres_set)(struct video *, int);
+    int (*bpp_set)(struct video *, int);
 
     int (*enable)(struct video *);
     int (*disable)(struct video *);

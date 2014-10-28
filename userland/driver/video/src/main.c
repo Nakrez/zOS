@@ -27,7 +27,7 @@ int main(void)
         return 1;
     }
 
-    uprint("Video: Initialization sucessful");
+    uprint("Video: Initialization successful");
 
     return 0;
 }
