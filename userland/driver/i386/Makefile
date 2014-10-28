@@ -1,4 +1,4 @@
 CURDIR := userland/driver/i386/
-SUBDIRS := ata/ video/
+SUBDIRS := ata/
 
 include ${SRCDIR}mk/subdirs.mk

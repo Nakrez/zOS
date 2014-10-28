@@ -28,6 +28,4 @@
 # define VBE_DIPSI_ID4 0xB0C4
 # define VBE_DIPSI_ID5 0xB0C5
 
-int vbe_initialize(void);
-
 #endif /* !VBE_H */

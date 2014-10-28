@@ -110,7 +110,6 @@ static char **read_init_conf(int fd)
     {
         if ((ret = read(fd, tmp, init_stat.st_size)) < 0)
         {
-            uprint("TEST");
             free(buf);
 
             return NULL;
