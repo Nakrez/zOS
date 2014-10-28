@@ -39,7 +39,9 @@ void segment_initialize(struct boot_info *boot)
     spinlock_init(&segment_lock);
 
     /* Reserve initial kernel memory */
-    segment_reserve(0x0, 1024);
+    segment_reserve(0x0, 160);
+    segment_reserve(0xA0000, 64);
+    segment_reserve(0xE0000, 800);
 
     segment_dump();
 }
@@ -162,7 +164,7 @@ struct segment *segment_locate(paddr_t addr)
 
     klist_for_each_elem(&segment_head, seg, list)
     {
-        if (seg->base >= addr
+        if (seg->base <= addr
             && seg->base + seg->page_size * PAGE_SIZE > addr)
         {
             spinlock_unlock(&segment_lock);

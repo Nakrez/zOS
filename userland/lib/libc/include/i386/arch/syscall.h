@@ -15,18 +15,19 @@
 # define SYS_INTERRUPT_UNREGISTER 12
 # define SYS_MMAP 13
 # define SYS_MUNMAP 14
-# define SYS_DEVICE_CREATE 15
-# define SYS_DEVICE_RECV_REQUEST 16
-# define SYS_DEVICE_SEND_RESPONSE 17
-# define SYS_OPEN 18
-# define SYS_READ 19
-# define SYS_WRITE 20
-# define SYS_CLOSE 21
-# define SYS_LSEEK 22
-# define SYS_MOUNT 23
-# define SYS_STAT 24
-# define SYS_FSTAT 25
-# define SYS_IOCTL 26
+# define SYS_MMAP_PHYSICAL 15
+# define SYS_DEVICE_CREATE 16
+# define SYS_DEVICE_RECV_REQUEST 17
+# define SYS_DEVICE_SEND_RESPONSE 18
+# define SYS_OPEN 19
+# define SYS_READ 20
+# define SYS_WRITE 21
+# define SYS_CLOSE 22
+# define SYS_LSEEK 23
+# define SYS_MOUNT 24
+# define SYS_STAT 25
+# define SYS_FSTAT 26
+# define SYS_IOCTL 27
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \

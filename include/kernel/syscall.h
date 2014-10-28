@@ -57,6 +57,7 @@ int sys_interrupt_unregister(struct syscall *interface);
 /* Memory */
 int sys_mmap(struct syscall *interface);
 int sys_munmap(struct syscall *interface);
+int sys_mmap_physical(struct syscall *interface);
 
 /* Vfs */
 int sys_vfs_device_create(struct syscall *interface);

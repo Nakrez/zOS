@@ -42,6 +42,7 @@ static syscall_callback syscalls[] =
     /* Memory */
     sys_mmap,
     sys_munmap,
+    sys_mmap_physical,
 
     /* Vfs */
     sys_vfs_device_create,

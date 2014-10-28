@@ -19,6 +19,15 @@ struct mmap_args {
     int offset;
 };
 
+int sys_mmap_physical(struct syscall *interface)
+{
+    paddr_t phy = interface->arg1;
+    size_t size = interface->arg2;
+
+    return as_map(thread_current()->parent->as, 0, phy, size,
+                  AS_MAP_WRITE | AS_MAP_USER);
+}
+
 int sys_mmap(struct syscall *interface)
 {
     struct mmap_args *args = (void *)interface->arg1;

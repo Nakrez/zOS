@@ -6,6 +6,7 @@
 # define PROT_WRITE (1 << 2)
 # define PROT_EXEC (1 << 3)
 
+void *mmap_physical(void *addr, size_t length);
 void *mmap(void *addr, size_t length, int prot, int flags, int fd,
            off_t offset);
 int munmap(void *addr, size_t length);
