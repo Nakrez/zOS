@@ -12,7 +12,7 @@
 #include <arch/page_fault.h>
 #include <arch/mmu.h>
 
-static void cow(struct as *as, struct as_mapping *mapping, vaddr_t addr_fault)
+static void cow(struct as *as, struct as_mapping *mapping)
 {
     if (mapping->phy->ref_count == 1)
         mapping->phy->flags &= ~SEGMENT_FLAGS_COW;
@@ -22,15 +22,14 @@ static void cow(struct as *as, struct as_mapping *mapping, vaddr_t addr_fault)
         struct segment *seg = segment_alloc(mapping->size / PAGE_SIZE);
 
         uint32_t *new_page;
-        uint32_t *old_page = (uint32_t*)(align(addr_fault, PAGE_SIZE) -
-                                         PAGE_SIZE);
+        uint32_t *old_page = (uint32_t *)mapping->virt;
 
         if (!seg)
             kernel_panic("COW: Out of memory");
 
         /* Copy memory area */
-        new_page = (uint32_t *)as_map(&kernel_as, 0, seg->base,
-                                      mapping->size / PAGE_SIZE, AS_MAP_WRITE);
+        new_page = (uint32_t *)as_map(&kernel_as, 0, seg->base, mapping->size,
+                                      AS_MAP_WRITE);
 
         if (!new_page)
             kernel_panic("COW: Unable to copy");
@@ -76,7 +75,7 @@ void page_fault_handler(struct irq_regs *regs)
 
             if (mapping && mapping->phy->flags & SEGMENT_FLAGS_COW)
             {
-                cow(thread->parent->as, mapping, addr_fault);
+                cow(thread->parent->as, mapping);
 
                 return;
             }
