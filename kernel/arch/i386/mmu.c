@@ -211,6 +211,9 @@ int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
 
         ret = map_mirror(as, vaddr, paddr, size, flags);
 
+        if (as->arch.cr3 != cr3_get())
+            kernel_panic("A bug happened in mmu.c, I knew it !");
+
         cr3_set(cr3);
 
         return ret;

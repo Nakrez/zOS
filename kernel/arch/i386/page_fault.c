@@ -83,8 +83,9 @@ void page_fault_handler(struct irq_regs *regs)
 
         if (regs->irq_data & PAGE_FAULT_USER)
         {
-            console_message(T_ERR, "Process %i: page fault (0x%x, 0x%x)",
-                            thread->parent->pid, addr_fault, regs->irq_data);
+            console_message(T_ERR, "Process (%i, %i): page fault (0x%x, 0x%x)",
+                            thread->parent->pid, thread->tid, addr_fault,
+                            regs->irq_data);
 
             process_exit(thread->parent, PROCESS_CODE_SEGV);
 

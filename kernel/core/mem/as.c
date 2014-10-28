@@ -353,8 +353,8 @@ int as_copy(struct as *src_as, struct as *dest_as, const void *src, void *dest,
         struct as_mapping *mapping_src = as_mapping_locate(src_as,
                                                            (vaddr_t)src);
         offset_src = (vaddr_t)src - mapping_src->virt;
-        kaddr_src = as_map(&kernel_as, 0, mapping_src->phy->base, size,
-                           AS_MAP_WRITE);
+        kaddr_src = as_map(&kernel_as, 0, mapping_src->phy->base,
+                           mapping_src->size, AS_MAP_WRITE);
     }
 
     if (dest_as == &kernel_as || dest > (void *)KERNEL_BEGIN)
@@ -367,8 +367,8 @@ int as_copy(struct as *src_as, struct as *dest_as, const void *src, void *dest,
         struct as_mapping *mapping_dest = as_mapping_locate(dest_as,
                                                             (vaddr_t)dest);
         offset_dest = (vaddr_t)dest - mapping_dest->virt;
-        kaddr_dest = as_map(&kernel_as, 0, mapping_dest->phy->base, size,
-                            AS_MAP_WRITE);
+        kaddr_dest = as_map(&kernel_as, 0, mapping_dest->phy->base,
+                            mapping_dest->size, AS_MAP_WRITE);
 
     }
 
