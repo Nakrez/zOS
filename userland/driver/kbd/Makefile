@@ -4,12 +4,9 @@ BIN := kbd
 INSTALL_DIR := bin
 BINSUBDIRS := src/
 
-kbd_CFLAGS := -I${SRCDIR}userland/lib/libc/include
-kbd_CFLAGS += -I${SRCDIR}userland/lib/libc/include/${ZOS_ARCH}/
-kbd_CFLAGS += -I${SRCDIR}userland/lib/libdriver/include
+kbd_CFLAGS := $(USERLAND_CFLAGS)
 kbd_CFLAGS += -I${SRCDIR}userland/driver/kbd/include/
 kbd_CFLAGS += -I${SRCDIR}userland/driver/kbd/include/arch/${ZOS_ARCH}/
-kbd_CFLAGS += $(USERLAND_CFLAGS)
 
 kbd_LDFLAGS := $(USERLAND_LDFLAGS)
 

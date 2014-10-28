@@ -4,7 +4,10 @@ DEPS :=
 CURDIR :=
 SUBDIRS := kernel/ userland/ bootloader/${ZOS_TARGET}/
 
-USERLAND_CFLAGS := -std=c99 -Wall -Wextra -nostdinc -fno-builtin -fno-common
+USERLAND_CFLAGS := -I $(SRCDIR)/userland/lib/include/
+USERLAND_CFLAGS += -I $(SRCDIR)/userland/lib/include/${ZOS_ARCH}/
+USERLAND_CFLAGS += -std=c99 -Wall -Wextra -nostdinc -fno-builtin -fno-common
+
 DEFAULT_LDFLAGS := $(DEFAULT_LDFLAGS) -nostdlib
 
 USERLAND_LDFLAGS := -T $(SRCDIR)userland/lib/libc/src/arch/$(ZOS_ARCH)/bin.ld

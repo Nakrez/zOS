@@ -9,8 +9,7 @@ video_CFLAGS += -I${SRCDIR}userland/lib/libc/include/${ZOS_ARCH}/
 video_CFLAGS += -I${SRCDIR}userland/lib/libdriver/include
 video_CFLAGS += $(USERLAND_CFLAGS)
 
-# video_LDFLAGS := $(USERLAND_LDFLAGS)
-video_LDFLAGS := -T $(SRCDIR)/video.ld
+video_LDFLAGS := $(USERLAND_LDFLAGS)
 
 video_LIBS := libdriver libc
 
