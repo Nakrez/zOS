@@ -1,2 +1,3 @@
 /bin/kbd
 /bin/video
+/bin/tty_ctrl
