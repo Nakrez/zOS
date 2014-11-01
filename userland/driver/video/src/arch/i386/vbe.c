@@ -8,6 +8,7 @@
 #include <zos/print.h>
 
 #include "vbe.h"
+#include "../../font.h"
 
 static uint16_t bga_read_register(uint16_t index)
 {
@@ -68,6 +69,9 @@ static int vbe_enable(struct video *video)
 
     bga_write_register(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_ENABLED);
 
+    vbe->bank = 0;
+    bga_bank_set(vbe->bank);
+
     return 0;
 }
 
@@ -79,6 +83,108 @@ static int vbe_disable(struct video *video)
 
     free(vbe->buffer);
     vbe->buffer = NULL;
+
+    return 0;
+}
+
+static void vbe_flush_buffer(struct vbe *vbe, uint32_t pos, size_t size)
+{
+    uint32_t bank = pos / VBE_BANK_SIZE;
+    uint32_t bank_pos = pos % VBE_BANK_SIZE;
+
+    if (vbe->bank != bank)
+    {
+        vbe->bank = bank;
+        bga_bank_set(bank++);
+    }
+
+    while (size)
+    {
+        vbe->phy_mem[bank_pos++] = vbe->buffer[pos++];
+
+        if (bank_pos == VBE_BANK_SIZE)
+        {
+            vbe->bank = bank;
+            bga_bank_set(bank++);
+            bank_pos = 0;
+        }
+
+        --size;
+    }
+}
+
+static void vbe_scroll(struct video *video)
+{
+    struct vbe *vbe = video->private;
+    size_t buffer_size = video->xres * video->yres * video->bpp / 8;
+    size_t line_size = (video->xres) * video->bpp / 8 * FONT_HEIGHT;
+
+    memcpy(vbe->buffer, vbe->buffer + line_size, buffer_size - line_size);
+
+    memset(vbe->buffer + buffer_size - line_size, 0, line_size);
+
+    vbe_flush_buffer(vbe, 0, buffer_size);
+
+    --vbe->cursor.y;
+}
+
+static void vbe_put_char(struct video *video, char c)
+{
+    struct vbe *vbe = video->private;
+    uint32_t buffer_pos;
+
+    buffer_pos = (vbe->cursor.y * video->xres * FONT_HEIGHT +
+                  vbe->cursor.x * FONT_WIDTH) * video->bpp / 8;
+
+    switch (c)
+    {
+        case '\n':
+            ++vbe->cursor.y;
+            vbe->cursor.x = 0;
+            break;
+        default:
+            {
+                uint16_t font_pos = c * FONT_HEIGHT;
+
+                for (int y_font = 0; y_font < FONT_HEIGHT; ++y_font)
+                {
+                    for (int x_font = 0; x_font < FONT_WIDTH; ++x_font)
+                    {
+                        if (video_font[font_pos + y_font] & (1 << x_font))
+                            vbe->buffer[buffer_pos + FONT_WIDTH - x_font] = 10;
+                    }
+
+                    vbe_flush_buffer(vbe, buffer_pos, FONT_WIDTH);
+                    buffer_pos += video->xres * video->bpp / 8;
+                }
+
+                ++vbe->cursor.x;
+
+                if (vbe->cursor.x == video->xres / FONT_WIDTH)
+                {
+                    ++vbe->cursor.y;
+                    vbe->cursor.x = 0;
+                }
+            }
+            break;
+    }
+
+    if (vbe->cursor.y == video->yres / FONT_HEIGHT)
+        vbe_scroll(video);
+}
+
+static int vbe_write(struct video *video, struct req_rdwr *req, size_t *size)
+{
+    struct vbe *vbe = video->private;
+    char *buffer = req->data;
+
+    if (!vbe->buffer)
+        return -1;
+
+    for (size_t i = 0; i < req->size; ++i)
+        vbe_put_char(video, buffer[i]);
+
+    *size = req->size;
 
     return 0;
 }
@@ -109,6 +215,11 @@ int video_initialize(struct video *video)
     video->yres = 0;
     video->bpp = 0;
 
+    vbe->cursor.x = 0;
+    vbe->cursor.y = 0;
+    vbe->buffer = NULL;
+    vbe->bank = 0;
+
     video->private = vbe;
 
     video->read = NULL;
@@ -118,6 +229,9 @@ int video_initialize(struct video *video)
     video->bpp_set = vbe_bpp_set;
     video->enable = vbe_enable;
     video->disable = vbe_disable;
+    video->write = vbe_write;
+
+    bga_write_register(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_DISABLED);
 
     return 0;
 }

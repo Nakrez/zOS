@@ -24,7 +24,7 @@ struct video {
     void *private;
 
     int (*read)(struct video *, struct req_rdwr *, size_t *);
-    int (*write)(struct video *, int, struct req_rdwr *, size_t *);
+    int (*write)(struct video *, struct req_rdwr *, size_t *);
 
     int (*xres_set)(struct video *, int);
     int (*yres_set)(struct video *, int);

@@ -13,7 +13,7 @@ int main(void)
 
     uprint("Video: Launching driver");
 
-    if (!(driver_implem = malloc(sizeof (struct video *))))
+    if (!(driver_implem = malloc(sizeof (struct video))))
     {
         uprint("Video: Out of memory");
 
