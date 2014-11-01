@@ -296,6 +296,7 @@ struct as *as_duplicate(struct as *as)
 
 cleanup:
     as_destroy(new_as);
+    spinlock_unlock(&as->map_lock);
 
     return NULL;
 }

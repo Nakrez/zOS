@@ -95,7 +95,7 @@ vaddr_t region_reserve(struct as *as, vaddr_t addr, size_t page_size)
         else if (addr >= reg->base && addr < regmax_range)
         {
             /* Address was found but area is too small */
-            if (max_range >= regmax_range)
+            if (max_range > regmax_range)
             {
                 spinlock_unlock(&as->region_lock);
                 return 0;
