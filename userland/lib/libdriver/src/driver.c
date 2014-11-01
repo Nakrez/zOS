@@ -126,6 +126,7 @@ static void dispatch(struct driver *driver, int mid, char *buf)
                 device_send_response(driver->dev_id, mid, &response,
                                      sizeof (struct resp_ioctl));
             }
+            break;
         default:
             uprint("Not supported");
             break;
