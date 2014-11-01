@@ -1,6 +1,6 @@
 CURDIR := userland/driver/video/src/
 
-OBJ := main.o font.o
+OBJ := main.o font.o driver.o
 
 BINSUBDIRS := arch/$(ZOS_ARCH)/
 

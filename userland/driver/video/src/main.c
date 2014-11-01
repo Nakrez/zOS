@@ -4,6 +4,8 @@
 #include <zos/print.h>
 #include <zos/video.h>
 
+#include "driver.h"
+
 /* Must be implemented by each architecture */
 int video_initialize(struct video *);
 
@@ -27,7 +29,9 @@ int main(void)
         return 1;
     }
 
+    driver_implem->opened = 0;
+
     uprint("Video: Initialization successful");
 
-    return 0;
+    return video_driver_run(driver_implem);
 }

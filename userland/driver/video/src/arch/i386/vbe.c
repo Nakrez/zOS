@@ -222,7 +222,6 @@ int video_initialize(struct video *video)
 
     video->private = vbe;
 
-    video->read = NULL;
     video->write = NULL;
     video->xres_set = vbe_xres_set;
     video->yres_set = vbe_yres_set;

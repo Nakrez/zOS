@@ -20,10 +20,10 @@ struct video {
     uint16_t xres;
     uint16_t yres;
     uint8_t bpp;
+    int opened;
 
     void *private;
 
-    int (*read)(struct video *, struct req_rdwr *, size_t *);
     int (*write)(struct video *, struct req_rdwr *, size_t *);
 
     int (*xres_set)(struct video *, int);
