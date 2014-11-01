@@ -129,7 +129,8 @@ uint32_t inode_find_in_dir(struct ext2fs *ext2, struct ext2_inode *inode,
             return 0;
         }
 
-        if (!strcmp(dirent_name, name))
+        if (!strncmp(dirent_name, name, dirent->name_size_low) &&
+            strlen(name) == dirent->name_size_low)
         {
             res = dirent->inode;
 
