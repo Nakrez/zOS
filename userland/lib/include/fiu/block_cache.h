@@ -18,6 +18,7 @@ struct fiu_block {
     void *block;
 
     struct fiu_block *next;
+    struct fiu_block *prev;
 };
 
 struct fiu_cache {

@@ -21,6 +21,8 @@ int ext2fs_open(struct fiu_internal *fiu, struct req_open *req,
 
     response->inode = req->inode;
 
+    ext2_icache_release(ext2, req->inode);
+
     return 0;
 }
 
@@ -80,9 +82,8 @@ int ext2fs_read(struct fiu_internal *fiu, struct req_rdwr *req, size_t *size)
 
 int ext2fs_close(struct fiu_internal *fiu, struct req_close *req)
 {
-    struct ext2fs *ext2 = fiu->private;
-
-    ext2_icache_release(ext2, req->inode);
+    (void)fiu;
+    (void)req;
 
     return 0;
 }
