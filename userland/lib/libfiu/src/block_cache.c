@@ -137,7 +137,7 @@ void fiu_cache_release(struct fiu_internal *fiu, uint32_t block)
 
     fblock = fiu->block_cache->blocks_head;
 
-    for (size_t i = 0; i < fiu->block_cache->cache_size; ++i)
+    while (fblock)
     {
         if (fblock->block_num == block)
         {
@@ -150,6 +150,8 @@ void fiu_cache_release(struct fiu_internal *fiu, uint32_t block)
 
             return;
         }
+
+        fblock = fblock->next;
     }
 
     spinlock_unlock(&fiu->block_cache->cache_lock);
