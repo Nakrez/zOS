@@ -1,5 +1,5 @@
 CURDIR := userland/bin/
 
-SUBDIRS := init/
+SUBDIRS := init/ shell/
 
 include ${SRCDIR}mk/subdirs.mk
