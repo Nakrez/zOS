@@ -206,14 +206,14 @@ int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
     if (!thread || thread->parent->as != as)
     {
         int ret = 0;
+        uint32_t eflags = eflags_get();
 
+        cpu_irq_disable();
         cr3_set(as->arch.cr3);
 
         ret = map_mirror(as, vaddr, paddr, size, flags);
 
-        if (as->arch.cr3 != cr3_get())
-            kernel_panic("A bug happened in mmu.c, I knew it !");
-
+        eflags_set(eflags);
         cr3_set(cr3);
 
         return ret;
