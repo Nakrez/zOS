@@ -3,6 +3,8 @@
 
 # include <zos/vfs.h>
 
+# define DRV_NORESPONSE (-2147483647 - 1)
+
 struct driver {
     char *dev_name;
 

@@ -79,6 +79,9 @@ static void dispatch(struct driver *driver, int mid, char *buf)
                 response.ret = driver->dev_ops->open(driver, mid, (void *)buf,
                                                      &response.inode);
 
+                if (response.ret == DRV_NORESPONSE)
+                    break;
+
                 device_send_response(driver->dev_id, mid, &response,
                                      sizeof (struct resp_open));
             }
@@ -89,6 +92,9 @@ static void dispatch(struct driver *driver, int mid, char *buf)
 
                 response.ret = driver->dev_ops->read(driver, mid, (void *)buf,
                                                      &response.size);
+
+                if (response.ret == DRV_NORESPONSE)
+                    break;
 
                 device_send_response(driver->dev_id, mid, &response,
                                      sizeof (struct resp_rdwr));
@@ -101,6 +107,9 @@ static void dispatch(struct driver *driver, int mid, char *buf)
                 response.ret = driver->dev_ops->write(driver, mid, (void *)buf,
                                                       &response.size);
 
+                if (response.ret == DRV_NORESPONSE)
+                    break;
+
                 device_send_response(driver->dev_id, mid, &response,
                                      sizeof (struct resp_rdwr));
             }
@@ -112,6 +121,9 @@ static void dispatch(struct driver *driver, int mid, char *buf)
                 response.ret = driver->dev_ops->close(driver, mid,
                                                       (void *)buf);
 
+                if (response.ret == DRV_NORESPONSE)
+                    break;
+
                 device_send_response(driver->dev_id, mid, &response,
                                      sizeof (struct resp_close));
             }
@@ -122,6 +134,9 @@ static void dispatch(struct driver *driver, int mid, char *buf)
 
                 response.ret = driver->dev_ops->ioctl(driver, mid, (void *)buf,
                                                       &response);
+
+                if (response.ret == DRV_NORESPONSE)
+                    break;
 
                 device_send_response(driver->dev_id, mid, &response,
                                      sizeof (struct resp_ioctl));
