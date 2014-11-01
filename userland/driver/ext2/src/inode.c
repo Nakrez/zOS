@@ -32,7 +32,11 @@ int inode_block_data(struct ext2fs *ext2, struct ext2_inode *inode,
         if (!blk)
             return 0;
 
-        return blk[offset / ext2->block_size];
+        *block = blk[offset / ext2->block_size];
+
+        fiu_cache_release(&ext2->fiu, inode->singly_ibp);
+
+        return 1;
     }
 
     return 0;
