@@ -49,9 +49,10 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
         return fd;
 
     if (res.dev < 0)
-        ret = mount_pt->ops->open(mount_pt, res.inode, uid, gid, flags, mode);
+        ret = mount_pt->ops->open(mount_pt, res.inode, process->pid, uid, gid,
+                                  flags, mode);
     else
-        ret = device_open(res.dev, -1, uid, gid, flags, mode);
+        ret = device_open(res.dev, -1, process->pid, uid, gid, flags, mode);
 
     if (ret < 0)
     {

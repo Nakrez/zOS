@@ -81,6 +81,7 @@ struct req_open {
     gid_t gid;
     int flags;
     mode_t mode;
+    pid_t pid;
 };
 
 /* Open response */

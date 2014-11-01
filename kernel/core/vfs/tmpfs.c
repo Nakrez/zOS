@@ -233,11 +233,12 @@ static int tmpfs_mount(struct mount_entry *root, ino_t inode, int mount_pt_nb)
     return 0;
 }
 
-static int tmpfs_open(struct mount_entry *root, ino_t inode, uid_t uid,
-                      gid_t gid, int flags, mode_t mode)
+static int tmpfs_open(struct mount_entry *root, ino_t inode, pid_t pid,
+                      uid_t uid, gid_t gid, int flags, mode_t mode)
 {
     (void)root;
     (void)inode;
+    (void)pid;
     (void)uid;
     (void)gid;
     (void)flags;

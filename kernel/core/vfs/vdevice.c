@@ -138,8 +138,8 @@ int device_send_response(dev_t dev, uint32_t req_id, char *buf, size_t size)
     return res;
 }
 
-int device_open(dev_t dev, ino_t inode, uid_t uid, gid_t gid, int flags,
-                mode_t mode)
+int device_open(dev_t dev, ino_t inode, pid_t pid, uid_t uid, gid_t gid,
+                int flags, mode_t mode)
 {
     int ret = 0;
     struct vdevice *device;
@@ -161,6 +161,7 @@ int device_open(dev_t dev, ino_t inode, uid_t uid, gid_t gid, int flags,
     request->gid = gid;
     request->flags = flags;
     request->mode = mode;
+    request->pid = pid;
 
     message->mid = (message->mid & ~0xFF) | VFS_OPEN;
 
