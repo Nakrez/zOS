@@ -77,6 +77,8 @@ int ext2fs_read(struct fiu_internal *fiu, struct req_rdwr *req, size_t *size)
         fiu_cache_release(&ext2->fiu, data_block);
     }
 
+    ext2_icache_release(ext2, req->inode);
+
     return 0;
 }
 

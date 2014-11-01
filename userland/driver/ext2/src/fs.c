@@ -300,5 +300,7 @@ int ext2fs_stat(struct fiu_internal *fiu, struct req_stat *req,
     response->st_mtime = inode->last_modification;
     response->st_ctime = inode->last_access;
 
+    ext2_icache_release(ext2, req->inode);
+
     return 0;
 }
