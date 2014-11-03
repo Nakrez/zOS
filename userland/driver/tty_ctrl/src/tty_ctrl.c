@@ -95,7 +95,7 @@ static int init_slaves(struct tty_ctrl *ctrl, int slaves)
 
         if (!pid)
         {
-            execve("/bin/tty", NULL, NULL);
+            execv("/bin/tty", NULL);
 
             uprint("tty_ctrl: Fail to spawn tty slave");
 

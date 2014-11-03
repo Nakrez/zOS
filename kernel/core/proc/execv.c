@@ -19,11 +19,10 @@ static int check_exec_perm(struct thread *thread, struct stat *stat)
     return stat->st_mode & 0001;
 }
 
-int process_execve(struct thread *thread, const char *filename,
-                   char *const argv[], char *const envp[])
+int process_execv(struct thread *thread, const char *filename,
+                  char *const argv[])
 {
     (void)argv;
-    (void)envp;
 
     int ret;
     int fd_binary;

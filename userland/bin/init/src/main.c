@@ -173,7 +173,7 @@ int main(void)
 
         if (pid == 0)
         {
-            if (execve(init_conf[i], NULL, NULL) < 0)
+            if (execv(init_conf[i], NULL) < 0)
                 uprint("Init: execve() failed");
 
             return 1;

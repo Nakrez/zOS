@@ -61,8 +61,8 @@ int process_fork(struct process *process, struct irq_regs *regs);
 int process_new_fd(struct process *process);
 void process_free_fd(struct process *process, int fd);
 
-int process_execve(struct thread *thread, const char *filename,
-                   char *const argv[], char *const envp[]);
+int process_execv(struct thread *thread, const char *filename,
+                  char *const argv[]);
 
 void process_exit(struct process *p, int code);
 

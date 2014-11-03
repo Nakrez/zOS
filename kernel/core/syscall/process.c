@@ -31,11 +31,10 @@ int sys_getpid(struct syscall *interface)
     return thread_current()->parent->pid;
 }
 
-int sys_execve(struct syscall *interface)
+int sys_execv(struct syscall *interface)
 {
     const char *filename = (void *)interface->arg1;
     char **const argv = (void *)interface->arg2;
-    char **const envp = (void *)interface->arg3;
 
-    return process_execve(thread_current(), filename, argv, envp);
+    return process_execv(thread_current(), filename, argv);
 }
