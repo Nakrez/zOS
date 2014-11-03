@@ -69,7 +69,7 @@ static inline void cpu_flush_tlb(void)
                           "mov %%eax, %%cr3\n"
                           :
                           :
-                          : "memory");
+                          : "memory", "eax");
 }
 
 static inline void cpu_irq_enable(void)

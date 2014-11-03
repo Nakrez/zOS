@@ -1,14 +1,138 @@
+#include <string.h>
+
 #include <kernel/zos.h>
 #include <kernel/panic.h>
 
 #include <kernel/mem/region.h>
+#include <kernel/mem/segment.h>
 
 #include <arch/thread.h>
 #include <arch/pm.h>
 #include <arch/mmu.h>
 
+/* FIXME: Disgusting */
+static int i386_setup_stack(char *stack, paddr_t phy_stack, char *argv[],
+                            int deep_argv_copy)
+{
+    /* Stack layout
+     * -------------
+     * -- TLS
+     * -- argv content --
+     * -- argv[n] --
+     * -- ....... --
+     * -- argv[0] --
+     * --  argc   --
+     */
+    int argc = 0;
+    const char *stack_base = stack;
+    uintptr_t *stack_ptr;
+    char *kstack = (void *)as_map(&kernel_as, 0, (paddr_t)phy_stack, PAGE_SIZE,
+                                  AS_MAP_WRITE);
+    char *argv_start;
+
+    if (!kstack)
+        return 1;
+
+    kstack += (PAGE_SIZE - 4) & 0xFFFFFFF0;
+
+    /* Reserve space for TLS Pointer */
+    kstack -= 2 * sizeof (uintptr_t);
+    stack -= 2 * sizeof (uintptr_t);
+
+    if (argv)
+    {
+        /* Copy argv content */
+        for (; argv[argc]; ++argc)
+        {
+            if (deep_argv_copy)
+            {
+                int len = strlen(argv[argc]) + 1;
+
+                kstack -= len;
+                stack -= len;
+
+                memcpy(kstack, argv[argc], len);
+
+                argv[argc] = stack;
+
+                if (len % 16)
+                {
+                    stack -= 16 - (len % 16);
+                    kstack -= 16 - (len % 16);
+                }
+            }
+        }
+
+        if (deep_argv_copy)
+        {
+            stack -= 16;
+            kstack -= 16;
+        }
+    }
+
+    stack_ptr = (void *)kstack;
+
+    *(stack_ptr--) = 0;
+    stack -= sizeof (uintptr_t);
+
+    /* Put argv table pointer */
+
+    if (argc > 0)
+    {
+        for (int i = argc - 1; i >= 0; --i)
+        {
+            *(stack_ptr--) = (uintptr_t)argv[i];
+            stack -= sizeof (uintptr_t);
+        }
+    }
+
+    argv_start = stack + sizeof (uintptr_t);
+
+    kstack = (void *)stack_ptr;
+
+    if (deep_argv_copy)
+    {
+        while (((uintptr_t)stack - sizeof (uintptr_t)) % 16)
+        {
+            --stack;
+            --kstack;
+        }
+
+        stack_ptr = (void *)kstack;
+    }
+    else
+    {
+        while (((uintptr_t)stack - 2 * sizeof (uintptr_t)) % 16)
+        {
+            --stack;
+            --kstack;
+        }
+
+        stack_ptr = (void *)kstack;
+    }
+
+    stack_ptr = (void *)kstack;
+
+    /* Argv address */
+    *(stack_ptr--) = (uintptr_t)argv_start;
+    stack -= sizeof (uintptr_t);
+
+    /* Put argc */
+    if (deep_argv_copy)
+        *(stack_ptr) = argc;
+    else
+    {
+        *(stack_ptr--) = (uintptr_t)argc;
+        stack -= sizeof (uintptr_t);
+    }
+
+    as_unmap(&kernel_as, (vaddr_t)kstack, AS_UNMAP_NORELEASE);
+
+    return stack_base - stack;
+}
+
 int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip,
-                       size_t arg_count, uintptr_t arg1, uintptr_t arg2)
+                       char *argv[], int deep_argv_copy)
 {
     if (p->type == PROCESS_TYPE_KERNEL)
     {
@@ -23,6 +147,8 @@ int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip,
     }
     else
     {
+        paddr_t phy_stack;
+
         t->regs.cs = USER_CS;
         t->regs.ds = USER_DS;
         t->regs.es = USER_DS;
@@ -37,8 +163,14 @@ int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip,
         if (!t->regs.esp)
             return 0;
 
+        phy_stack = segment_alloc_address(1);
+
+        /* TODO: Release region */
+        if (!phy_stack)
+            return 0;
+
         /* Reserve user stack */
-        t->regs.esp = as_map(p->as, t->regs.esp, 0, PAGE_SIZE,
+        t->regs.esp = as_map(p->as, t->regs.esp, phy_stack, PAGE_SIZE,
                              AS_MAP_WRITE | AS_MAP_USER);
 
         if (!t->regs.esp)
@@ -47,19 +179,11 @@ int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip,
             return 0;
         }
 
-        t->regs.esp += PAGE_SIZE - 4;
+        t->regs.esp += (PAGE_SIZE - 4) & 0xFFFFFFF0;
 
-        if (arg_count)
-        {
-            uintptr_t *stack = (uintptr_t *)t->regs.esp;
-
-            if (arg_count > 1)
-                *(stack--) = arg2;
-
-            *(stack--) = arg1;
-
-            t->regs.esp = (uintptr_t)stack;
-        }
+        t->regs.esp -= (uintptr_t)i386_setup_stack((void *)t->regs.esp,
+                                                   phy_stack, argv,
+                                                   deep_argv_copy);
     }
 
     t->regs.edi = 0;

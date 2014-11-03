@@ -109,7 +109,7 @@ int main(void)
 
     kbd.driver.private = &kbd;
 
-    arch_tid = thread_create(interrupt_thread, &kbd);
+    arch_tid = thread_create(interrupt_thread, 1, &kbd);
 
     if (arch_tid < 0)
     {

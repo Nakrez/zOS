@@ -32,7 +32,7 @@ int main(void)
     {
         if (ide.devices[i].exists)
         {
-            tid = thread_create(driver_device_thread, &ide.devices[i]);
+            tid = thread_create(driver_device_thread, 1, &ide.devices[i]);
 
             if (tid < 0)
                 uprint("ATA: Fail to start thread");

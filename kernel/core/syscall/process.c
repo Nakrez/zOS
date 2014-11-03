@@ -34,7 +34,7 @@ int sys_getpid(struct syscall *interface)
 int sys_execv(struct syscall *interface)
 {
     const char *filename = (void *)interface->arg1;
-    char **const argv = (void *)interface->arg2;
+    char *const *argv = (void *)interface->arg2;
 
     return process_execv(thread_current(), filename, argv);
 }

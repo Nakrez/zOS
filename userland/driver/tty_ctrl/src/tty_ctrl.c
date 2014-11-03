@@ -95,7 +95,9 @@ static int init_slaves(struct tty_ctrl *ctrl, int slaves)
 
         if (!pid)
         {
-            execv("/bin/tty", NULL);
+            char *argv[] = { "/bin/tty", NULL };
+
+            execv("/bin/tty", argv);
 
             uprint("tty_ctrl: Fail to spawn tty slave");
 
@@ -156,11 +158,13 @@ static void tty_ctrl_input_push(struct tty_ctrl *ctrl, char c)
     write(ctrl->video_fd, &c, 1);
 }
 
-static void tty_ctrl_input_thread(void *param)
+static void tty_ctrl_input_thread(int argc, void *argv[])
 {
+    (void) argc;
+
     int ret;
     struct input_event event;
-    struct tty_ctrl *ctrl = param;
+    struct tty_ctrl *ctrl = argv[0];
 
     while (1)
     {
@@ -244,7 +248,7 @@ static int init_input_thread(struct tty_ctrl *ctrl)
     ctrl->input.ctrl = 0;
     spinlock_init(&ctrl->input.lock);
 
-    tid = thread_create(tty_ctrl_input_thread, ctrl);
+    tid = thread_create(tty_ctrl_input_thread, 1, ctrl);
 
     if (tid < 0)
         return -1;

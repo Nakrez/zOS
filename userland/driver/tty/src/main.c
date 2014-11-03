@@ -118,10 +118,12 @@ static struct driver_ops tty_ops = {
     .write = tty_write,
 };
 
-static void tty_input_thread(void *param)
+static void tty_input_thread(int argc, void *argv[])
 {
+    (void)argc;
+
     int ret;
-    struct tty *tty = param;
+    struct tty *tty = argv[0];
 
     while (1)
     {
@@ -210,7 +212,7 @@ int main(void)
         return 1;
     }
 
-    if (thread_create(tty_input_thread, &tty) < 0)
+    if (thread_create(tty_input_thread, 1, &tty) < 0)
     {
         uprint("tty: Fail to spwan input thread");
 

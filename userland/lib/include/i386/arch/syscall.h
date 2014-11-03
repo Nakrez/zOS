@@ -45,7 +45,7 @@
                          : "=r" (ret)                       \
                          : "i" (num),                       \
                            "g" (arg1)                       \
-                         : "memory");
+                         : "memory", "ebx");
 
 # define SYSCALL2(num, arg1, arg2, ret)                     \
     __asm__ __volatile__("mov %3, %%ecx\n"                  \
@@ -57,7 +57,7 @@
                          : "i" (num),                       \
                            "g" (arg1),                      \
                            "g" (arg2)                       \
-                         : "memory");
+                         : "memory", "ecx", "ebx");
 
 # define SYSCALL3(num, arg1, arg2, arg3, ret)               \
     __asm__ __volatile__("mov %4, %%edx\n"                  \
@@ -71,7 +71,7 @@
                            "g" (arg1),                      \
                            "g" (arg2),                      \
                            "g" (arg3)                       \
-                         : "memory");
+                         : "memory", "edx", "ecx", "ebx");
 
 # define SYSCALL4(num, arg1, arg2, arg3, arg4, ret)         \
     __asm__ __volatile__("mov %5, %%esi\n"                  \
@@ -87,7 +87,7 @@
                            "g" (arg2),                      \
                            "g" (arg3),                      \
                            "g" (arg4)                       \
-                         : "memory");
+                         : "memory", "esi", "edx", "ecx", "ebx");
 
 # define SYSCALL5(num, arg1, arg2, arg3, arg4, arg5, ret)   \
     __asm__ __volatile__("mov %6, %%edi\n"                  \
@@ -105,6 +105,6 @@
                            "g" (arg3),                      \
                            "g" (arg4),                      \
                            "g" (arg5)                       \
-                         : "memory");
+                         : "memory", "edi", "esi", "edx", "ecx", "ebx");
 
 #endif /* !LIBC_I386_SYSCALL_H */

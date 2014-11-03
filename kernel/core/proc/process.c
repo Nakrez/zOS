@@ -90,7 +90,7 @@ struct process *process_create(int type, uintptr_t code, int flags)
             goto error;
     }
 
-    if (thread_create(process, code, 0, 0, 0) < 0)
+    if (thread_create(process, code, NULL, 0) < 0)
         goto error;
 
     klist_add(&processes, &process->list);

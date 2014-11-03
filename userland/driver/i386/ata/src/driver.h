@@ -10,6 +10,6 @@ struct ata_private {
     int partition;
 };
 
-void driver_device_thread(void *param);
+void driver_device_thread(int argc, void *argv[]);
 
 #endif /* !DRIVER_H */

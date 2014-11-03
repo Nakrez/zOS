@@ -18,7 +18,8 @@ static inline void spinlock_lock(spinlock_t *spin)
                           "test %%eax, %%eax\n"
                           "jnz 1b\n"
                           :
-                          : "b" (spin));
+                          : "b" (spin)
+                          : "eax", "memory");
 }
 
 static inline void spinlock_unlock(spinlock_t *spin)
@@ -26,7 +27,8 @@ static inline void spinlock_unlock(spinlock_t *spin)
     __asm__ __volatile__ ("mov $0x0, %%eax\n"
                           "lock xchg (%0), %%eax\n"
                           :
-                          : "b" (spin));
+                          : "b" (spin)
+                          : "eax");
 }
 
 #endif /* !ARCH_I386_SPINLOCK_H */

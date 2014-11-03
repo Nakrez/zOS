@@ -29,7 +29,7 @@ static inline void spinlock_lock(spinlock_t *spin)
                           "jnz 1b\n"
                           :
                           : "b" (&spin->lock)
-                          : "memory");
+                          : "memory", "eax");
 
     spin->eflags = eflags;
 }
@@ -40,7 +40,7 @@ static inline void spinlock_unlock(spinlock_t *spin)
                           "lock xchg (%0), %%eax\n"
                           :
                           : "b" (&spin->lock)
-                          : "memory");
+                          : "memory", "eax");
 
     eflags_set(spin->eflags);
 }

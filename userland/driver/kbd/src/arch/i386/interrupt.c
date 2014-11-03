@@ -14,12 +14,14 @@
 
 #include <kbd.h>
 
-void interrupt_thread(void *arg)
+void interrupt_thread(int argc, void *argv[])
 {
+    (void)argc;
+
     int res;
     uint8_t key;
     struct input_event event;
-    struct kbd *kbd = arg;
+    struct kbd *kbd = argv[0];
 
     res = interrupt_register(KEYBOARD_INTERRUPT);
 

@@ -173,7 +173,9 @@ int main(void)
 
         if (pid == 0)
         {
-            if (execv(init_conf[i], NULL) < 0)
+            char *argv[] = { init_conf[i], NULL };
+
+            if (execv(init_conf[i], argv) < 0)
                 uprint("Init: execve() failed");
 
             return 1;

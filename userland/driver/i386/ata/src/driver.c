@@ -154,12 +154,14 @@ static void driver_partition_thread(void *param)
         ;
 }
 
-void driver_device_thread(void *param)
+void driver_device_thread(int argc, void *argv[])
 {
+    (void) argc;
+
     char ata_name[10];
     struct driver device_driver;
     struct ata_private device_private;
-    struct ide_device *device = param;
+    struct ide_device *device = argv[0];
 
     device_private.device = device;
     device_private.partition = -1;

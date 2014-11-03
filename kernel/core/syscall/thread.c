@@ -5,8 +5,10 @@
 
 int sys_thread_create(struct syscall *interface)
 {
-    return thread_create(thread_current()->parent, interface->arg1,
-                         2, interface->arg2, interface->arg3);
+    uintptr_t code = interface->arg1;
+    char **argv = (void *)interface->arg2;
+
+    return thread_create(thread_current()->parent, code, argv, 0);
 }
 
 int sys_thread_exit(struct syscall *interface)

@@ -8,6 +8,6 @@
 
 # define KEYBOARD_ACK 0xFA
 
-void interrupt_thread(void *);
+void interrupt_thread(int argc, void *argv[]);
 
 #endif /* !ARCH_I386_INTERRUPT_H */
