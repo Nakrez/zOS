@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #include <zos/print.h>
@@ -14,18 +15,18 @@
 /* TODO: FIXME */
 static char buf[255];
 
-static int open_init_conf(void)
+static int open_file_timeout(const char *file, int wait, int timeout)
 {
     int fd;
-    int timeout = 0;
+    int timeout_current = 0;
 
-    while (timeout < INIT_CONF_TIMEOUT)
+    while (timeout_current < timeout)
     {
-        if ((fd = open(INIT_CONF_PATH, O_RDONLY, 0)) >= 0)
+        if ((fd = open(file, O_RDONLY, 0)) >= 0)
             return fd;
 
-        timeout += INIT_CONF_WAIT;
-        usleep(INIT_CONF_WAIT);
+        timeout_current += wait;
+        usleep(wait);
     }
 
     return -1;
@@ -124,13 +125,76 @@ static char **read_init_conf(int fd)
     return split_init_conf(buf);
 }
 
+static void exec_conf_line(char *line)
+{
+    pid_t pid;
+    char *bin;
+    char *rest;
+    int in;
+    int out;
+    int err;
+
+    if (!line || !(*line))
+        return;
+
+    bin = strtok_r(line, ",", &rest);
+
+    if (*rest)
+    {
+        in = open_file_timeout(rest, INIT_CONF_WAIT,
+                               INIT_CONF_TIMEOUT);
+        if (in == STDIN_FILENO)
+        {
+            out = dup2(in, STDOUT_FILENO);
+            err = dup2(in, STDERR_FILENO);
+        }
+        else if (in >= 0)
+            close(in);
+    }
+
+    sprintf(buf, "Init: Launching %s", line);
+
+    uprint(buf);
+
+    pid = fork();
+
+    if (pid < 0)
+    {
+        uprint("Init: fork() failed");
+
+        return;
+    }
+
+    if (pid == 0)
+    {
+        char *argv[] = { bin, NULL };
+
+        if (execv(bin, argv) < 0)
+            uprint("Init: execve() failed");
+
+        exit(1);
+    }
+
+    if (*rest)
+    {
+        if (in >= 0)
+            close(in);
+        if (out >= 0)
+            close(out);
+        if (err >= 0)
+            close(err);
+    }
+}
+
 int main(void)
 {
     int conf_fd = 0;
     char **init_conf = NULL;
-    pid_t pid;
 
-    if ((conf_fd = open_init_conf()) < 0)
+    conf_fd = open_file_timeout(INIT_CONF_PATH, INIT_CONF_WAIT,
+                                INIT_CONF_TIMEOUT);
+
+    if (conf_fd < 0)
     {
         uprint("Init: Failed to open it's configuration file.");
         uprint("Init: Canceling boot");
@@ -154,33 +218,7 @@ int main(void)
     uprint("Init: Starting system !");
 
     for (int i = 0; init_conf[i]; ++i)
-    {
-        if (!*init_conf[i])
-            continue;
-
-        sprintf(buf, "Init: Launching %s", init_conf[i]);
-
-        uprint(buf);
-
-        pid = fork();
-
-        if (pid < 0)
-        {
-            uprint("Init: fork() failed");
-
-            continue;
-        }
-
-        if (pid == 0)
-        {
-            char *argv[] = { init_conf[i], NULL };
-
-            if (execv(init_conf[i], argv) < 0)
-                uprint("Init: execve() failed");
-
-            return 1;
-        }
-    }
+        exec_conf_line(init_conf[i]);
 
     /* We only free 0 because we know all lines are from the same buffer */
     free(init_conf[0]);
