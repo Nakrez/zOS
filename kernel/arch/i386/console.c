@@ -80,6 +80,8 @@ int x86_console_putc(char c)
         ++x86_console.y;
         x86_console.x = 0;
 
+        outb(0x3f8, '\n');
+
         if (x86_console.y == YMAX)
         {
             x86_console.y = YMAX - 1;
@@ -93,6 +95,8 @@ int x86_console_putc(char c)
 
         (*addr++) = c;
         (*addr) = x86_console.color;
+
+        outb(0x3f8, c);
 
         ++x86_console.x;
     }

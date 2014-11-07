@@ -20,11 +20,11 @@ all: zos-${ZOS_TARGET}-image.img
 
 boot: zos-${ZOS_TARGET}-image.img
 	$(call run,QEMU,)
-	@qemu-system-i386 -vga std $<
+	@qemu-system-i386 -vga std $< -serial stdio
 
 boot-gdb: zos-${ZOS_TARGET}-image.img
 	$(call run,QEMU-GDB,)
-	@qemu-system-i386 -vga std $< -S -s
+	@qemu-system-i386 -vga std $< -S -s -serial stdio
 
 rootfs/%: ${SRCDIR}/userland/root/%
 	$(call run,CP,cp $^ $@)
