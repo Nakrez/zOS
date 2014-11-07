@@ -75,6 +75,8 @@ void process_free_fd(struct process *process, int fd);
 int process_execv(struct thread *thread, const char *filename,
                   char *const argv[]);
 
+pid_t process_waitpid(struct process *p, pid_t pid, int *status, int options);
+
 void process_exit(struct process *p, int code);
 
 void process_destroy(struct process *p);
