@@ -235,14 +235,25 @@ void process_exit(struct process *p, int code)
 
     cpu->scheduler.time = 1;
 
-    scheduler_update(NULL);
+    scheduler_update(NULL, 1);
 }
 
 void process_destroy(struct process *p)
 {
     (void) p;
 
+    if (p->pid == 1)
+        kernel_panic("Init has been killed");
+
     as_destroy(p->as);
 
     kfree(p->as);
+
+    spinlock_lock(&p->plock);
+
+    scheduler_event_notify(SCHED_EV_PEXIT, p->pid);
+
+    scheduler_event_notify(SCHED_EV_PEXIT_PARENT, p->parent->pid);
+
+    spinlock_unlock(&p->plock);
 }

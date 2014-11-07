@@ -17,7 +17,13 @@
 /* A new response has arrived */
 # define SCHED_EV_RESP 4
 
-# define SCHED_EV_SIZE SCHED_EV_RESP
+/* A process exited */
+# define SCHED_EV_PEXIT 5
+
+/* A process exited and notify parent */
+# define SCHED_EV_PEXIT_PARENT 6
+
+# define SCHED_EV_SIZE SCHED_EV_PEXIT_PARENT
 
 struct thread;
 
