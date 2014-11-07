@@ -151,15 +151,16 @@ int process_execv(struct thread *thread, const char *filename,
     {
         kfree(new_argv);
 
-        scheduler_update(NULL);
         process_exit(thread->parent, 0);
+
+        scheduler_update(NULL, 1);
     }
 
     thread_update_exec(thread, entry, new_argv);
 
     kfree(new_argv);
 
-    scheduler_update(NULL);
+    scheduler_update(NULL, 1);
 
     return 0;
 }

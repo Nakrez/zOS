@@ -21,7 +21,7 @@ int sys_thread_exit(struct syscall *interface)
 
     cpu->scheduler.time = 1;
 
-    scheduler_update(NULL);
+    scheduler_update(NULL, 1);
 
     return 0;
 }

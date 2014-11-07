@@ -61,12 +61,7 @@ void scheduler_start(struct scheduler *sched);
  * The function is called by the timer on regular basis to update scheduler
  * state
  */
-void scheduler_update(struct irq_regs *regs);
-
-/*
- * Elect a new thread
- */
-struct thread *scheduler_elect(struct scheduler *sched);
+void scheduler_update(struct irq_regs *regs, int force);
 
 /*
  * Switch to new_thread

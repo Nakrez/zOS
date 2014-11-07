@@ -49,7 +49,7 @@ void timer_handler(struct irq_regs *regs)
         }
     }
 
-    scheduler_update(regs);
+    scheduler_update(regs, 0);
 }
 
 static int timer_new(void)

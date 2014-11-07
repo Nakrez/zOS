@@ -35,10 +35,44 @@ void scheduler_start(struct scheduler *sched)
 {
     sched->time = 1;
 
-    scheduler_update(NULL);
+    scheduler_update(NULL, 0);
 }
 
-void scheduler_update(struct irq_regs *regs)
+static struct thread *scheduler_elect(struct scheduler *sched, int force)
+{
+    struct thread *thread;
+
+    if (klist_empty(&sched->threads))
+            return sched->idle;
+
+    /* Get first element in the thread list */
+    thread = klist_elem(sched->threads.next, struct thread, sched);
+
+    klist_del(&thread->sched);
+
+    if (force && sched->running == thread)
+    {
+        size_t count = 0;
+
+        klist_for_each(&sched->threads, tmp, sched)
+        {
+            ++count;
+        }
+
+        klist_add_back(&sched->threads, &thread->sched);
+
+        if (count == 0)
+            thread = sched->idle;
+        else
+            thread = scheduler_elect(sched, force);
+    }
+    else
+        klist_add_back(&sched->threads, &thread->sched);
+
+    return thread;
+}
+
+void scheduler_update(struct irq_regs *regs, int force)
 {
     struct cpu *cpu = cpu_get(cpu_id_get());
 
@@ -46,60 +80,43 @@ void scheduler_update(struct irq_regs *regs)
 
     if (cpu->scheduler.time <= 0 ||
         cpu->scheduler.running->state != THREAD_STATE_RUNNING ||
-        !regs)
+        !regs || force)
     {
-        int state;
-        struct thread *new_thread;
+        struct thread *thread;
 
-        if (!regs && cpu->scheduler.running)
+        /* FIXME: x86 code */
+        uint32_t eflags = eflags_get();
+
+        if (!regs)
+            cpu_irq_disable();
+
+        /* Clean blocked/zombie thread if any */
+        klist_for_each(&cpu->scheduler.threads, tlist, sched)
         {
-            state = cpu->scheduler.running->state;
-            cpu->scheduler.running->state = THREAD_STATE_BLOCKED;
-        }
+            thread = klist_elem(tlist, struct thread, sched);
 
-        new_thread = scheduler_elect(&cpu->scheduler);
-
-        if (!regs && cpu->scheduler.running)
-            cpu->scheduler.running->state = state;
-
-        while (new_thread->state == THREAD_STATE_ZOMBIE)
-        {
-            if (cpu->scheduler.running == new_thread)
+            if (thread->state == THREAD_STATE_BLOCKED)
+                klist_del(&thread->sched);
+            else if (thread->state == THREAD_STATE_ZOMBIE)
             {
-                cpu->scheduler.running = NULL;
-                cpu->scheduler.time = 1;
+                if (cpu->scheduler.running == thread)
+                    continue;
+                klist_del(&thread->sched);
+                thread_destroy(thread);
             }
-
-            thread_destroy(new_thread);
-
-            new_thread = scheduler_elect(&cpu->scheduler);
         }
 
-        if (new_thread != cpu->scheduler.running)
-            scheduler_switch(&cpu->scheduler, new_thread, regs);
+        thread = scheduler_elect(&cpu->scheduler, force);
+
+        if (thread != cpu->scheduler.running)
+            scheduler_switch(&cpu->scheduler, thread, regs);
         else
             cpu->scheduler.time = SCHEDULER_TIME;
+
+        if (!regs)
+            /* FIXME: x86 code */
+            eflags_set(eflags);
     }
-}
-
-struct thread *scheduler_elect(struct scheduler *sched)
-{
-    if (klist_empty(&sched->threads))
-    {
-        if (sched->running != NULL &&
-            sched->running->state == THREAD_STATE_RUNNING)
-            return sched->running;
-        else
-            return sched->idle;
-    }
-
-    /* Get first element in the thread list */
-    struct thread *thread = klist_elem(sched->threads.next, struct thread,
-                                       sched);
-
-    klist_del(&thread->sched);
-
-    return thread;
 }
 
 void scheduler_switch(struct scheduler *sched, struct thread *new_thread,
@@ -110,15 +127,20 @@ void scheduler_switch(struct scheduler *sched, struct thread *new_thread,
     sched->running = new_thread;
     sched->time = SCHEDULER_TIME;
 
-    if (old != NULL && old->state == THREAD_STATE_RUNNING)
-        klist_add_back(&sched->threads, &old->sched);
-
     _scheduler.sswitch(regs, new_thread, old);
 }
 
 void scheduler_remove_thread(struct thread *t, struct scheduler *sched)
 {
-    spinlock_lock(&sched->sched_lock);
+    /*
+     * This function is only called by thread_block() which already lock the
+     * scheduler lock
+     */
+    if (t->state == THREAD_STATE_RUNNING)
+    {
+        spinlock_unlock(&sched->sched_lock);
+        return;
+    }
 
     if (t == sched->running)
     {
@@ -137,7 +159,7 @@ void scheduler_remove_thread(struct thread *t, struct scheduler *sched)
         sched->running = NULL;
         sched->time = 1;
 
-        scheduler_update(NULL);
+        scheduler_update(NULL, 1);
     }
     else
     {
