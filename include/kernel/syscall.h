@@ -42,6 +42,7 @@ int sys_usleep(struct syscall *interface);
 int sys_exit(struct syscall *interface);
 int sys_fork(struct syscall *interface);
 int sys_getpid(struct syscall *interface);
+int sys_waitpid(struct syscall *interface);
 int sys_execv(struct syscall *interface);
 
 /* Thread */

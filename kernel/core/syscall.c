@@ -27,6 +27,7 @@ static syscall_callback syscalls[] =
     &sys_exit,
     &sys_fork,
     &sys_getpid,
+    &sys_waitpid,
     &sys_execv,
 
     /* Thread */

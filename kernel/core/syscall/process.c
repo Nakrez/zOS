@@ -31,6 +31,15 @@ int sys_getpid(struct syscall *interface)
     return thread_current()->parent->pid;
 }
 
+int sys_waitpid(struct syscall *interface)
+{
+    pid_t pid = interface->arg1;
+    int *status = (int *)interface->arg2;
+    int options = interface->arg3;
+
+    return process_waitpid(thread_current()->parent, pid, status, options);
+}
+
 int sys_execv(struct syscall *interface)
 {
     const char *filename = (void *)interface->arg1;
