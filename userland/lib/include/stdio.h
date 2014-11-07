@@ -7,6 +7,10 @@
 # define _IOLBF 2
 # define _IONBF 3
 
+# define STDIN_FILENO 0
+# define STDOUT_FILENO 1
+# define STDERR_FILENO 2
+
 struct _IO_FILE;
 
 typedef struct _IO_FILE FILE;
