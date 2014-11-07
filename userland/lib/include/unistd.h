@@ -29,4 +29,7 @@ struct stat;
 int stat(const char *path, struct stat *buf);
 int fstat(int fd, struct stat *buf);
 
+int dup(int oldfd);
+int dup2(int oldfd, int newfd);
+
 #endif /* !LIBC_UNISTD_H */
