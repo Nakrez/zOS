@@ -28,6 +28,9 @@ void scheduler_add_thread(struct scheduler *sched, struct thread *thread)
 
     klist_add_back(&sched->threads, &thread->sched);
 
+    if (sched->running && sched->running == sched->idle)
+        sched->time = 1;
+
     spinlock_unlock(&sched->sched_lock);
 }
 
@@ -80,7 +83,9 @@ void scheduler_update(struct irq_regs *regs, int force)
 
     if (cpu->scheduler.time <= 0 ||
         cpu->scheduler.running->state != THREAD_STATE_RUNNING ||
-        !regs || force)
+        !regs || force ||
+        (cpu->scheduler.running == cpu->scheduler.idle &&
+         klist_empty(&cpu->scheduler.threads)))
     {
         struct thread *thread;
 
@@ -101,6 +106,7 @@ void scheduler_update(struct irq_regs *regs, int force)
             {
                 if (cpu->scheduler.running == thread)
                     continue;
+
                 klist_del(&thread->sched);
                 thread_destroy(thread);
             }
