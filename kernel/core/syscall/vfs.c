@@ -140,3 +140,18 @@ int sys_vfs_ioctl(struct syscall *interface)
 
     return vfs_ioctl(thread_current(), fd, request, argp);
 }
+
+int sys_vfs_dup(struct syscall *interface)
+{
+    int oldfd = interface->arg1;
+
+    return vfs_dup(thread_current(), oldfd);
+}
+
+int sys_vfs_dup2(struct syscall *interface)
+{
+    int oldfd = interface->arg1;
+    int newfd = interface->arg2;
+
+    return vfs_dup2(thread_current(), oldfd, newfd);
+}

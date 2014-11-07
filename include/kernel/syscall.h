@@ -78,4 +78,7 @@ int sys_vfs_fstat(struct syscall *interface);
 
 int sys_vfs_ioctl(struct syscall *interface);
 
+int sys_vfs_dup(struct syscall *interface);
+int sys_vfs_dup2(struct syscall *interface);
+
 #endif /* !SYSCALL_H */
