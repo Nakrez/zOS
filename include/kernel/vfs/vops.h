@@ -39,5 +39,7 @@ int vfs_write(struct thread *t, int fd, const void *buf, size_t count);
 int vfs_close(struct thread *t, int fd);
 int vfs_lseek(struct thread *t, int fd, int offset, int whence);
 int vfs_ioctl(struct thread *t, int fd, int req, int *argp);
+int vfs_dup(struct thread *t, int oldfd);
+int vfs_dup2(struct thread *t, int oldfd, int newfd);
 
 #endif /* !VFS_VOPS_H */
