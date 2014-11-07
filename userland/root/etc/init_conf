@@ -1,4 +1,4 @@
 /bin/kbd
 /bin/video
 /bin/tty_ctrl
-/bin/shell
+/bin/shell,/dev/tty0
