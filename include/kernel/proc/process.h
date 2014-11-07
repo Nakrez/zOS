@@ -70,6 +70,7 @@ struct process *process_get(pid_t pid);
 int process_fork(struct process *process, struct irq_regs *regs);
 
 int process_new_fd(struct process *process);
+int process_fd_exist(struct process *process, int fd);
 void process_free_fd(struct process *process, int fd);
 
 int process_execv(struct thread *thread, const char *filename,

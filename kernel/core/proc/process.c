@@ -163,11 +163,7 @@ int process_fork(struct process *process, struct irq_regs *regs)
         return -1;
 
     /* Increase reference count on vnode associated to open file descriptors */
-    for (int i = 0; i < PROCESS_MAX_OPEN_FD; ++i)
-    {
-        /* if (child->files[i].mode != VFS_MODE_UNUSED) */
-        /*     ++child->files[i].vnode->ref_count; */
-    }
+    memcpy(child->files, process->files, sizeof (process->files));
 
     klist_add(&process->children, &child->brothers);
 
@@ -195,6 +191,22 @@ int process_new_fd(struct process *process)
     spinlock_unlock(&process->files_lock);
 
     return -EMFILE;
+}
+
+int process_fd_exist(struct process *process, int fd)
+{
+    int ret;
+
+    if (fd < 0 || fd >= PROCESS_MAX_OPEN_FD)
+        return 0;
+
+    spinlock_lock(&process->files_lock);
+
+    ret = process->files[fd].used;
+
+    spinlock_unlock(&process->files_lock);
+
+    return ret;
 }
 
 void process_free_fd(struct process *process, int fd)
