@@ -31,6 +31,8 @@ struct process
 {
     pid_t pid;
 
+    struct process *parent;
+
     int state;
 
     int exit_state;
@@ -41,11 +43,20 @@ struct process
 
     size_t thread_count;
 
+    spinlock_t plock;
+
     spinlock_t files_lock;
 
     struct vfile files[PROCESS_MAX_OPEN_FD];
 
+    /* List of threads */
     struct klist threads;
+
+    /* List of children */
+    struct klist children;
+
+    /* List of brothers */
+    struct klist brothers;
 
     /* List of process */
     struct klist list;

@@ -47,6 +47,7 @@ static pid_t process_new_pid(void)
     return -1;
 }
 
+/* TODO: Too much code is duplicated with fork() */
 struct process *process_create(int type, uintptr_t code, int flags)
 {
     struct process *process;
@@ -75,12 +76,17 @@ struct process *process_create(int type, uintptr_t code, int flags)
     process->type = type;
     process->pid = pid;
 
+    /* By default init is your father */
+    process->parent = process_get(1);
+
+    spinlock_init(&process->plock);
     spinlock_init(&process->files_lock);
 
     memset(process->files, 0, sizeof (process->files));
 
     /* Init thread list */
     klist_head_init(&process->threads);
+    klist_head_init(&process->children);
 
     if (flags & PROCESS_FLAG_LOAD)
     {
@@ -141,13 +147,16 @@ int process_fork(struct process *process, struct irq_regs *regs)
     }
 
     child->pid = pid;
+    child->parent = process;
     child->state = PROCESS_STATE_ALIVE;
     child->type = process->type;
     child->thread_count = 0;
 
-    klist_head_init(&child->threads);
-
+    spinlock_init(&child->plock);
     spinlock_init(&child->files_lock);
+
+    klist_head_init(&child->threads);
+    klist_head_init(&process->children);
 
     /* TODO: cleanup */
     if (!thread_duplicate(child, thread_current(), regs))
@@ -159,6 +168,8 @@ int process_fork(struct process *process, struct irq_regs *regs)
         /* if (child->files[i].mode != VFS_MODE_UNUSED) */
         /*     ++child->files[i].vnode->ref_count; */
     }
+
+    klist_add(&process->children, &child->brothers);
 
     klist_add(&processes, &child->list);
 
@@ -203,8 +214,12 @@ void process_exit(struct process *p, int code)
     struct cpu *cpu = cpu_get(cpu_id_get());
     struct thread *thread;
 
+    spinlock_lock(&p->plock);
+
     p->exit_state = code;
     p->state = PROCESS_STATE_ZOMBIE;
+
+    spinlock_unlock(&p->plock);
 
     /*
      * Exit all threads. When a process have no thread anymore it will be
