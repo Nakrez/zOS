@@ -96,10 +96,24 @@ static void command_execute(struct command *command)
     }
     else
     {
-        execv(command->argv[0], command->argv);
+        char *bin;
 
-        write(STDERR_FILENO, "Cannot execute: ", 15);
-        write(STDERR_FILENO, command->argv[0], strlen(command->argv[0]));
+        if (*command->argv[0] != '/')
+        {
+            /* 6 = /bin/ + '\0' */
+            if (!(bin = malloc(strlen(command->argv[0] + 6))))
+                exit(1);
+
+            strcpy(bin, "/bin/");
+            strcat(bin, command->argv[0]);
+        }
+        else
+            bin = command->argv[0];
+
+        execv(bin, command->argv);
+
+        write(STDERR_FILENO, "Cannot execute: ", 16);
+        write(STDERR_FILENO, bin, strlen(bin));
         write(STDERR_FILENO, "\n", 1);
 
         exit(1);
