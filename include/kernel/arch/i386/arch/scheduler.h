@@ -6,6 +6,6 @@
 # include <arch/cpu.h>
 
 void i386_switch(struct irq_regs *regs, struct thread *new,
-                 struct thread *old);
+                 struct thread *old, spinlock_t *sched_lock);
 
 #endif /* !ARCH_I386_SCHEDULER_H */

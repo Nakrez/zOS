@@ -5,12 +5,15 @@
 #include <arch/pm.h>
 
 void i386_switch(struct irq_regs *regs, struct thread *new,
-                 struct thread *old)
+                 struct thread *old, spinlock_t *sched_lock)
 {
     struct process *parent = new->parent;
     struct cpu *cpu = cpu_get(cpu_id_get());
 
     thread_save_state(old, regs);
+
+    /* We manually unlock the mutex to avoid interrupt to occur here */
+    spinlock_unlock_no_restore(sched_lock);
 
     if (new->regs.cs == KERNEL_CS)
         __asm__ __volatile__("mov %0, %%esp\n"

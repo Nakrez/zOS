@@ -31,8 +31,8 @@ struct scheduler
 
 struct scheduler_glue
 {
-    void (*sswitch)(struct irq_regs *r, struct thread *new,
-                    struct thread *old);
+    void (*sswitch)(struct irq_regs *, struct thread *, struct thread *old,
+                    spinlock_t *);
 };
 
 extern struct scheduler_glue _scheduler;
@@ -62,12 +62,6 @@ void scheduler_start(struct scheduler *sched);
  * state
  */
 void scheduler_update(struct irq_regs *regs, int force);
-
-/*
- * Switch to new_thread
- */
-void scheduler_switch(struct scheduler *sched, struct thread *new_thread,
-                      struct irq_regs *regs);
 
 void scheduler_remove_thread(struct thread *t, struct scheduler *sched);
 

@@ -46,7 +46,7 @@ static struct thread *scheduler_elect(struct scheduler *sched, int force)
     struct thread *thread;
 
     if (klist_empty(&sched->threads))
-            return sched->idle;
+        return sched->idle;
 
     /* Get first element in the thread list */
     thread = klist_elem(sched->threads.next, struct thread, sched);
@@ -75,9 +75,23 @@ static struct thread *scheduler_elect(struct scheduler *sched, int force)
     return thread;
 }
 
+static void scheduler_switch(struct scheduler *sched,
+                             struct thread *new_thread, struct irq_regs *regs,
+                             spinlock_t *sched_lock)
+{
+    struct thread *old = sched->running;
+
+    sched->running = new_thread;
+    sched->time = SCHEDULER_TIME;
+
+    _scheduler.sswitch(regs, new_thread, old, sched_lock);
+}
+
 void scheduler_update(struct irq_regs *regs, int force)
 {
     struct cpu *cpu = cpu_get(cpu_id_get());
+
+    spinlock_lock(&cpu->scheduler.sched_lock);
 
     --cpu->scheduler.time;
 
@@ -85,15 +99,9 @@ void scheduler_update(struct irq_regs *regs, int force)
         cpu->scheduler.running->state != THREAD_STATE_RUNNING ||
         !regs || force ||
         (cpu->scheduler.running == cpu->scheduler.idle &&
-         klist_empty(&cpu->scheduler.threads)))
+         !klist_empty(&cpu->scheduler.threads)))
     {
         struct thread *thread;
-
-        /* FIXME: x86 code */
-        uint32_t eflags = eflags_get();
-
-        if (!regs)
-            cpu_irq_disable();
 
         /* Clean blocked/zombie thread if any */
         klist_for_each(&cpu->scheduler.threads, tlist, sched)
@@ -108,32 +116,33 @@ void scheduler_update(struct irq_regs *regs, int force)
                     continue;
 
                 klist_del(&thread->sched);
+
+                /*
+                 * FIXME: I don't like the fact that the lock is released here
+                 * might cause bugs. Maybe an asynchronous event dispatcher
+                 * would be cleaner and may improve stability a lot
+                 * (thread_destroy dispatch two events which are responsable
+                 * for dead locks if the lock is not released)
+                 */
+                spinlock_unlock_no_restore(&cpu->scheduler.sched_lock);
+
                 thread_destroy(thread);
+
+                spinlock_lock(&cpu->scheduler.sched_lock);
             }
         }
 
         thread = scheduler_elect(&cpu->scheduler, force);
 
         if (thread != cpu->scheduler.running)
-            scheduler_switch(&cpu->scheduler, thread, regs);
+            scheduler_switch(&cpu->scheduler, thread, regs,
+                             &cpu->scheduler.sched_lock);
         else
             cpu->scheduler.time = SCHEDULER_TIME;
 
-        if (!regs)
-            /* FIXME: x86 code */
-            eflags_set(eflags);
     }
-}
 
-void scheduler_switch(struct scheduler *sched, struct thread *new_thread,
-                      struct irq_regs *regs)
-{
-    struct thread *old = sched->running;
-
-    sched->running = new_thread;
-    sched->time = SCHEDULER_TIME;
-
-    _scheduler.sswitch(regs, new_thread, old);
+    spinlock_unlock(&cpu->scheduler.sched_lock);
 }
 
 void scheduler_remove_thread(struct thread *t, struct scheduler *sched)
