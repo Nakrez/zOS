@@ -34,13 +34,18 @@ static inline void spinlock_lock(spinlock_t *spin)
     spin->eflags = eflags;
 }
 
-static inline void spinlock_unlock(spinlock_t *spin)
+static inline void spinlock_unlock_no_restore(spinlock_t *spin)
 {
     __asm__ __volatile__ ("mov $0x0, %%eax\n"
                           "lock xchg (%0), %%eax\n"
                           :
                           : "b" (&spin->lock)
                           : "memory", "eax");
+}
+
+static inline void spinlock_unlock(spinlock_t *spin)
+{
+    spinlock_unlock_no_restore(spin);
 
     eflags_set(spin->eflags);
 }
