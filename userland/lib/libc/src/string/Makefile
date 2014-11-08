@@ -1,6 +1,7 @@
 CURDIR := userland/lib/libc/src/string/
 
-OBJ := memcpy.o memset.o strlen.o strcpy.o strtok_r.o strcmp.o strncmp.o
+OBJ := memcpy.o memset.o strlen.o strcpy.o strtok_r.o strcmp.o strncmp.o \
+		strcat.o
 
 LIBSUBDIRS :=
 
