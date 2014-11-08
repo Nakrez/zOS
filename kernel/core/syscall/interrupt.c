@@ -56,13 +56,21 @@ int sys_interrupt_listen(struct syscall *interface)
         return -1;
 
     if (t->interrupts[interface->arg1 - IRQ_USER_BEGIN] & INTERRUPT_FIRED)
+    {
+        t->interrupts[interface->arg1 - IRQ_USER_BEGIN] &= ~INTERRUPT_FIRED;
+
         return interface->arg1;
+    }
 
     /* Block thread until an interrupt occured */
     thread_block(t, SCHED_EV_INTERRUPT, interface->arg1, NULL);
 
     if (t->interrupts[interface->arg1 - IRQ_USER_BEGIN] & INTERRUPT_FIRED)
+    {
+        t->interrupts[interface->arg1 - IRQ_USER_BEGIN] &= ~INTERRUPT_FIRED;
+
         return interface->arg1;
+    }
 
     return -1;
 }
