@@ -17,6 +17,7 @@ having the Virtual File System embedded within the kernel.
   * Round robin scheduler
   * Thread support
   * fork() using Copy-On-Write
+* Interrupt in userland API
 * VFS
   * Driver interface and communication
   * Filesystem Driver interface (WIP)
@@ -31,12 +32,21 @@ having the Virtual File System embedded within the kernel.
     else
 * Filesystem In Userland library (libfiu)
   * Easy filesystem implementation
-  * Only provide filesystem operation and information, the library do
-    everything else
+  * Filesystem drivers only provide filesystem operations and informations, the
+    library do the rest
+  * Generic block cache implementation
+* Drivers:
+  * ATA: (only disk no CDROM atm)
+  * Ext2
+  * Keyboard
+  * Video (x86 only using VBE Extended)
+  * TTY
+* Other binaries:
+  * Shell, cat
 
 ## Build instruction ##
 
-To build zOS you first have to configure it by lanching the configure script.
+To build zOS you first have to configure it by lanching the `configure` script.
 
 If you want to build the image just use `make`.
 

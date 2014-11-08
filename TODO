@@ -5,7 +5,7 @@
 [CORE]
 
 - Review CPU to be sure it could support SMP (which I doubt)
-- Review ELF loader (Move it to its own files & map memory with correct rights)
+- Review ELF loader (map memory with correct rights)
 - Review locks (Some might be missing)
 
 [MEM]
@@ -13,23 +13,26 @@
 - Change page_size argument by size (in byte) and compute page_size inside
   the function
 
+[PROC]
+
+- Add wait/waitpid(-1, ...)
+
 [SYSCALL]
 
-- Add memory specific syscalls (mmap, munmap)
 - /!\ Check user pointers from syscalls /!\
 
 [VFS]
 
-- Add Filesystem driver interface
+- Add dirent.h interface
 
 [SCHEDULER]
 
 - Remove x86 asm inline in core scheduler
+- Add asynchronous event dispatching
 
 [THREAD]
 
 - Add thread_join()
-- TLS kernel ?
 
 [X86]
 
@@ -39,5 +42,5 @@
 
 [USERLAND]
 
-- Add TTY driver + kbd + vga driver
-- Add init binary
+- Replace init's sleep() with wait()
+- Add ls binary
