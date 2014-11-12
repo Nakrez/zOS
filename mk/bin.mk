@@ -1,3 +1,4 @@
+ifneq ($(BIN-y),)
 _BIN := $(addprefix $(CURDIR)/, $(BIN-y))
 
 $(BIN-y)_OBJ :=
@@ -22,3 +23,4 @@ rootfs/$(INSTALL_DIR)/$(BIN-y) : $(_BIN)
 	$(call run,CP,cp $< $@)
 
 ALL_BIN := $(ALL_BIN) $(_BIN)
+endif

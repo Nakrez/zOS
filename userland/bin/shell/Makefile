@@ -1,8 +1,12 @@
 CURDIR := userland/bin/shell
 
-BIN-y := shell
+BIN-y :=
+BIN-$(CONFIG_SHELL) := shell
+
+BINSUBDIRS-y :=
+BINSUBDIRS-$(CONFIG_SHELL) := src
+
 INSTALL_DIR := bin
-BINSUBDIRS-y := src
 
 shell_CFLAGS := $(USERLAND_CFLAGS)
 shell_LDFLAGS := $(USERLAND_LDFLAGS)

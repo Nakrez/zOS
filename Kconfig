@@ -1,0 +1,8 @@
+mainmenu "zOS/$ZOS_ARCH Configuration"
+
+config ZOS_ARCH
+    string
+    option env="ZOS_ARCH"
+
+source "kernel/core/Kconfig"
+source "userland/Kconfig"

@@ -1,8 +1,12 @@
 CURDIR := userland/driver/kbd
 
-BIN-y := kbd
+BIN-y :=
+BIN-$(CONFIG_KBD) := kbd
+
+BINSUBDIRS-y :=
+BINSUBDIRS-$(CONFIG_KBD) := src
+
 INSTALL_DIR := bin
-BINSUBDIRS-y := src
 
 kbd_CFLAGS := $(USERLAND_CFLAGS)
 kbd_CFLAGS += -I$(SRCDIR)/userland/driver/kbd/include/

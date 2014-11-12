@@ -1,0 +1,55 @@
+menu "Core configuration (developer only)"
+
+config CONSOLE
+    bool "Generic console module"
+    default y
+
+config PANIC
+    bool "Kernel panic utility"
+    default y
+    depends on CONSOLE
+
+config MODULE
+    bool "Early boot module support"
+    default y
+    depends on PANIC
+
+config MEMORY
+    bool "Generic memory module"
+    default y
+    depends on MODULE
+
+config PROCESS
+    bool "Generic process module"
+    default y
+    depends on MEMORY
+
+config INTERRUPT
+    bool "Generic interrupt module"
+    default y
+    depends on MEMORY
+    depends on PROCESS
+
+config TIMER
+    bool "Generic timer module"
+    default y
+    depends on INTERRUPT
+
+config VFS
+    bool "VFS Components"
+    default y
+    depends on MEMORY
+    depends on PROCESS
+
+config SYSCALL
+    bool "Syscall module"
+    default y
+    depends on MEMORY
+    depends on PROCESS
+
+config SCHEDULER
+    bool "Scheduler module"
+    default y
+    depends on TIMER
+
+endmenu

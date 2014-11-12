@@ -1,8 +1,12 @@
 CURDIR := userland/driver/tty_ctrl
 
-BIN-y := tty_ctrl
+BIN-y :=
+BIN-$(CONFIG_TTY) := tty_ctrl
+
+BINSUBDIRS-y :=
+BINSUBDIRS-$(CONFIG_TTY) := src
+
 INSTALL_DIR := bin
-BINSUBDIRS-y := src
 
 tty_ctrl_CFLAGS := $(USERLAND_CFLAGS)
 tty_ctrl_LDFLAGS := $(USERLAND_LDFLAGS)

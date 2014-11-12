@@ -1,0 +1,17 @@
+menu "Binaries"
+
+config INIT
+    bool "Init"
+    default y
+
+config SHELL
+    bool "Shell"
+    default y
+    depends on TTY
+
+config CAT
+    bool "Cat"
+    default y
+    depends on SHELL
+
+endmenu

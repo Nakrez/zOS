@@ -46,12 +46,12 @@ having the Virtual File System embedded within the kernel.
 
 ## Build instruction ##
 
-To build zOS you first have to configure it by lanching the `configure` script.
+zOS use Kconfig build system.
 
-If you want to build the image just use `make`.
+To create a new configuration file you can type `make menuconfig`.
 
-You can boot zOS by typing `make boot`. It will generate the image and launch
-qemu with it.
+Then, you just have to run `make` or `make boot` if you want to run the
+created image file into `qemu`.
 
 ## License ##
 

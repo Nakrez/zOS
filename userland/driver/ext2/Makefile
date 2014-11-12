@@ -1,8 +1,12 @@
 CURDIR := userland/driver/ext2
 
-BIN-y := ext2
+BIN-y :=
+BIN-$(CONFIG_EXT2) := ext2
+
+BINSUBDIRS-y :=
+BINSUBDIRS-$(CONFIG_EXT2) := src
+
 INSTALL_DIR := bin
-BINSUBDIRS-y := src
 
 ext2_CFLAGS := $(USERLAND_CFLAGS)
 ext2_LDFLAGS := $(USERLAND_LDFLAGS)

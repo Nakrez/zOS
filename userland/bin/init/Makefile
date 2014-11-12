@@ -1,8 +1,12 @@
 CURDIR := userland/bin/init
 
-BIN-y := init
-INSTALL_DIR := bin
+BIN-y :=
+BIN-$(CONFIG_INIT) := init
+
 BINSUBDIRS-y := src
+BINSUBDIRS-$(CONFIG_INIT) := src
+
+INSTALL_DIR := bin
 
 init_CFLAGS := $(USERLAND_CFLAGS)
 init_LDFLAGS := $(USERLAND_LDFLAGS)

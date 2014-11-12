@@ -1,0 +1,6 @@
+menu "Userland"
+
+source "userland/driver/Kconfig"
+source "userland/bin/Kconfig"
+
+endmenu

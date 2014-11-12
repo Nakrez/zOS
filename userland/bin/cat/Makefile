@@ -1,14 +1,18 @@
 CURDIR := userland/bin/cat
 
-BIN-y := cat
-INSTALL_DIR := bin
+BIN-y :=
+BIN-$(CONFIG_CAT) := cat
+
 BINSUBDIRS-y :=
+
+INSTALL_DIR := bin
 
 cat_CFLAGS := $(USERLAND_CFLAGS)
 cat_LDFLAGS := $(USERLAND_LDFLAGS)
 
 cat_LIBS := libc
 
-OBJ-y := cat.o
+OBJ-y :=
+OBJ-$(CONFIG_CAT) := cat.o
 
 include $(SRCDIR)/mk/bin.mk

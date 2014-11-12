@@ -1,6 +1,7 @@
 CURDIR := kernel/arch/i386/debug/ubsan
 
-OBJ-y := ubsan.o
+OBJ-y :=
+OBJ-$(CONFIG_PANIC) += ubsan.o
 
 BINSUBDIRS-y :=
 
