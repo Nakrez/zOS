@@ -1,17 +1,17 @@
 menu "Binaries"
 
-config INIT
+config BUILD_INIT
     bool "Init"
     default y
 
-config SHELL
+config BUILD_SHELL
     bool "Shell"
     default y
-    depends on TTY
+    depends on BUILD_TTY
 
-config CAT
+config BUILD_CAT
     bool "Cat"
     default y
-    depends on SHELL
+    depends on BUILD_SHELL
 
 endmenu

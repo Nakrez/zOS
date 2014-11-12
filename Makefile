@@ -1,3 +1,4 @@
+# Some parts of this Makefile comes from Linux
 ARCH ?= i386
 PLAT ?= pc
 
@@ -7,6 +8,19 @@ ZOS_PLAT := $(PLAT)
 ZOS_TARGET = ${ZOS_ARCH}-${ZOS_PLAT}
 
 export ZOS_ARCH ZOS_PLAT ZOS_TARGET
+
+# Do not use make's built-in rules and variables
+# (this increases performance and avoids hard-to-debug behaviour);
+MAKEFLAGS += -rR
+
+# Avoid funny character set dependencies
+unexport LC_ALL
+LC_COLLATE=C
+LC_NUMERIC=C
+export LC_COLLATE LC_NUMERIC
+
+# Avoid interference with shell env settings
+unexport GREP_OPTIONS
 
 # Kconfig BUILD
 
@@ -28,6 +42,10 @@ ifndef KBUILD_VERBOSE
   KBUILD_VERBOSE = 0
 endif
 
+export KBUILD_VERBOSE
+
+PHONY = all
+
 all: zos
 
 KCURDIR := $(shell pwd)
@@ -35,7 +53,9 @@ KCURDIR := $(shell pwd)
 # Cancel implicit rules on top Makefile
 $(KCURDIR)/Makefile Makefile: ;
 
-# That's our default target when none is given on the command line
+KCONFIG_AUTOHEADER = $(srctree)/include/kernel/config.h
+KBUILD_KCONFIG = $(KCURDIR)/Kconfig
+export KBUILD_KCONFIG KCONFIG_AUTOHEADER
 
 # SHELL used by kbuild
 CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
@@ -57,9 +77,8 @@ obj		:= $(objtree)
 
 export srctree objtree
 
-KCONFIG_AUTOHEADER = $(srctree)/include/kernel/config.h
-KBUILD_KCONFIG = $(KCURDIR)/Kconfig
-export KBUILD_KCONFIG KCONFIG_AUTOHEADER
+KCONFIG_CONFIG	?= .config
+export KCONFIG_CONFIG
 
 # We need some generic definitions (do not try to remake the file).
 $(srctree)/scripts/Kbuild.include: ;
@@ -72,7 +91,6 @@ scripts_basic:
 
 
 config: scripts_basic FORCE
-	$(Q)mkdir -p include/linux include/config
 	$(Q)$(MAKE) $(build)=scripts/kconfig $@
 
 %config: scripts_basic FORCE
@@ -89,14 +107,13 @@ FORCE:
 
 CC ?= gcc
 LD ?= gcc
-AS ?= gcc
+AS := gcc
 AR ?= ar
 
 CC := $(CROSS_COMPILE)$(CC)
 LD := $(CROSS_COMPILE)$(LD)
 AS := $(CROSS_COMPILE)$(AS)
 AR := $(CROSS_COMPILE)$(AR)
-
 
 CURDIR :=
 
@@ -105,7 +122,6 @@ SRCDIR := $(shell pwd)
 DEPS :=
 
 DESTDIR := $(shell pwd)
-
 
 SUBDIRS := kernel userland bootloader/${ZOS_TARGET}
 
@@ -123,17 +139,17 @@ INSTALL_BIN :=
 ALL_BIN :=
 EXTRA_FILE := rootfs/etc/init_conf
 
--include .config
+-include $(KCONFIG_CONFIG)
 
-zos: silentoldconfig zos-${ZOS_TARGET}-image.img
+zos: silentoldconfig zos-$(ZOS_TARGET)-image.img
 
-boot: zos-${ZOS_TARGET}-image.img
+boot: zos
 	$(call run,QEMU,)
-	@qemu-system-i386 -vga std $< -serial stdio
+	@qemu-system-i386 -vga std zos-$(ZOS_TARGET)-image.img -serial stdio
 
-boot-gdb: zos-${ZOS_TARGET}-image.img
+boot-gdb: zos
 	$(call run,QEMU-GDB,)
-	@qemu-system-i386 -vga std $< -S -s -serial stdio
+	@qemu-system-i386 -vga std zos-$(ZOS_TARGET)-image.img -S -s -serial stdio
 
 rootfs/%: $(SRCDIR)/userland/root/%
 	$(call run,CP,cp $^ $@)

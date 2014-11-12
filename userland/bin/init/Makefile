@@ -1,10 +1,10 @@
 CURDIR := userland/bin/init
 
 BIN-y :=
-BIN-$(CONFIG_INIT) := init
+BIN-$(CONFIG_BUILD_INIT) := init
 
 BINSUBDIRS-y := src
-BINSUBDIRS-$(CONFIG_INIT) := src
+BINSUBDIRS-$(CONFIG_BUILD_INIT) := src
 
 INSTALL_DIR := bin
 

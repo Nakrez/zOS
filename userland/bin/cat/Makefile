@@ -1,7 +1,7 @@
 CURDIR := userland/bin/cat
 
 BIN-y :=
-BIN-$(CONFIG_CAT) := cat
+BIN-$(CONFIG_BUILD_CAT) := cat
 
 BINSUBDIRS-y :=
 
@@ -13,6 +13,6 @@ cat_LDFLAGS := $(USERLAND_LDFLAGS)
 cat_LIBS := libc
 
 OBJ-y :=
-OBJ-$(CONFIG_CAT) := cat.o
+OBJ-$(CONFIG_BUILD_CAT) := cat.o
 
 include $(SRCDIR)/mk/bin.mk

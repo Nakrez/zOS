@@ -1,10 +1,10 @@
 CURDIR := userland/driver/video
 
 BIN-y :=
-BIN-$(CONFIG_VIDEO) := video
+BIN-$(CONFIG_BUILD_VIDEO) := video
 
 BINSUBDIRS-y :=
-BINSUBDIRS-$(CONFIG_VIDEO) := src
+BINSUBDIRS-$(CONFIG_BUILD_VIDEO) := src
 
 INSTALL_DIR := bin
 

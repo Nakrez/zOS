@@ -1,10 +1,10 @@
 CURDIR := userland/driver/tty
 
 BIN-y :=
-BIN-$(CONFIG_TTY) := tty
+BIN-$(CONFIG_BUILD_TTY) := tty
 
 BINSUBDIRS-y :=
-BINSUBDIRS-$(CONFIG_TTY) := src
+BINSUBDIRS-$(CONFIG_BUILD_TTY) := src
 
 INSTALL_DIR := bin
 

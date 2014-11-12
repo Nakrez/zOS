@@ -1,10 +1,10 @@
 CURDIR := userland/driver/kbd
 
 BIN-y :=
-BIN-$(CONFIG_KBD) := kbd
+BIN-$(CONFIG_BUILD_KBD) := kbd
 
 BINSUBDIRS-y :=
-BINSUBDIRS-$(CONFIG_KBD) := src
+BINSUBDIRS-$(CONFIG_BUILD_KBD) := src
 
 INSTALL_DIR := bin
 

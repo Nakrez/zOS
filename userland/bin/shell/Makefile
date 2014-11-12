@@ -1,10 +1,10 @@
 CURDIR := userland/bin/shell
 
 BIN-y :=
-BIN-$(CONFIG_SHELL) := shell
+BIN-$(CONFIG_BUILD_SHELL) := shell
 
 BINSUBDIRS-y :=
-BINSUBDIRS-$(CONFIG_SHELL) := src
+BINSUBDIRS-$(CONFIG_BUILD_SHELL) := src
 
 INSTALL_DIR := bin
 

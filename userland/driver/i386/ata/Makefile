@@ -1,10 +1,10 @@
 CURDIR := userland/driver/i386/ata
 
 BIN-y :=
-BIN-$(CONFIG_ATA) := ata
+BIN-$(CONFIG_BUILD_ATA) := ata
 
 BINSUBDIRS-y :=
-BINSUBDIRS-$(CONFIG_ATA) := src
+BINSUBDIRS-$(CONFIG_BUILD_ATA) := src
 
 INSTALL_DIR := bin
 
