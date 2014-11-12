@@ -48,10 +48,14 @@ having the Virtual File System embedded within the kernel.
 
 zOS use Kconfig build system.
 
-To create a new configuration file you can type `make menuconfig`.
+To create a new configuration file you can type `make menuconfig` or
+`make config`.
 
 Then, you just have to run `make` or `make boot` if you want to run the
 created image file into `qemu`.
+
+If you are building zOS for a different architecture than your host computer
+be sure to correctly set `CROSS_COMPILE`.
 
 ## License ##
 
