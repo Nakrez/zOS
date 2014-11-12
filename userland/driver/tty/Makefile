@@ -1,14 +1,14 @@
-CURDIR := userland/driver/tty/
+CURDIR := userland/driver/tty
 
-BIN := tty
+BIN-y := tty
 INSTALL_DIR := bin
-BINSUBDIRS := src/
+BINSUBDIRS-y := src
 
 tty_CFLAGS := $(USERLAND_CFLAGS)
 tty_LDFLAGS := $(USERLAND_LDFLAGS)
 
 tty_LIBS := libdriver libc
 
-OBJ :=
+OBJ-y :=
 
-include ${SRCDIR}mk/bin.mk
+include $(SRCDIR)/mk/bin.mk

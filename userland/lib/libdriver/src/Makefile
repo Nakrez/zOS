@@ -1,7 +1,7 @@
-CURDIR := userland/lib/libdriver/src/
+CURDIR := userland/lib/libdriver/src
 
-LIBSUBDIRS :=
+LIBSUBDIRS-y :=
 
-OBJ := driver.o
+OBJ-y := driver.o
 
-include ${SRCDIR}mk/libsubdirs.mk
+include $(SRCDIR)/mk/libsubdirs.mk

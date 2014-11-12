@@ -1,10 +1,6 @@
-CURDIR := kernel/glue/i386-pc/
+CURDIR := kernel/glue/i386-pc
 
-OBJ := console.o segment.o as.o interrupt.o timer.o thread.o scheduler.o \
+OBJ-y := console.o segment.o as.o interrupt.o timer.o thread.o scheduler.o \
 	syscall.o cpu.o
 
-
-DEPS := $(DEPS) $(addprefix $(CURDIR), $(OBJ:.o=.d))
-
-$(BIN)_OBJ += $(addprefix $(DESTDIR), $(addprefix $(CURDIR), $(OBJ)))
-
+include $(SRCDIR)/mk/binsubdirs.mk

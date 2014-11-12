@@ -1,7 +1,7 @@
-CURDIR := kernel/core/scheduler/
+CURDIR := kernel/core/scheduler
 
-OBJ := scheduler.o event.o
+OBJ-y := scheduler.o event.o
 
 BINSUBDIRS :=
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

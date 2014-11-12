@@ -1,8 +1,8 @@
-CURDIR := userland/lib/libc/src/string/
+CURDIR := userland/lib/libc/src/string
 
-OBJ := memcpy.o memset.o strlen.o strcpy.o strtok_r.o strcmp.o strncmp.o \
+OBJ-y := memcpy.o memset.o strlen.o strcpy.o strtok_r.o strcmp.o strncmp.o \
 		strcat.o
 
-LIBSUBDIRS :=
+LIBSUBDIRS-y :=
 
-include ${SRCDIR}mk/libsubdirs.mk
+include $(SRCDIR)/mk/libsubdirs.mk

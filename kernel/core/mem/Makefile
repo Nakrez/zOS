@@ -1,7 +1,7 @@
-CURDIR := kernel/core/mem/
+CURDIR := kernel/core/mem
 
-OBJ := segment.o region.o as.o kmalloc.o
+OBJ-y := segment.o region.o as.o kmalloc.o
 
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

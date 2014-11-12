@@ -1,7 +1,7 @@
-CURDIR := userland/driver/tty_ctrl/src/
+CURDIR := userland/driver/tty_ctrl/src
 
-OBJ := main.o tty_ctrl.o driver.o keymap.o
+OBJ-y := main.o tty_ctrl.o driver.o keymap.o
 
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

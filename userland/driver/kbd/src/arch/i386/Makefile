@@ -1,7 +1,7 @@
-CURDIR := userland/driver/kbd/src/arch/i386/
+CURDIR := userland/driver/kbd/src/arch/i386
 
-OBJ := interrupt.o keymap.o
+OBJ-y := interrupt.o keymap.o
 
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

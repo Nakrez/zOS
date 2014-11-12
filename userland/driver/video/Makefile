@@ -1,14 +1,14 @@
-CURDIR := userland/driver/video/
+CURDIR := userland/driver/video
 
-BIN := video
+BIN-y := video
 INSTALL_DIR := bin
-BINSUBDIRS := src/
+BINSUBDIRS-y := src
 
 video_CFLAGS := $(USERLAND_CFLAGS)
 video_LDFLAGS := $(USERLAND_LDFLAGS)
 
 video_LIBS := libdriver libc
 
-OBJ :=
+OBJ-y :=
 
-include ${SRCDIR}mk/bin.mk
+include $(SRCDIR)/mk/bin.mk

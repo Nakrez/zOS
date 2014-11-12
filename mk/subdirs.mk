@@ -1,4 +1,4 @@
-SUBDIRS := $(addprefix $(CURDIR), $(SUBDIRS))
+SUBDIRS := $(addprefix $(SRCDIR)/$(CURDIR)/, $(SUBDIRS))
 $(foreach DIR, $(SUBDIRS), $(shell mkdir -p $(DIR)))
 
-include $(addsuffix Makefile,$(addprefix $(SRCDIR), $(SUBDIRS)))
+include $(addsuffix /Makefile, $(SUBDIRS))

@@ -1,7 +1,7 @@
-CURDIR := kernel/core/proc/
+CURDIR := kernel/core/proc
 
-OBJ := process.o thread.o elf.o execv.o wait.o
+OBJ-y := process.o thread.o elf.o execv.o wait.o
 
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

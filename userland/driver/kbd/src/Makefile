@@ -1,7 +1,7 @@
-CURDIR := userland/driver/kbd/src/
+CURDIR := userland/driver/kbd/src
 
-OBJ := main.o buffer.o
+OBJ-y := main.o buffer.o
 
-BINSUBDIRS := arch/${ZOS_ARCH}/
+BINSUBDIRS-y := arch/${ZOS_ARCH}
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

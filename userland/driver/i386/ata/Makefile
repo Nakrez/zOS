@@ -1,14 +1,14 @@
-CURDIR := userland/driver/i386/ata/
+CURDIR := userland/driver/i386/ata
 
-BIN := ata
+BIN-y := ata
 INSTALL_DIR := bin
-BINSUBDIRS := src/
+BINSUBDIRS-y := src
 
 ata_CFLAGS := $(USERLAND_CFLAGS)
 ata_LDFLAGS := $(USERLAND_LDFLAGS)
 
 ata_LIBS := libdriver libc
 
-OBJ :=
+OBJ-y :=
 
-include ${SRCDIR}mk/bin.mk
+include $(SRCDIR)/mk/bin.mk

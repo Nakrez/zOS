@@ -1,17 +1,17 @@
-CURDIR := userland/driver/kbd/
+CURDIR := userland/driver/kbd
 
-BIN := kbd
+BIN-y := kbd
 INSTALL_DIR := bin
-BINSUBDIRS := src/
+BINSUBDIRS-y := src
 
 kbd_CFLAGS := $(USERLAND_CFLAGS)
-kbd_CFLAGS += -I${SRCDIR}userland/driver/kbd/include/
-kbd_CFLAGS += -I${SRCDIR}userland/driver/kbd/include/arch/${ZOS_ARCH}/
+kbd_CFLAGS += -I$(SRCDIR)/userland/driver/kbd/include/
+kbd_CFLAGS += -I$(SRCDIR)/userland/driver/kbd/include/arch/${ZOS_ARCH}/
 
 kbd_LDFLAGS := $(USERLAND_LDFLAGS)
 
 kbd_LIBS := libdriver libc
 
-OBJ :=
+OBJ-y :=
 
-include ${SRCDIR}mk/bin.mk
+include $(SRCDIR)/mk/bin.mk

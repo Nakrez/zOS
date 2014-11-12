@@ -1,7 +1,7 @@
-$(LIB)_OBJ += $(addprefix $(DESTDIR), $(addprefix $(CURDIR), $(OBJ)))
+$(LIB-y)_OBJ += $(addprefix $(DESTDIR)/, $(addprefix $(CURDIR)/, $(OBJ-y)))
 
-DEPS := $(DEPS) $(addprefix $(CURDIR), $(OBJ:.o=.d))
+DEPS := $(DEPS) $(addprefix $(CURDIR)/, $(OBJ-y:.o=.d))
 
-SUBDIRS := $(LIBSUBDIRS)
+SUBDIRS := $(LIBSUBDIRS-y)
 
-include $(SRCDIR)mk/subdirs.mk
+include $(SRCDIR)/mk/subdirs.mk

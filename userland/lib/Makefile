@@ -1,4 +1,4 @@
-CURDIR := userland/lib/
-SUBDIRS := libc/ libdriver/ libfiu/
+CURDIR := userland/lib
+SUBDIRS := libc libdriver libfiu
 
-include ${SRCDIR}mk/subdirs.mk
+include $(SRCDIR)/mk/subdirs.mk

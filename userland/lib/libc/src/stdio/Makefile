@@ -1,7 +1,7 @@
-CURDIR := userland/lib/libc/src/stdio/
+CURDIR := userland/lib/libc/src/stdio
 
-OBJ := stdio.o vsprintf.o sprintf.o fopen.o iobcreate.o iobadd.o
+OBJ-y := stdio.o vsprintf.o sprintf.o fopen.o iobcreate.o iobadd.o
 
-LIBSUBDIRS :=
+LIBSUBDIRS-y :=
 
-include $(SRCDIR)mk/libsubdirs.mk
+include $(SRCDIR)/mk/libsubdirs.mk

@@ -1,7 +1,7 @@
-CURDIR := userland/lib/libc/src/stdlib/
+CURDIR := userland/lib/libc/src/stdlib
 
-OBJ := malloc.o
+OBJ-y := malloc.o
 
-LIBSUBDIRS :=
+LIBSUBDIRS-y :=
 
-include $(SRCDIR)mk/libsubdirs.mk
+include $(SRCDIR)/mk/libsubdirs.mk

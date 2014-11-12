@@ -1,7 +1,7 @@
-CURDIR := userland/driver/ext2/src/
+CURDIR := userland/driver/ext2/src
 
-OBJ := main.o fs.o inode_cache.o block.o inode.o file.o
+OBJ-y := main.o fs.o inode_cache.o block.o inode.o file.o
 
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

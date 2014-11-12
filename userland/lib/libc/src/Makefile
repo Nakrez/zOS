@@ -1,7 +1,7 @@
-CURDIR := userland/lib/libc/src/
+CURDIR := userland/lib/libc/src
 
-LIBSUBDIRS := string/ stdlib/ stdio/ sys/ arch/$(ZOS_ARCH)/
+LIBSUBDIRS-y := string stdlib stdio sys arch/$(ZOS_ARCH)
 
-OBJ :=
+OBJ-y :=
 
-include ${SRCDIR}mk/libsubdirs.mk
+include $(SRCDIR)/mk/libsubdirs.mk

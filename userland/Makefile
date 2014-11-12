@@ -1,4 +1,4 @@
-CURDIR := userland/
-SUBDIRS := lib/ bin/ driver/
+CURDIR := userland
+SUBDIRS := lib bin driver
 
-include ${SRCDIR}mk/subdirs.mk
+include $(SRCDIR)/mk/subdirs.mk

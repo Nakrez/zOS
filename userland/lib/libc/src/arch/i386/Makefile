@@ -1,7 +1,7 @@
-CURDIR := userland/lib/libc/src/arch/i386/
+CURDIR := userland/lib/libc/src/arch/i386
 
-OBJ := crt0.o
+OBJ-y := crt0.o
 
-LIBSUBDIRS := compiler/
+LIBSUBDIRS-y := compiler
 
-include ${SRCDIR}mk/libsubdirs.mk
+include $(SRCDIR)/mk/libsubdirs.mk

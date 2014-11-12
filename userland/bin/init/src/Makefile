@@ -1,7 +1,7 @@
-CURDIR := userland/bin/init/src/
+CURDIR := userland/bin/init/src
 
-OBJ := main.o
+OBJ-y := main.o
 
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

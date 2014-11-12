@@ -1,14 +1,14 @@
-CURDIR := userland/driver/tty_ctrl/
+CURDIR := userland/driver/tty_ctrl
 
-BIN := tty_ctrl
+BIN-y := tty_ctrl
 INSTALL_DIR := bin
-BINSUBDIRS := src/
+BINSUBDIRS-y := src
 
 tty_ctrl_CFLAGS := $(USERLAND_CFLAGS)
 tty_ctrl_LDFLAGS := $(USERLAND_LDFLAGS)
 
 tty_ctrl_LIBS := libdriver libc
 
-OBJ :=
+OBJ-y :=
 
-include ${SRCDIR}mk/bin.mk
+include $(SRCDIR)/mk/bin.mk

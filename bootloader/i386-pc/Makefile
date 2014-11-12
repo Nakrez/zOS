@@ -1,18 +1,19 @@
-CURDIR := bootloader/i386-pc/
+CURDIR := bootloader/i386-pc
 
-BIN = zboot
+BIN-y = zboot
 INSTALL_DIR := boot
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
 EXTRA_FILE := ${EXTRA_FILE} rootfs/boot/grub/grub.cfg
 
-OBJ := entry.o bootloader.o utils.o
+OBJ-y := entry.o bootloader.o utils.o
 
-zboot_CFLAGS := -I$(SRCDIR)include -I$(SRCDIR)include/kernel/arch/$(ZOS_ARCH)
+zboot_CFLAGS := $(CFLAGS)
+zboot_CFLAGS += -I$(SRCDIR)/include -I$(SRCDIR)/include/kernel/arch/$(ZOS_ARCH)
 zboot_CFLAGS += -std=c99 -nostdinc -fno-builtin -fno-common -Wall -Wextra
-zboot_LDFLAGS := -T $(SRCDIR)$(CURDIR)zboot.ld
+zboot_LDFLAGS := -T $(SRCDIR)/$(CURDIR)/zboot.ld
 
-include ${SRCDIR}/mk/bin.mk
+include $(SRCDIR)/mk/bin.mk
 
 zos-i386-pc-image.img: $(INSTALL_BIN) ${EXTRA_FILE}
 	$(call run,MKIMG,)

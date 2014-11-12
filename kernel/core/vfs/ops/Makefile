@@ -1,9 +1,8 @@
-CURDIR := kernel/core/vfs/ops/
+CURDIR := kernel/core/vfs/ops
 
-OBJ := lookup.o mkdir.o mknod.o open.o read.o write.o lseek.o close.o stat.o \
+OBJ-y := lookup.o mkdir.o mknod.o open.o read.o write.o lseek.o close.o stat.o \
 		ioctl.o dup.o
 
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
-include ${SRCDIR}mk/binsubdirs.mk
-
+include $(SRCDIR)/mk/binsubdirs.mk

@@ -1,4 +1,5 @@
-CURDIR := userland/driver/i386/
-SUBDIRS := ata/
+CURDIR := userland/driver/i386
 
-include ${SRCDIR}mk/subdirs.mk
+SUBDIRS := ata
+
+include $(SRCDIR)/mk/subdirs.mk

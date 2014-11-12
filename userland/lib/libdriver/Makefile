@@ -1,13 +1,13 @@
-CURDIR := userland/lib/libdriver/
+CURDIR := userland/lib/libdriver
 
-LIB := libdriver
-LIBSUBDIRS := src/
+LIB-y := libdriver
+LIBSUBDIRS-y := src
 
 libdriver_CFLAGS := -I${SRCDIR}${CURDIR}/include
 libdriver_CFLAGS += -I${SRCDIR}userland/lib/libc/include
 libdriver_CFLAGS += -I${SRCDIR}userland/lib/libc/include/${ZOS_ARCH}/
 libdriver_CFLAGS += $(USERLAND_CFLAGS)
 
-OBJ :=
+OBJ-y :=
 
-include ${SRCDIR}mk/lib.mk
+include $(SRCDIR)/mk/lib.mk

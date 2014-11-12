@@ -1,7 +1,7 @@
-CURDIR := userland/lib/libfiu/src/
+CURDIR := userland/lib/libfiu/src
 
-LIBSUBDIRS :=
+LIBSUBDIRS-y :=
 
-OBJ := fiu.o block_cache.o
+OBJ-y := fiu.o block_cache.o
 
-include ${SRCDIR}mk/libsubdirs.mk
+include $(SRCDIR)/mk/libsubdirs.mk

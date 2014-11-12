@@ -1,15 +1,15 @@
-_LIB := $(addprefix $(CURDIR), $(addsuffix .a, $(LIB)))
+_LIB := $(addprefix $(CURDIR)/, $(addsuffix .a, $(LIB-y)))
 
-$(LIB)_OBJ :=
+$(LIB-y)_OBJ :=
 
-include ${SRCDIR}mk/libsubdirs.mk
+include $(SRCDIR)/mk/libsubdirs.mk
 
-$(LIB)_PATH := $(_LIB)
-$(_LIB): CFLAGS := $(DEFAULT_CFLAGS) $($(LIB)_CFLAGS)
-$(_LIB): ASFLAGS := $(DEFAULT_ASFLAGS) $($(LIB)_ASFLAGS)
-$(_LIB): $($(LIB)_OBJ)
+$(LIB-y)_PATH := $(_LIB)
+$(_LIB): CFLAGS := $(DEFAULT_CFLAGS) $($(LIB-y)_CFLAGS)
+$(_LIB): ASFLAGS := $(DEFAULT_ASFLAGS) $($(LIB-y)_ASFLAGS)
+$(_LIB): $($(LIB-y)_OBJ)
 
-$(_LIB)_OBJ := $($(LIB)_OBJ)
+$(_LIB)_OBJ := $($(LIB-y)_OBJ)
 
 $(_LIB):
 	$(call run,AR,$(AR) rcs $@ $($@_OBJ))

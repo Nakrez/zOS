@@ -1,14 +1,14 @@
-CURDIR := userland/bin/init/
+CURDIR := userland/bin/init
 
-BIN := init
+BIN-y := init
 INSTALL_DIR := bin
-BINSUBDIRS := src/
+BINSUBDIRS-y := src
 
 init_CFLAGS := $(USERLAND_CFLAGS)
 init_LDFLAGS := $(USERLAND_LDFLAGS)
 
 init_LIBS := libc
 
-OBJ :=
+OBJ-y :=
 
-include ${SRCDIR}mk/bin.mk
+include $(SRCDIR)/mk/bin.mk

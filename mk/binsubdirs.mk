@@ -1,7 +1,7 @@
-$(BIN)_OBJ += $(addprefix $(DESTDIR), $(addprefix $(CURDIR), $(OBJ)))
+$(BIN-y)_OBJ += $(addprefix $(DESTDIR)/, $(addprefix $(CURDIR)/, $(OBJ-y)))
 
-DEPS := $(DEPS) $(addprefix $(CURDIR), $(OBJ:.o=.d))
+DEPS := $(DEPS) $(addprefix $(CURDIR)/, $(OBJ-y:.o=.d))
 
-SUBDIRS := $(BINSUBDIRS)
+SUBDIRS := $(BINSUBDIRS-y)
 
-include $(SRCDIR)mk/subdirs.mk
+include $(SRCDIR)/mk/subdirs.mk

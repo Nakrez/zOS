@@ -1,7 +1,7 @@
-CURDIR := userland/driver/tty/src/
+CURDIR := userland/driver/tty/src
 
-OBJ := main.o
+OBJ-y := main.o
 
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

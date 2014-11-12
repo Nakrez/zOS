@@ -1,7 +1,7 @@
-CURDIR := kernel/core/syscall/
+CURDIR := kernel/core/syscall
 
-OBJ := process.o thread.o interrupt.o vfs.o mem.o
+OBJ-y := process.o thread.o interrupt.o vfs.o mem.o
 
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

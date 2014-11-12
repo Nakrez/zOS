@@ -1,5 +1,5 @@
-CURDIR := userland/bin/
+CURDIR := userland/bin
 
-SUBDIRS := init/ shell/ cat/
+SUBDIRS := init shell cat
 
-include ${SRCDIR}mk/subdirs.mk
+include $(SRCDIR)/mk/subdirs.mk

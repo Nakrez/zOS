@@ -1,14 +1,14 @@
-CURDIR := userland/bin/shell/
+CURDIR := userland/bin/shell
 
-BIN := shell
+BIN-y := shell
 INSTALL_DIR := bin
-BINSUBDIRS := src/
+BINSUBDIRS-y := src
 
 shell_CFLAGS := $(USERLAND_CFLAGS)
 shell_LDFLAGS := $(USERLAND_LDFLAGS)
 
 shell_LIBS := libc
 
-OBJ :=
+OBJ-y :=
 
-include ${SRCDIR}mk/bin.mk
+include $(SRCDIR)/mk/bin.mk

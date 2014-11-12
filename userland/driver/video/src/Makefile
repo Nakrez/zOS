@@ -1,7 +1,7 @@
-CURDIR := userland/driver/video/src/
+CURDIR := userland/driver/video/src
 
-OBJ := main.o font.o driver.o
+OBJ-y := main.o font.o driver.o
 
-BINSUBDIRS := arch/$(ZOS_ARCH)/
+BINSUBDIRS-y := arch/$(ZOS_ARCH)
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

@@ -1,7 +1,7 @@
-CURDIR := kernel/arch/i386/debug/
+CURDIR := kernel/arch/i386/debug
 
-OBJ :=
+OBJ-y :=
 
-BINSUBDIRS := ubsan/
+BINSUBDIRS-y := ubsan
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk

@@ -1,7 +1,7 @@
-CURDIR := userland/driver/video/src/arch/i386/
+CURDIR := userland/driver/video/src/arch/i386
 
-OBJ := vbe.o
+OBJ-y := vbe.o
 
-BINSUBDIRS :=
+BINSUBDIRS-y :=
 
-include ${SRCDIR}mk/binsubdirs.mk
+include $(SRCDIR)/mk/binsubdirs.mk
