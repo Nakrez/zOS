@@ -5,6 +5,7 @@
 #include <arch/page_fault.h>
 #include <arch/cpu.h>
 #include <arch/pic.h>
+#include <arch/mp.h>
 
 struct interrupt_glue interrupt_glue_dispatcher =
 {
@@ -18,6 +19,8 @@ struct interrupt_glue interrupt_glue_dispatcher =
 
 int i386_interrupt_initialize(void)
 {
+    mp_parse_tables();
+
     idt_initialize();
     pic_initialize();
 
