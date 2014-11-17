@@ -1,8 +1,9 @@
 CURDIR := kernel
 
 BIN-y = zkernel
-INSTALL_DIR := boot
 BINSUBDIRS-y := core glue/$(ZOS_TARGET) arch/$(ZOS_ARCH)
+
+INSTALL_DIR := boot
 
 zkernel_CFLAGS := $(CFLAGS)
 zkernel_CFLAGS += -I$(SRCDIR)/include -I$(SRCDIR)/include/kernel/arch/$(ZOS_ARCH)

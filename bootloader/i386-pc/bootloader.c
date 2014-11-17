@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # define K_PADDR(addr) ((void *)((char*)(addr) - 0xC0000000))
 # define K_VADDR(addr) ((void *)((char*)(addr) + 0xC0000000))
 
+extern char _bend;
 static void *boot_brk = 0;
 
 static void *boot_alloc(size_t size)
@@ -38,6 +39,25 @@ static void *boot_alloc(size_t size)
     boot_brk += size;
 
     return addr;
+}
+
+static void relocate_mods(multiboot_module_t *mod,
+                          multiboot_uint32_t mods_count)
+{
+    char *relocate_base = &_bend;
+    size_t mod_size;
+
+    for (multiboot_uint32_t i = 0; i < mods_count; ++i)
+    {
+        mod_size = mod[i].mod_end - mod[i].mod_start;
+
+        memcpy(relocate_base, (void *)mod[i].mod_start, mod_size);
+
+        mod[i].mod_start = (multiboot_uint32_t)relocate_base;
+        mod[i].mod_end = (multiboot_uint32_t)relocate_base + mod_size;
+
+        relocate_base += mod_size;
+    }
 }
 
 static void setup_mmap(struct boot_info *b_inf, multiboot_info_t *multiboot)
@@ -114,9 +134,7 @@ static void *load_kernel(Elf32_Ehdr *khdr)
 
         /* Detect higher kernel address to give boot_alloc() a start address */
         if (boot_brk < (void *)(load_addr + msize))
-        {
             boot_brk = load_addr + msize;
-        }
     }
 
     return (void *)khdr->e_entry;
@@ -149,6 +167,9 @@ void bootloader_entry(unsigned long magic, multiboot_info_t* multiboot)
     void *kentry;
     multiboot_module_t *mods = (multiboot_module_t*)multiboot->mods_addr;
     struct boot_info *b_inf;
+
+    /* Relocate modules */
+    relocate_mods(mods, multiboot->mods_count);
 
     /* Load kernel */
     kentry = load_kernel((Elf32_Ehdr *)mods[0].mod_start);

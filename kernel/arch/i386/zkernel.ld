@@ -3,7 +3,7 @@ ENTRY(kernel_main)
 
 SECTIONS
 {
-    . = 0xC0020000;
+    . = 0xC0100000 + SIZEOF_HEADERS;
 
     .text :
     {

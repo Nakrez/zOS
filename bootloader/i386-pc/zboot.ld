@@ -3,7 +3,7 @@ ENTRY(zboot_start)
 
 SECTIONS
 {
-    . = 0x10000;
+    . = 0x300000 + SIZEOF_HEADERS;
 
     .multiboot :
     {
@@ -13,5 +13,10 @@ SECTIONS
     .text :
     {
         *(.text)
+        *(.rodata)
+        *(.data)
+        *(.bss)
     }
+
+    _bend = ALIGN(4096);
 }
