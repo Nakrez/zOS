@@ -14,6 +14,7 @@ size_t strlen(const char *str);
 char *strcpy(char *destination, const char *source);
 
 int strcmp(const char *str1, const char *str2);
+int strncmp(const char *s1, const char *s2, size_t n);
 char *strtok_r(char *str, const char *delim, char **saveptr);
 
 char *strchr(const char *s, int c);
