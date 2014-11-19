@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <kernel/cpu.h>
 
 #include <arch/tss.h>
@@ -10,6 +12,8 @@ void tss_initialize(struct cpu *cpu)
 
     uint32_t tss_base = (uint32_t)&cpu->arch.tss;
     uint32_t tss_size = tss_base + sizeof (struct tss);
+
+    memset(&cpu->arch.tss, 0, sizeof (struct tss));
 
     gdt_add_entry(GDT_TSS_BASE + cpu->id, tss_base, tss_size, TSS(3), 0);
 
