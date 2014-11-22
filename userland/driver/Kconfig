@@ -1,9 +1,6 @@
 menu "Driver"
 
-config BUILD_ATA
-    bool "ATA disk"
-    depends on $ZOS_ARCH = "i386"
-    default y
+source "userland/driver/$ZOS_ARCH/Kconfig"
 
 config BUILD_EXT2
     bool "Ext2 filesystem"

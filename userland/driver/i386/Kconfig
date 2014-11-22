@@ -1,0 +1,11 @@
+menu "Disk"
+
+config BUILD_ATA
+    bool "ATA disk"
+    default y
+
+config BUILD_AHCI
+    bool "AHCI disk"
+    default n
+
+endmenu

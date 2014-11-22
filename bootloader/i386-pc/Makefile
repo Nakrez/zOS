@@ -36,7 +36,12 @@ rootfs/boot/grub/grub.cfg:
 	@echo "multiboot /boot/zboot" >> $@
 	@echo "module /boot/zkernel" >> $@
 	@echo "module /bin/init" >> $@
+ifeq ($(CONFIG_BUILD_ATA),y)
 	@echo "module /bin/ata" >> $@
+endif
+ifeq ($(CONFIG_BUILD_AHCI),y)
+	@echo "module /bin/ahci" >> $@
+endif
 	@echo "module /bin/ext2" >> $@
 	@echo "boot" >> $@
 	@echo "}" >> $@
