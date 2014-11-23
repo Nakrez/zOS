@@ -28,7 +28,7 @@ struct _IO_FILE *iob_create(int fd, int flags)
         }
 
         file->_io_read_ptr = file->_io_read_base;
-        file->_io_read_end = file->_io_read_base + _IO_BUFSIZE_READ;
+        file->_io_read_end = file->_io_read_base;
     }
 
     if (flags & O_WRONLY)

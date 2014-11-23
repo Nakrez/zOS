@@ -17,6 +17,7 @@ struct _IO_FILE;
 typedef struct _IO_FILE FILE;
 
 FILE *fopen(const char *filename, const char *mode);
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 int fflush(FILE *stream);
 int fclose(FILE *fp);
 
