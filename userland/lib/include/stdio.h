@@ -18,6 +18,7 @@ typedef struct _IO_FILE FILE;
 
 FILE *fopen(const char *filename, const char *mode);
 int fflush(FILE *stream);
+int fclose(FILE *fp);
 
 int sprintf(char *str, const char *format, ...);
 int vsprintf(char *str, const char *format, va_list ap);

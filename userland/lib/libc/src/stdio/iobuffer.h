@@ -32,5 +32,7 @@ struct _IO_FILE *iob_create(int fd, int flags);
 
 void iob_add(struct _IO_FILE *file);
 int iob_flush(struct _IO_FILE *file);
+void iob_destroy(struct _IO_FILE *file);
+void iob_remove(struct _IO_FILE *file);
 
 #endif /* !LIBC_STDIO_IOBUFFER_H */
