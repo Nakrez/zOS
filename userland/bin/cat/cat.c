@@ -5,41 +5,38 @@
 
 static void usage(void)
 {
-    write(1, "cat\n", 4);
+    write(STDERR_FILENO, "cat [FILE]...\n", 14);
 }
 
 static char buf[4096];
 
+static void cat_file(const char *filename)
+{
+    FILE *file;
+    size_t ret;
+
+    if (!(file = fopen(filename, "r")))
+    {
+        write(STDERR_FILENO, filename, strlen(filename));
+        write(STDERR_FILENO, ": No such file or directory\n", 28);
+
+        return;
+    }
+
+    while ((ret = fread(buf, 4096, 1, file)) != 0)
+        write(STDOUT_FILENO, buf, ret);
+
+    fclose(file);
+}
+
 int main(int argc, char *argv[])
 {
-    int fd;
-    int ret;
-
-    if (argc != 2)
+    if (argc < 2)
         usage();
     else
     {
-        if ((fd = open(argv[1], O_RDONLY, 0)) < 0)
-        {
-            write(STDERR_FILENO, argv[1], strlen(argv[1]));
-            write(STDERR_FILENO, ": No such file or directory\n", 28);
-
-            return 1;
-        }
-
-        while ((ret = read(fd, buf, 4096)) > 0)
-            write(STDOUT_FILENO, buf, ret);
-
-        if (ret < 0)
-        {
-            write(STDERR_FILENO, "\nread error\n", 12);
-
-            close(fd);
-
-            return 1;
-        }
-
-        close(fd);
+        for (int i = 1; i < argc; ++i)
+            cat_file(argv[i]);
     }
 
     return 0;
