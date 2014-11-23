@@ -1,6 +1,7 @@
 #ifndef LIBC_STDIO_H
 # define LIBC_STDIO_H
 
+# include <stdint.h>
 # include <stdarg.h>
 
 # define _IOFBF 1
@@ -16,6 +17,7 @@ struct _IO_FILE;
 typedef struct _IO_FILE FILE;
 
 FILE *fopen(const char *filename, const char *mode);
+int fflush(FILE *stream);
 
 int sprintf(char *str, const char *format, ...);
 int vsprintf(char *str, const char *format, va_list ap);

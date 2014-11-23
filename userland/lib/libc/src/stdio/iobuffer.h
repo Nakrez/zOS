@@ -28,8 +28,9 @@ struct _IO_FILE {
 extern struct _IO_FILE *_IO_files;
 extern spinlock_t _IO_lock;
 
-void iob_add(struct _IO_FILE *file);
-
 struct _IO_FILE *iob_create(int fd, int flags);
+
+void iob_add(struct _IO_FILE *file);
+int iob_flush(struct _IO_FILE *file);
 
 #endif /* !LIBC_STDIO_IOBUFFER_H */
