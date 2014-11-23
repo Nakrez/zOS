@@ -14,4 +14,9 @@ config BUILD_CAT
     default y
     depends on BUILD_SHELL
 
+config BUILD_STAT
+    bool "Stat"
+    default y
+    depends on BUILD_SHELL
+
 endmenu
