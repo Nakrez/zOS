@@ -29,6 +29,9 @@ int vfprintf(FILE *stream, const char *format, va_list ap)
                     iob_putc('x', stream);
                     ret += 2 + iob_putu(stream, va_arg(ap, uintptr_t), 16);
                     break;
+                case 'o':
+                    ret += iob_puti(stream, va_arg(ap, int), 8);
+                    break;
                 case 's':
                     ret += fputs(va_arg(ap, const char *), stream);
                     break;
