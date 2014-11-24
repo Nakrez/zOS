@@ -8,7 +8,7 @@
 
 void tss_initialize(struct cpu *cpu)
 {
-    int tss_sel = TSS_SELECTOR(cpu->id);
+    int16_t tss_sel = TSS_SELECTOR(cpu->id);
 
     uint32_t tss_base = (uint32_t)&cpu->arch.tss;
     uint32_t tss_size = tss_base + sizeof (struct tss);
