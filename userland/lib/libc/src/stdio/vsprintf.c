@@ -60,9 +60,7 @@ int vsprintf(char *str, const char *format, va_list ap)
                         char *s = va_arg(ap, char *);
 
                         while (*s)
-                        {
                             *(str++) = *(s++);
-                        }
                     }
                     break;
                 case '%':

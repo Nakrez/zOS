@@ -24,6 +24,8 @@ FILE *fopen(const char *filename, const char *mode);
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 int fputc(int c, FILE *stream);
 int putchar(int c);
+int fputs(const char *s, FILE *stream);
+int puts(const char *s);
 int fflush(FILE *stream);
 int fclose(FILE *fp);
 
