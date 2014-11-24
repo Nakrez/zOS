@@ -9,11 +9,11 @@ struct tss
 {
     uint16_t previous_task, __previous_task;
     uint32_t esp0;
-    uint32_t ss0, __ss0;
+    uint16_t ss0, __ss0;
     uint32_t esp1;
-    uint32_t ss1, __ss1;
+    uint16_t ss1, __ss1;
     uint32_t esp2;
-    uint32_t ss2, __ss2;
+    uint16_t ss2, __ss2;
     uint32_t cr3;
     uint32_t eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
     uint16_t es, __es;
