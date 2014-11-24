@@ -98,6 +98,7 @@ int main(void)
     struct kbd kbd;
     int arch_tid;
 
+    kbd.opened = 0;
     kbd.mid = 0;
     spinlock_init(&kbd.lock);
 
