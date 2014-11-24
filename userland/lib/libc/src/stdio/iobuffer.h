@@ -33,6 +33,8 @@ struct _IO_FILE *iob_create(int fd, int flags);
 void iob_add(struct _IO_FILE *file);
 size_t iob_read(void *ptr, size_t size, struct _IO_FILE *stream);
 int iob_putc(int c, struct _IO_FILE *stream);
+int iob_puti(struct _IO_FILE *stream, int num, unsigned int base);
+int iob_putu(struct _IO_FILE *stream, unsigned int num, unsigned int base);
 int iob_flush(struct _IO_FILE *file);
 void iob_destroy(struct _IO_FILE *file);
 void iob_remove(struct _IO_FILE *file);

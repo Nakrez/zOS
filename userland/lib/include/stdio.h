@@ -26,6 +26,9 @@ int fputc(int c, FILE *stream);
 int putchar(int c);
 int fputs(const char *s, FILE *stream);
 int puts(const char *s);
+int printf(const char *s, ...);
+int fprintf(FILE *stream, const char *s, ...);
+int vfprintf(FILE *stream, const char *format, va_list ap);
 int fflush(FILE *stream);
 int fclose(FILE *fp);
 
