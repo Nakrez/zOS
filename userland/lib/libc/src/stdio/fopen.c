@@ -26,7 +26,7 @@ FILE *fopen(const char *filename, const char *mode)
         ++mode;
     }
 
-    if ((fd = open(filename, flags, 0)) < 0)
+    if ((fd = open(filename, flags | (_IOFBF << 8), 0)) < 0)
         return NULL;
 
     return iob_create(fd, flags);

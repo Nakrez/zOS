@@ -16,6 +16,10 @@ struct _IO_FILE;
 
 typedef struct _IO_FILE FILE;
 
+extern FILE *stdin;
+extern FILE *stdout;
+extern FILE *stderr;
+
 FILE *fopen(const char *filename, const char *mode);
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 int fflush(FILE *stream);

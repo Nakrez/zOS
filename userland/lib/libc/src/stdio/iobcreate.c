@@ -49,7 +49,6 @@ struct _IO_FILE *iob_create(int fd, int flags)
     file->flags = 0;
 
     file->flags = flags;
-    file->flags |= _IOLBF << 8;
 
     iob_add(file);
 
