@@ -75,7 +75,7 @@ static void command_execute(struct command *command)
 
     if ((pid = fork()) < 0)
     {
-        write(STDERR_FILENO, "fork() failed\n", 14);
+        fprintf(stderr, "fork() failed\n");
 
         return;
     }
@@ -86,13 +86,13 @@ static void command_execute(struct command *command)
 
         if ((pid = waitpid(pid, &status, 0)) < 0)
         {
-            write(STDERR_FILENO, "waitpid() failed\n", 17);
+            fprintf(stderr, "waitpid() failed (err = %i)\n", pid);
 
             return;
         }
 
         if (status != 0)
-            write(STDERR_FILENO, "\nshell: status != 0\n", 20);
+            fprintf(stderr, "shell: process returned %i\n", status);
     }
     else
     {
@@ -112,9 +112,7 @@ static void command_execute(struct command *command)
 
         execv(bin, command->argv);
 
-        write(STDERR_FILENO, "Cannot execute: ", 16);
-        write(STDERR_FILENO, bin, strlen(bin));
-        write(STDERR_FILENO, "\n", 1);
+        fprintf(stderr, "Cannot execute: %s\n", bin);
 
         exit(1);
     }
@@ -128,7 +126,7 @@ static void execute(char *buf)
 
     if (!cmd)
     {
-        write(STDERR_FILENO, "Memory exhausted\n", 17);
+        fprintf(stderr, "Memory exhausted\n");
 
         return;
     }
@@ -151,7 +149,7 @@ static void execute(char *buf)
         {
             command_free(cmd);
 
-            write(STDERR_FILENO, "Memory exhausted\n", 17);
+            fprintf(stderr, "Memory exhausted\n");
 
             return;
         }
@@ -177,13 +175,15 @@ int main(void)
     /* TODO: Let init handle it */
     while (1)
     {
-        write(STDOUT_FILENO, "root@zOS $ ", 11);
+        printf("root@zOS $ ");
+
+        fflush(stdout);
 
         ret = read(STDIN_FILENO, buf, 256);
 
         if (ret < 0)
         {
-            write(STDOUT_FILENO, "\nread failed\n", 13);
+            printf("\nread failed\n");
 
             continue;
         }
