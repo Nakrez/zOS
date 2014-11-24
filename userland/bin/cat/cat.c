@@ -3,12 +3,14 @@
 #include <string.h>
 #include <fcntl.h>
 
+# define BUFFER_SIZE 4096
+
 static void usage(void)
 {
-    write(STDERR_FILENO, "cat [FILE]...\n", 14);
+    fprintf(stderr, "cat [FILE]...\n");
 }
 
-static char buf[4096];
+static char buf[BUFFER_SIZE];
 
 static void cat_file(const char *filename)
 {
@@ -17,14 +19,16 @@ static void cat_file(const char *filename)
 
     if (!(file = fopen(filename, "r")))
     {
-        write(STDERR_FILENO, filename, strlen(filename));
-        write(STDERR_FILENO, ": No such file or directory\n", 28);
+        fprintf(stderr, "%s: No such file or directoy\n", filename);
 
         return;
     }
 
-    while ((ret = fread(buf, 4096, 1, file)) != 0)
-        write(STDOUT_FILENO, buf, ret);
+    while ((ret = fread(buf, BUFFER_SIZE - 1, 1, file)) != 0)
+    {
+        buf[ret] = 0;
+        printf(buf);
+    }
 
     fclose(file);
 }
