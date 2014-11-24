@@ -2,7 +2,7 @@
 
 int fputs(const char *s, FILE *stream)
 {
-    int ret;
+    int ret = 0;
 
     while (*s)
     {

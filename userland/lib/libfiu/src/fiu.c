@@ -124,7 +124,7 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
 
 static int fiu_loop(struct fiu_internal *fiu)
 {
-    int res;
+    int res = 0;
     char *buf = malloc(255);
 
     if (!buf)

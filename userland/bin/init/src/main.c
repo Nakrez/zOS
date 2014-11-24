@@ -130,9 +130,9 @@ static void exec_conf_line(char *line)
     pid_t pid;
     char *bin;
     char *rest;
-    int in;
-    int out;
-    int err;
+    int in = -1;
+    int out = -1;
+    int err = -1;
 
     if (!line || !(*line))
         return;
