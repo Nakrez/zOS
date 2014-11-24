@@ -22,10 +22,13 @@ extern FILE *stderr;
 
 FILE *fopen(const char *filename, const char *mode);
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+int fputc(int c, FILE *stream);
 int fflush(FILE *stream);
 int fclose(FILE *fp);
 
 int sprintf(char *str, const char *format, ...);
 int vsprintf(char *str, const char *format, va_list ap);
+
+# define putc(c, s) fputc(c, s)
 
 #endif /* !LIBC_STDIO_H */
