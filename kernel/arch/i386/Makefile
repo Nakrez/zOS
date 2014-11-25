@@ -1,7 +1,7 @@
 CURDIR := kernel/arch/i386
 
 OBJ-y :=
-OBJ-$(CONFIG_CONSOLE) += console.o
+OBJ-$(CONFIG_CONSOLE) += vga_text.o serial.o
 OBJ-$(CONFIG_PANIC) += back_trace.o
 OBJ-$(CONFIG_MEMORY) += gdt.o pm.o mmu.o page_fault.o
 OBJ-$(CONFIG_INTERRUPT) += idt.o isr.o pic.o mp.o
