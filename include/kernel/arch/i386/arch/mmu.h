@@ -18,25 +18,24 @@
 # define KERNEL_BEGIN 0xC0000000
 # define KERNEL_END 0xFFFFFFFF
 
+# define KERNEL_PHY_PD 0x1000
+# define KERNEL_VIRT_PD 0xC0001000
+
+# define KERNEL_EXTRA_PT_BEGIN 0x2000
+# define KERNEL_EXTRA_PT_END 0x80000
+# define KERNEL_EXTRA_PT_COUNT ((KERNEL_EXTRA_PT_END - \
+                                 KERNEL_EXTRA_PT_BEGIN) / PAGE_SIZE)
+
 /*
  * Kernel will always be able to work between 0xC0000000 and 0xC0400000
  * Extendable heap is extra allocatable memory for the kernel
  */
+# define MB 1024 * 1024
+
 # define KERNEL_EXHEAP_START 0xC0400000
-/*
- * Kernel will use memory (physical) available between 0x2000 and 0xA0000
- * as extra page tables for the kernel heap
- */
-# define KERNEL_PT_START 0x2000
-# define KERNEL_PT_END 0xA0000
+# define KERNEL_EXHEAP_END (KERNEL_BEGIN + KERNEL_EXTRA_PT_COUNT * 4 * MB)
 
-# define KERNEL_PT_START_INDEX 0x2
-# define KERNEL_PT_END_INDEX 0xA0
-
-# define KERNEL_EXHEAP_SIZE ((KERNEL_PT_END_INDEX - KERNEL_PT_START_INDEX) * \
-                            PAGE_SIZE * 1024)
-
-# define KERNEL_EXHEAP_END KERNEL_EXHEAP_START + KERNEL_EXHEAP_SIZE
+# define KERNEL_EXHEAP_SIZE (KERNEL_EXHEAP_END - KERNEL_EXHEAP_START)
 
 struct as;
 

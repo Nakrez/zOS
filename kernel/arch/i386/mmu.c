@@ -16,29 +16,25 @@
 
 int mmu_init_kernel(struct as *as)
 {
-    /* cr3 is mapped at 0xC0000000 by the bootloader */
-    uint32_t *kpd = (uint32_t *) 0xC0000000;
+    int i = 769;
 
-    /* 0xC0001000 is safe to use for initial page table */
-    uint32_t *kpt = (uint32_t *) 0xC0001000;
-
-    paddr_t kpt_phy = 0x1000;
+    /* cr3 is mapped at 0xC0001000 by the bootloader */
+    uint32_t *kpd = (uint32_t *)KERNEL_VIRT_PD;
 
     /* Set cr3 */
-    as->arch.cr3 = 0x0;
+    as->arch.cr3 = KERNEL_PHY_PD;
 
-    /* Map kernel in the page table */
-    for (size_t i = 0; i < PAGE_SIZE; ++i)
-        kpt[i] = (i * PAGE_SIZE) | PT_PRESENT | PT_WRITE;
-
-    /* Clean page directory */
+    /* Clean identity mapping used by bootloader */
     kpd[0] = 0;
 
-    kpd[768] = kpt_phy | PD_PRESENT | PD_WRITE;
+    /* 0xC0000000 - 0xC0400000 is mapped with one big page */
+    kpd[768] = 0 | PD_PRESENT | PD_4MB | PD_WRITE;
 
-    /* Map extended kernel heap page table */
-    for (size_t i = KERNEL_PT_START_INDEX; i < KERNEL_PT_END_INDEX; ++i)
-        kpd[767 + i] = i * PAGE_SIZE | PD_PRESENT | PD_WRITE;
+    /* Map extra pre mapped page directory */
+    for (uint32_t pt = KERNEL_EXTRA_PT_BEGIN;
+         pt < KERNEL_EXTRA_PT_END;
+         pt += PAGE_SIZE)
+        kpd[i++] = pt | PD_PRESENT | PD_WRITE;
 
     /* Mirroring setup */
     kpd[1023] = as->arch.cr3 | PD_PRESENT | PD_WRITE;
@@ -51,7 +47,7 @@ int mmu_init_kernel(struct as *as)
 int mmu_init_user(struct as *as)
 {
     uint32_t *vpd;
-    uint32_t *kpd = (void *)0xC0000000;
+    uint32_t *kpd = (void *)KERNEL_VIRT_PD;
 
     /* Allocate a page for the page directory */
     as->arch.cr3 = segment_alloc_address(1);
@@ -70,7 +66,7 @@ int mmu_init_user(struct as *as)
 
     /* We map the kernel address space */
     for (int i = 768; i < 1023; ++i)
-        vpd[i] = kpd[i] | PD_PRESENT | PD_WRITE;
+        vpd[i] = kpd[i];
 
     /* Setup mirroring */
     vpd[1023] = as->arch.cr3 | PD_PRESENT | PD_WRITE;

@@ -146,10 +146,12 @@ static void setup_page(void)
      * Only map 1 big page from 0x0-0x400000 on 0xC0000000-0xC0400000
      * The page directory is at 0x0 (0xC0000000) and the kernel knows it
      */
-    volatile uint32_t *pd = (uint32_t *)0x0;
+    volatile uint32_t *pd = (uint32_t *)KERNEL_PHY_PD;
 
-    pd[768] = 0;
-    pd[768] |= PD_PRESENT | PD_4MB | PD_WRITE;
+    for (int i = 0; i < 1024; i++)
+        pd[i] = 0;
+
+    pd[768] = 0x0 | PD_PRESENT | PD_4MB | PD_WRITE;
 
     /* Map 0x0-0x400000 on 0x0 as well */
     pd[0] = pd[768];
