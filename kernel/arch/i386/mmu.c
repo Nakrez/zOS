@@ -16,8 +16,6 @@
 
 int mmu_init_kernel(struct as *as)
 {
-    int i = 769;
-
     /* cr3 is mapped at 0xC0001000 by the bootloader */
     uint32_t *kpd = (uint32_t *)KERNEL_VIRT_PD;
 
@@ -25,16 +23,28 @@ int mmu_init_kernel(struct as *as)
     as->arch.cr3 = KERNEL_PHY_PD;
 
     /* Clean identity mapping used by bootloader */
-    kpd[0] = 0;
+    for (int i = 0; i < 768; ++i)
+        kpd[i] = 0;
 
     /* 0xC0000000 - 0xC0400000 is mapped with one big page */
     kpd[768] = 0 | PD_PRESENT | PD_4MB | PD_WRITE;
+
+    int index = 769;
 
     /* Map extra pre mapped page directory */
     for (uint32_t pt = KERNEL_EXTRA_PT_BEGIN;
          pt < KERNEL_EXTRA_PT_END;
          pt += PAGE_SIZE)
-        kpd[i++] = pt | PD_PRESENT | PD_WRITE;
+    {
+        /* Clean page table then map it */
+        memset((void *)(KERNEL_BEGIN + pt), 0, PAGE_SIZE);
+
+        kpd[index++] = pt | PD_PRESENT | PD_WRITE;
+    }
+
+    /* Zero other entries */
+    for (; index < 1023; ++index)
+        kpd[index] = 0;
 
     /* Mirroring setup */
     kpd[1023] = as->arch.cr3 | PD_PRESENT | PD_WRITE;
@@ -63,6 +73,9 @@ int mmu_init_user(struct as *as)
 
     if (!vpd)
         goto error;
+
+    /* Clean new page directory */
+    memset(vpd, 0, PAGE_SIZE);
 
     /* We map the kernel address space */
     for (int i = 768; i < 1023; ++i)
@@ -132,6 +145,13 @@ static int install_pt_if_needed(uint32_t *pd, uint32_t pd_index, int flags)
 
         /* We can use flags because PD and PT flags are the same */
         pd[pd_index] = phy_pt | flags;
+
+        uint32_t *pt = (void *)(0xFFC00000 + 0x1000 * pd_index);
+
+        cpu_invalid_page(pt);
+
+        /* Clean new page table */
+        memset(pt, 0, PAGE_SIZE);
     }
 
     return 1;
