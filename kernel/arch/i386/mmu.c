@@ -238,8 +238,13 @@ int mmu_map(struct as *as, vaddr_t vaddr, paddr_t paddr, size_t size,
         return map_mirror(as, vaddr, paddr, size, flags);
 }
 
-void clean_if_needed(uint32_t *pt, uint32_t *pd, uint32_t pd_index)
+static void clean_if_needed(uint32_t *pt, uint32_t *pd, uint32_t pd_index)
 {
+    /* Don't remove kernel page tables */
+    if (pd_index >= 768)
+        return;
+
+    /* Check if the page table can be removed */
     for (size_t i = 0; i < PAGE_SIZE / sizeof (uint32_t); ++i)
         if (pt[i])
             return;
