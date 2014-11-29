@@ -47,7 +47,7 @@ struct process
 
     spinlock_t files_lock;
 
-    struct vfile files[PROCESS_MAX_OPEN_FD];
+    struct vfile files[PROCESS_MAX_OPEN_FD + 1];
 
     /* List of threads */
     struct klist threads;
