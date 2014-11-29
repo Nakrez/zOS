@@ -148,6 +148,8 @@ static int fiu_loop(struct fiu_internal *fiu)
         fiu_dispatch(fiu, res, buf);
     }
 
+    free(buf);
+
     return res;
 }
 
