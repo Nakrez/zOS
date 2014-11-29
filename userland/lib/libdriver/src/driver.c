@@ -172,5 +172,7 @@ int driver_loop(struct driver *driver)
         dispatch(driver, res, buf);
     }
 
+    free(buf);
+
     return 0;
 }
