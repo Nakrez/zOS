@@ -134,6 +134,7 @@ static void tty_input_thread(int argc, void *argv[])
             if (!tmp)
                 continue;
 
+            tty->input.buffer = tmp;
             tty->input.max_size *= 2;
         }
 
