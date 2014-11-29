@@ -177,7 +177,7 @@ static void exec_conf_line(char *line)
 
     if (*rest)
     {
-        if (in >= 0)
+        if (in == STDIN_FILENO)
             close(in);
         if (out >= 0)
             close(out);
