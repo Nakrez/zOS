@@ -23,7 +23,6 @@ static int check_exec_perm(struct thread *thread, struct stat *stat)
 }
 
 # define ARGV_DUP_SIZE 10
-# define ARGV_RES_SIZE 100
 
 static char **duplicate_argv(char *const argv[])
 {
@@ -35,7 +34,7 @@ static char **duplicate_argv(char *const argv[])
         if (i == ARGV_DUP_SIZE)
             kernel_panic("Need realloc argv");
 
-        new_argv[i] = kmalloc(sizeof (char *) * ARGV_RES_SIZE);
+        new_argv[i] = kmalloc(strlen(argv[i]) + 1);
 
         if (!new_argv[i])
         {
