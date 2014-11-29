@@ -106,6 +106,8 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
             }
 
 
+            kfree(path_copy);
+
             return 0;
         }
 
@@ -119,6 +121,8 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
             ret->dev = node->dev;
             ret->inode = node->inode;
 
+            kfree(path_copy);
+
             return 0;
         }
 
@@ -128,6 +132,8 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
     ret->inode = node->inode;
     ret->dev = node->dev;
     ret->ret = RES_OK;
+
+    kfree(path_copy);
 
     return 0;
 }
