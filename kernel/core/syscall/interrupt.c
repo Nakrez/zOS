@@ -5,7 +5,7 @@
 
 #include <kernel/scheduler/event.h>
 
-static struct thread *interrupts[IRQ_USER_SIZE];
+static struct thread *interrupts[IRQ_USER_SIZE + 1];
 
 static void user_interrupt_callback(struct irq_regs *regs)
 {
