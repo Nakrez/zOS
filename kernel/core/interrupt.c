@@ -6,7 +6,7 @@
 
 #include <glue/interrupt.h>
 
-static struct interrupt_entry interrupt_entries[MAX_IRQ_NUMBER];
+static struct interrupt_entry interrupt_entries[MAX_IRQ_NUMBER + 1];
 
 void interrupt_initialize(void)
 {
