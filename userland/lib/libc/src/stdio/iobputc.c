@@ -5,12 +5,14 @@
 
 int iob_putc(int c, struct _IO_FILE *stream)
 {
+    char ch = c;
+
     if (!stream)
         return -1;
 
     if (((stream->flags >> 8) & 3) == _IONBF)
     {
-        write(stream->fd, &c, 1);
+        write(stream->fd, &ch, 1);
 
         return c;
     }
