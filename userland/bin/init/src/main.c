@@ -39,6 +39,9 @@ static char **split_init_conf(char *config)
     char **conf = malloc(sizeof (char *) * size);
     char *line_begin = config;
 
+    if (!conf)
+        return NULL;
+
     while (1)
     {
         if (*config == '\n' || *config == '\0')
