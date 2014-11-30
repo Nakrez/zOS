@@ -207,6 +207,9 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
     response->processed = 0;
     response->dev = -1;
 
+    if (!inode)
+        return LOOKUP_RES_KO;
+
     while (*req->path == '/')
     {
         ++req->path;
