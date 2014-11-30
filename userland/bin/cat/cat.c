@@ -27,7 +27,7 @@ static void cat_file(const char *filename)
     while ((ret = fread(buf, BUFFER_SIZE - 1, 1, file)) != 0)
     {
         buf[ret] = 0;
-        printf(buf);
+        fputs(buf, stdout);
     }
 
     fclose(file);
