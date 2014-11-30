@@ -35,7 +35,8 @@ static int ext2fs_load_group_table(struct ext2fs *ext2)
 
     offset = ext2->block_size == 1024 ? 2048 : ext2->sb.block_size;
 
-    lseek(ext2->fd, offset, SEEK_SET);
+    if (lseek(ext2->fd, offset, SEEK_SET) < 0)
+        return 0;
 
     ret = read(ext2->fd, ext2->grp_table,
                sizeof (struct ext2_group_descriptor) * gt_size);
@@ -68,7 +69,8 @@ int ext2fs_initialize(struct ext2fs *ext2, const char *disk)
         return 0;
 
     /* Superblock is always 1024 bytes after the beginning */
-    lseek(ext2->fd, 1024, SEEK_CUR);
+    if (lseek(ext2->fd, 1024, SEEK_CUR) < 0)
+        return 0;
 
     while (read_size != sizeof (struct ext2_superblock))
     {
