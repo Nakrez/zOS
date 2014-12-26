@@ -144,12 +144,10 @@ EXTRA_FILE := rootfs/etc/init_conf
 zos: silentoldconfig zos-$(ZOS_TARGET)-image.img
 
 boot: zos
-	$(call run,QEMU,)
-	@qemu-system-i386 -vga std zos-$(ZOS_TARGET)-image.img -serial stdio
+	$(call run,QEMU,qemu-system-i386 -vga std zos-$(ZOS_TARGET)-image.img -serial stdio)
 
 boot-gdb: zos
-	$(call run,QEMU-GDB,)
-	@qemu-system-i386 -vga std zos-$(ZOS_TARGET)-image.img -S -s -serial stdio
+	$(call run,QEMU-GDB,qemu-system-i386 -vga std zos-$(ZOS_TARGET)-image.img -S -s -serial stdio)
 
 rootfs/%: $(SRCDIR)/userland/root/%
 	$(call run,CP,cp $^ $@)
