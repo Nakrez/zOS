@@ -120,12 +120,14 @@ static int fiu_stat(struct mount_entry *root, uid_t uid, gid_t gid,
 
     answer = MESSAGE_EXTRACT(struct resp_stat, response);
 
-    if (answer->ret < 0)
+    res = answer->ret;
+
+    if (res < 0)
     {
         message_free(message);
         message_free(response);
 
-        return answer->ret;
+        return res;
     }
 
     memcpy(buf, &answer->stat, sizeof (struct stat));
@@ -133,7 +135,7 @@ static int fiu_stat(struct mount_entry *root, uid_t uid, gid_t gid,
     message_free(message);
     message_free(response);
 
-    return answer->ret;
+    return res;
 }
 
 static int fiu_open(struct mount_entry *root, ino_t inode, pid_t pid,
