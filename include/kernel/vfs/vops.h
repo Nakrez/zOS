@@ -49,5 +49,6 @@ int vfs_lseek(struct thread *t, int fd, int offset, int whence);
 int vfs_ioctl(struct thread *t, int fd, int req, int *argp);
 int vfs_dup(struct thread *t, int oldfd);
 int vfs_dup2(struct thread *t, int oldfd, int newfd);
+int vfs_getdirent(struct thread *t, int fd, struct dirent *dirent, int index);
 
 #endif /* !VFS_VOPS_H */
