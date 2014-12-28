@@ -101,7 +101,7 @@ static void command_execute(struct command *command)
         if (*command->argv[0] != '/')
         {
             /* 6 = /bin/ + '\0' */
-            if (!(bin = malloc(strlen(command->argv[0] + 6))))
+            if (!(bin = malloc(strlen(command->argv[0]) + 6)))
                 exit(1);
 
             strcpy(bin, "/bin/");
