@@ -1,3 +1,28 @@
+/*
+ * zOS
+ * Copyright (C) 2014 - 2015 Baptiste Covolato
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with zOS.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * \file    kernel/core/proc/process.c
+ * \brief   Implementation of some process management related functions
+ *
+ * \author  Baptiste Covolato
+ */
+
 #include <string.h>
 
 #include <kernel/zos.h>
@@ -67,8 +92,8 @@ static pid_t process_new_pid(void)
 
 struct process *process_create(int type, uintptr_t code, int flags)
 {
-    struct process *process;
     pid_t pid;
+    struct process *process;
 
     if ((pid = process_new_pid()) < 0)
         return NULL;
@@ -94,8 +119,10 @@ struct process *process_create(int type, uintptr_t code, int flags)
      */
     init_process(process, pid, type, process_get(1));
 
+    /* Mark all file slots has unused */
     memset(process->files, 0, sizeof (process->files));
 
+    /* Load the binary pointed by code if necessary */
     if (flags & PROCESS_FLAG_LOAD)
     {
         code = process_load_elf(process, code);
@@ -104,6 +131,7 @@ struct process *process_create(int type, uintptr_t code, int flags)
             goto error;
     }
 
+    /* Create main thread */
     if (thread_create(process, code, NULL, 0) < 0)
         goto error;
 
@@ -135,15 +163,13 @@ struct process *process_get(pid_t pid)
 
 int process_fork(struct process *process, struct irq_regs *regs)
 {
+    pid_t pid;
     struct process *child;
-    pid_t pid = process_new_pid();
 
-    if (!pid)
+    if (!(pid = process_new_pid()))
         return -EAGAIN;
 
-    child = kmalloc(sizeof (struct process));
-
-    if (!child)
+    if (!(child = kmalloc(sizeof (struct process))))
         return -ENOMEM;
 
     if (!(child->as = as_duplicate(process->as)))
@@ -155,6 +181,11 @@ int process_fork(struct process *process, struct irq_regs *regs)
 
     init_process(child, pid, process->type, process);
 
+    /*
+     * Duplicate thread, the child's thread will automatically be added to the
+     * scheduler and return in the userland code and return 0 to the syscall
+     * fork() performed by the father
+     */
     if (!thread_duplicate(child, thread_current(), regs))
     {
         as_destroy(child->as);
@@ -164,12 +195,16 @@ int process_fork(struct process *process, struct irq_regs *regs)
         return -ENOMEM;
     }
 
+    /* Inherit file descriptor from parent */
     memcpy(child->files, process->files, sizeof (process->files));
 
+    /* Add the new process to the father's children list */
     klist_add(&process->children, &child->brothers);
 
+    /* Add the process to the process' list */
     klist_add(&processes, &child->list);
 
+    /* Only the father returns here, the child return in thread_duplicate */
     return pid;
 }
 
@@ -238,7 +273,6 @@ void process_exit(struct process *p, int code)
      * Exit all threads. When a process have no thread anymore it will be
      * destroyed
      */
-
     klist_for_each(&p->threads, tlist, list)
     {
         thread = klist_elem(tlist, struct thread, list);
@@ -264,6 +298,7 @@ void process_destroy(struct process *p)
 
     spinlock_lock(&p->plock);
 
+    /* Notify process waiting for this process to exit, if there is any */
     scheduler_event_notify(SCHED_EV_PEXIT, p->pid);
 
     scheduler_event_notify(SCHED_EV_PEXIT_PARENT, p->parent->pid);
