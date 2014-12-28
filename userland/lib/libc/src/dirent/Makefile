@@ -1,6 +1,6 @@
 CURDIR := userland/lib/libc/src/dirent
 
-OBJ-y := opendir.o
+OBJ-y := opendir.o closedir.o
 
 LIBSUBDIRS-y :=
 

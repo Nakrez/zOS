@@ -24,5 +24,6 @@ typedef struct {
 
 int getdirent(int fd, struct dirent *d, int index);
 DIR *opendir(const char *dirname);
+int closedir(DIR *d);
 
 #endif /* !LIBC_DIRENT_H */
