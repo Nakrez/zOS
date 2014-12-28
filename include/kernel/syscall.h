@@ -81,4 +81,6 @@ int sys_vfs_ioctl(struct syscall *interface);
 int sys_vfs_dup(struct syscall *interface);
 int sys_vfs_dup2(struct syscall *interface);
 
+int sys_vfs_getdirent(struct syscall *interface);
+
 #endif /* !SYSCALL_H */

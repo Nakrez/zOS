@@ -155,3 +155,12 @@ int sys_vfs_dup2(struct syscall *interface)
 
     return vfs_dup2(thread_current(), oldfd, newfd);
 }
+
+int sys_vfs_getdirent(struct syscall *interface)
+{
+    int fd = interface->arg1;
+    struct dirent *dirent = (void *)interface->arg2;
+    int index = interface->arg3;
+
+    return vfs_getdirent(thread_current(), fd, dirent, index);
+}
