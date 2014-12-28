@@ -21,6 +21,24 @@ void process_initialize(void)
     klist_head_init(&processes);
 }
 
+static void init_process(struct process *p, pid_t pid, int type,
+                         struct process *parent)
+{
+    p->state = PROCESS_STATE_ALIVE;
+    p->thread_count = 0;
+    p->type = type;
+    p->pid = pid;
+
+    p->parent = parent;
+
+    spinlock_init(&p->plock);
+    spinlock_init(&p->files_lock);
+
+    /* Init thread list */
+    klist_head_init(&p->threads);
+    klist_head_init(&p->children);
+}
+
 static pid_t process_new_pid(void)
 {
     struct process *process;
@@ -47,7 +65,6 @@ static pid_t process_new_pid(void)
     return -1;
 }
 
-/* TODO: Too much code is duplicated with fork() */
 struct process *process_create(int type, uintptr_t code, int flags)
 {
     struct process *process;
@@ -71,22 +88,13 @@ struct process *process_create(int type, uintptr_t code, int flags)
     else
         process->as = &kernel_as;
 
-    process->state = PROCESS_STATE_ALIVE;
-    process->thread_count = 0;
-    process->type = type;
-    process->pid = pid;
-
-    /* By default init is your father */
-    process->parent = process_get(1);
-
-    spinlock_init(&process->plock);
-    spinlock_init(&process->files_lock);
+    /*
+     * Process created by this function are processes that are launched as
+     * module at boot time, the parent is logically init
+     */
+    init_process(process, pid, type, process_get(1));
 
     memset(process->files, 0, sizeof (process->files));
-
-    /* Init thread list */
-    klist_head_init(&process->threads);
-    klist_head_init(&process->children);
 
     if (flags & PROCESS_FLAG_LOAD)
     {
@@ -146,17 +154,10 @@ int process_fork(struct process *process, struct irq_regs *regs)
         return -1;
     }
 
-    child->pid = pid;
-    child->parent = process;
-    child->state = PROCESS_STATE_ALIVE;
-    child->type = process->type;
-    child->thread_count = 0;
+    init_process(child, pid, process->type, process);
 
-    spinlock_init(&child->plock);
-    spinlock_init(&child->files_lock);
 
-    klist_head_init(&child->threads);
-    klist_head_init(&process->children);
+        kfree(child);
 
     /* TODO: cleanup */
     if (!thread_duplicate(child, thread_current(), regs))
