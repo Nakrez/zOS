@@ -172,7 +172,6 @@ int main(void)
     int ret;
     char buf[256];
 
-    /* TODO: Let init handle it */
     while (1)
     {
         printf("root@zOS $ ");
@@ -183,7 +182,7 @@ int main(void)
 
         if (ret < 0)
         {
-            printf("\nread failed\n");
+            printf("\nshell: read failed\n");
 
             continue;
         }
