@@ -7,6 +7,8 @@
 # define VFS_SEEK_CUR (1 << 1)
 # define VFS_SEEK_END (1 << 2)
 
+# define NAME_MAX 256
+
 struct resp_lookup;
 struct mount_entry;
 struct thread;
@@ -25,6 +27,12 @@ struct stat {
     time_t st_atime;
     time_t st_mtime;
     time_t st_ctime;
+};
+
+struct dirent {
+    ino_t d_ino;
+
+    char d_name[NAME_MAX];
 };
 
 int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
