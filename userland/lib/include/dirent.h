@@ -19,4 +19,6 @@ typedef struct {
     int index;
 } DIR;
 
+int getdirent(int fd, struct dirent *d, int index);
+
 #endif /* !LIBC_DIRENT_H */

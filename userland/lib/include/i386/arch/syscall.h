@@ -31,6 +31,7 @@
 # define SYS_IOCTL 28
 # define SYS_DUP 29
 # define SYS_DUP2 30
+# define SYS_GETDIRENT 31
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \
