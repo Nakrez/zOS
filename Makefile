@@ -99,9 +99,6 @@ config: scripts_basic FORCE
 PHONY += FORCE
 FORCE:
 
-# Declare the contents of the .PHONY variable as phony.  We keep that
-# information in a variable so we can use it in if_changed and friends.
-.PHONY: $(PHONY)
 
 # ZOS BUILD
 
@@ -166,6 +163,7 @@ distclean: clean
 	@rm -rf $(ALL_LIB)
 	@rm -rf $(DEPS)
 	@rm -rf rootfs.img rootfs zos-$(ZOS_TARGET)-image.img
+	@rm -rf doc/kernel doc/userland
 
 help:
 	@echo "Cleaning targets:"
@@ -183,6 +181,25 @@ help:
 	@echo "Boot targets:"
 	@echo "  boot		  - Boot image created by zos with qemu"
 	@echo "  boot-gdb	  - Same as boot but enable qemu debug options"
+	@echo ""
+	@echo "Other targets:"
+	@echo "  doc		  - Build doxygen all documentation"
+	@echo "  doc-kernel	  - Build doxygen documentation related to the kernel"
+	@echo "  doc-user	  - Build doxygen documentation related to the userland"
+
+doc: doc-kernel doc-user
+
+doc-kernel:
+	doxygen doc/Doxyfile-kernel
+
+doc-user:
+	doxygen doc/Doxyfile-user
+
+PHONY += doc doc-kernel doc-user
+
+# Declare the contents of the .PHONY variable as phony.  We keep that
+# information in a variable so we can use it in if_changed and friends.
+.PHONY: $(PHONY)
 
 include $(SRCDIR)/mk/rootfsdirs.mk
 include $(SRCDIR)/mk/run.mk
