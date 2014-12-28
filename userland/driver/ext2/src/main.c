@@ -11,6 +11,7 @@ static struct fiu_ops ext2_ops = {
     .stat = ext2fs_stat,
     .open = ext2fs_open,
     .read = ext2fs_read,
+    .getdirent = ext2fs_getdirent,
     .close = ext2fs_close,
 };
 

@@ -5,6 +5,9 @@
 
 # define NAME_MAX 256
 
+# define DIR_OK 1
+# define DIR_END 0
+
 struct dirent {
     ino_t d_ino;
 
