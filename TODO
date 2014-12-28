@@ -1,3 +1,9 @@
+[GENERAL]
+
+- Add doc, comment.
+
+[KERNEL]
+
 [MISC]
 
 - Rename all glue specific data structure as XXX_glue_data
@@ -19,11 +25,7 @@
 
 [SYSCALL]
 
-- /!\ Check user pointers from syscalls /!\
-
-[VFS]
-
-- Add dirent.h interface
+- /!\ Check user pointers from syscalls /!\ (implement linux EFAULT mechanism)
 
 [SCHEDULER]
 
@@ -40,7 +42,30 @@
 - Add SMP support
 - Add GPF handler
 
+[VFS]
+
+- Add write operations
+- Add getdirent() support on tmpfs
+- Add shared memory for operations such as read/write...
+
+[ARCH]
+
+- Add x86_64 support
+- Add arm support (consider platform aspect carefully)
+- ...
+
 [USERLAND]
 
+[INIT]
+
 - Replace init's sleep() with wait()
-- Add ls binary
+
+[EXT2]
+
+- Add write support
+
+[ATA]
+
+- Add partition support
+- Add ATAPI support
+- Add DMA
