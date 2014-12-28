@@ -123,15 +123,11 @@ static int fiu_stat(struct mount_entry *root, uid_t uid, gid_t gid,
     res = answer->ret;
 
     if (res < 0)
-    {
-        message_free(message);
-        message_free(response);
-
-        return res;
-    }
+        goto end;
 
     memcpy(buf, &answer->stat, sizeof (struct stat));
 
+end:
     message_free(message);
     message_free(response);
 
