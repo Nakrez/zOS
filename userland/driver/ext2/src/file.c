@@ -16,9 +16,6 @@ int ext2fs_open(struct fiu_internal *fiu, struct req_open *req,
     if (!(inode = ext2_icache_request(ext2, req->inode)))
         return -1;
 
-    if (inode->type_perm & EXT2_TYPE_DIRECTORY)
-        return -1;
-
     response->inode = req->inode;
 
     ext2_icache_release(ext2, req->inode);
