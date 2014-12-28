@@ -24,6 +24,7 @@ struct fs_ops {
                 void *buf);
     int (*write)(struct mount_entry *, struct process *, struct req_rdwr *,
                  const void *buf);
+    int (*getdirent)(struct mount_entry *, ino_t, struct dirent *, int);
     int (*close)(struct mount_entry *, ino_t);
     void (*cleanup)(void *);
 };
