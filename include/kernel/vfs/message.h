@@ -133,4 +133,18 @@ struct resp_ioctl {
     int argp;
 };
 
+/* Dirent request */
+struct req_getdirent {
+    ino_t inode;
+
+    int index;
+};
+
+/* Dirent response */
+struct resp_getdirent {
+    int ret;
+
+    struct dirent dirent;
+};
+
 #endif /* !VFS_MESSAGE_H */

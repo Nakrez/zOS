@@ -17,6 +17,7 @@
 # define VFS_MKNOD 9
 # define VFS_STAT 10
 # define VFS_IOCTL 11
+# define VFS_GETDIRENT 12
 
 # define VFS_OPS_OPEN (1 << 0)
 # define VFS_OPS_READ (1 << 1)
@@ -29,6 +30,7 @@
 # define VFS_OPS_MKNOD (1 << 8)
 # define VFS_OPS_STAT (1 << 9)
 # define VFS_OPS_IOCTL (1 << 10)
+# define VFS_OPS_GETDIRENT (1 << 11)
 
 /*
  * Special request emitted by the kernel when remounting root with userland
@@ -136,6 +138,20 @@ struct resp_ioctl {
     int modify_argp;
 
     int argp;
+};
+
+/* Dirent request */
+struct req_getdirent {
+    ino_t inode;
+
+    int index;
+};
+
+/* Dirent response */
+struct resp_getdirent {
+    int ret;
+
+    struct dirent dirent;
 };
 
 #endif /* !ZOS_VFS_H */
