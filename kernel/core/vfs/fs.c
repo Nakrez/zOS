@@ -146,6 +146,56 @@ static int fiu_read(struct mount_entry *root, struct process *process,
     return device_read_write(process, root->dev, req, buf, VFS_READ);
 }
 
+static int fiu_getdirent(struct mount_entry *root, ino_t inode,
+                         struct dirent *d, int index)
+{
+    int res;
+    struct vdevice *device;
+    struct message *message;
+    struct message *response;
+    struct req_getdirent *request;
+    struct resp_getdirent *answer;
+
+    if (!(device = device_get(root->dev)))
+        return -ENODEV;
+
+    if (!(device->ops & VFS_OPS_GETDIRENT))
+        return -ENOSYS;
+
+    if (!(message = message_alloc(sizeof (struct req_getdirent))))
+        return -ENOMEM;
+
+    request = MESSAGE_EXTRACT(struct req_getdirent, message);
+
+    request->inode = inode;
+    request->index = index;
+
+    message->mid = (message->mid & ~0xFF) | VFS_GETDIRENT;
+
+    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
+    {
+        message_free(message);
+
+        return res;
+    }
+
+    answer = MESSAGE_EXTRACT(struct resp_getdirent, response);
+
+    res = answer->ret;
+
+    if (res < 0)
+        goto end;
+
+    memcpy(d, &answer->dirent, sizeof (struct dirent));
+
+end:
+
+    message_free(message);
+    message_free(response);
+
+    return res;
+}
+
 static int fiu_close(struct mount_entry *root, ino_t inode)
 {
     return device_close(root->dev, inode);
@@ -156,5 +206,6 @@ struct fs_ops fiu_ops = {
     .stat = fiu_stat,
     .open = fiu_open,
     .read = fiu_read,
+    .getdirent = fiu_getdirent,
     .close = fiu_close,
 };
