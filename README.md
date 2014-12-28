@@ -42,7 +42,7 @@ having the Virtual File System embedded within the kernel.
   * Video (x86 only using VBE Extended)
   * TTY
 * Other binaries:
-  * Shell, cat
+  * Shell, cat, ls, stat
 
 ## Build instruction ##
 
@@ -51,11 +51,19 @@ zOS use Kconfig build system.
 To create a new configuration file you can type `make menuconfig` or
 `make config`.
 
-Then, you just have to run `make` or `make boot` if you want to run the
-created image file into `qemu`.
+Some system already have a default configuration file. To use it just type
+`make $TARGET_defconfig`, where $TARGET is the target you want to build (for
+example to build zos for i386-pc the target is `i386_pc`). All configuration
+files are available in `kernel/arch/$ARCH/configs` (where $ARCH is the
+architecture you want to build zos for).
+
+Then, you just have to run `make` to create the image. If you want to create
+the image and run it in qemu you can use `make boot`.
 
 If you are building zOS for a different architecture than your host computer
-be sure to correctly set `CROSS_COMPILE`.
+be sure to set variables `CROSS_COMPILE`, `ARCH` and `PLAT` correctly.
+
+If you want to see all available make targets just type `make help`.
 
 ## License ##
 
