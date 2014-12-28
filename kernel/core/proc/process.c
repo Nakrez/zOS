@@ -112,9 +112,8 @@ struct process *process_create(int type, uintptr_t code, int flags)
     return process;
 
 error:
-    /* FIXME: Add as_delete */
     if (process->as != &kernel_as)
-        kfree(process->as);
+        as_destroy(process->as);
 
     kfree(process);
 
@@ -140,30 +139,31 @@ int process_fork(struct process *process, struct irq_regs *regs)
     pid_t pid = process_new_pid();
 
     if (!pid)
-        return -1;
+        return -EAGAIN;
 
     child = kmalloc(sizeof (struct process));
 
     if (!child)
-        return -1;
+        return -ENOMEM;
 
     if (!(child->as = as_duplicate(process->as)))
     {
         kfree(child);
 
-        return -1;
+        return -EAGAIN;
     }
 
     init_process(child, pid, process->type, process);
 
+    if (!thread_duplicate(child, thread_current(), regs))
+    {
+        as_destroy(child->as);
 
         kfree(child);
 
-    /* TODO: cleanup */
-    if (!thread_duplicate(child, thread_current(), regs))
-        return -1;
+        return -ENOMEM;
+    }
 
-    /* Increase reference count on vnode associated to open file descriptors */
     memcpy(child->files, process->files, sizeof (process->files));
 
     klist_add(&process->children, &child->brothers);
