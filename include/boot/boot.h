@@ -29,6 +29,7 @@ struct boot_seg
 
 struct boot_modules
 {
+    char *mod_args;
     void *mod_start;
     uint32_t mod_size;
 };

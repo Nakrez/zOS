@@ -15,3 +15,13 @@ void *memset(void *ptr, int value, size_t size)
 
     return ptr;
 }
+
+int strlen(const char *s)
+{
+    const char *base = s;
+
+    while (*s)
+        ++s;
+
+    return s - base;
+}

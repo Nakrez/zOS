@@ -102,13 +102,30 @@ static void setup_modules(struct boot_info *b_inf, multiboot_info_t *multiboot)
 
     for (size_t i = 1; i < multiboot->mods_count; ++i)
     {
+        /* Copy module's command line */
+        if (mods[i].cmdline)
+        {
+            size_t cmdline_size = strlen((void *)mods[i].cmdline) + 1;
+            b_inf->mods[i - 1].mod_args = boot_alloc(cmdline_size);
+
+            memcpy(b_inf->mods[i - 1].mod_args, (void *)mods[i].cmdline,
+                  cmdline_size);
+        }
+        else
+            b_inf->mods[i - 1].mod_args = 0;
+
+        /* Copy module code */
         b_inf->mods[i - 1].mod_size = mods[i].mod_end - mods[i].mod_start;
         b_inf->mods[i - 1].mod_start = boot_alloc(b_inf->mods[i - 1].mod_size);
 
         memcpy(b_inf->mods[i - 1].mod_start, (void *)mods[i].mod_start,
                b_inf->mods[i - 1].mod_size);
 
+        /* Make addresses virtual */
         b_inf->mods[i - 1].mod_start = K_VADDR(b_inf->mods[i - 1].mod_start);
+
+        if (mods[i].cmdline)
+            b_inf->mods[i - 1].mod_args = K_VADDR(b_inf->mods[i - 1].mod_args);
     }
 
     b_inf->mods = K_VADDR(b_inf->mods);

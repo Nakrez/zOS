@@ -18,6 +18,10 @@ void module_initialize(struct boot_info *boot)
         console_message(T_INF, "Loading module %u located at 0x%x, size %u o",
                         i, boot->mods[i].mod_start, boot->mods[i].mod_size);
 
+        if (boot->mods[i].mod_args)
+            console_message(T_INF, "Module %u command line: %s", i,
+                            boot->mods[i].mod_args);
+
         p = process_create(PROCESS_TYPE_USER,
                            (uintptr_t)boot->mods[i].mod_start,
                            PROCESS_FLAG_LOAD);
