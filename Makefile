@@ -167,6 +167,23 @@ distclean: clean
 	@rm -rf $(DEPS)
 	@rm -rf rootfs.img rootfs zos-$(ZOS_TARGET)-image.img
 
+help:
+	@echo "Cleaning targets:"
+	@echo "  clean		  - Remove most generated files but keep"
+	@echo "       		    configuration and generated binaries/images"
+	@echo "  distclean	  - Remove all generated files except configuration"
+	@echo ""
+	@echo "Configuration targets:"
+	@$(MAKE) -f $(SRCDIR)/scripts/kconfig/Makefile help
+	@echo ""
+	@echo "Build targets:"
+	@echo "  all		  - Build a zos image according to configuration file"
+	@echo "  zos		  - Same as all"
+	@echo ""
+	@echo "Boot targets:"
+	@echo "  boot		  - Boot image created by zos with qemu"
+	@echo "  boot-gdb	  - Same as boot but enable qemu debug options"
+
 include $(SRCDIR)/mk/rootfsdirs.mk
 include $(SRCDIR)/mk/run.mk
 include $(SRCDIR)/mk/rules.mk
