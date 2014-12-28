@@ -19,4 +19,9 @@ config BUILD_STAT
     default y
     depends on BUILD_SHELL
 
+config BUILD_LS
+    bool "Ls"
+    default y
+    depends on BUILD_SHELL
+
 endmenu
