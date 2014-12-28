@@ -3,6 +3,10 @@
 
 # include <sys/types.h>
 
+# define STAT_MOD_DIRECTORY 0x4000
+
+# define S_ISDIR(m) ((m & STAT_MOD_DIRECTORY) == STAT_MOD_DIRECTORY)
+
 struct stat {
     dev_t st_dev;
     ino_t st_ino;
