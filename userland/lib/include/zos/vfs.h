@@ -2,6 +2,7 @@
 # define ZOS_VFS_H
 
 # include <stdint.h>
+# include <dirent.h>
 
 # include <sys/types.h>
 # include <sys/stat.h>

@@ -28,6 +28,9 @@ static int fiu_capabilities(struct fiu_internal *fiu)
     if (fiu->ops->read)
         fiu->capabilities |= VFS_OPS_READ;
 
+    if (fiu->ops->getdirent)
+        fiu->capabilities |= VFS_OPS_GETDIRENT;
+
     if (fiu->ops->close)
         fiu->capabilities |= VFS_OPS_CLOSE;
     else
@@ -104,6 +107,16 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
 
                 device_send_response(fiu->dev_id, mid, &resp,
                                      sizeof (struct resp_rdwr));
+            }
+            break;
+        case VFS_GETDIRENT:
+            {
+                struct resp_getdirent resp;
+
+                resp.ret = fiu->ops->getdirent(fiu, (void *)buf, &resp.dirent);
+
+                device_send_response(fiu->dev_id, mid, &resp,
+                                     sizeof (struct resp_getdirent));
             }
             break;
         case VFS_CLOSE:
