@@ -37,9 +37,11 @@ static void cat_file(const char *filename)
     if (S_ISDIR(s.st_mode))
     {
         fprintf(stderr, "%s: Is a directory\n", filename);
+
+        return;
     }
 
-    while ((ret = fread(buf, BUFFER_SIZE - 1, 1, file)) != 0)
+    while ((ret = fread(buf, BUFFER_SIZE - 1, 1, file)) > 0)
     {
         buf[ret] = 0;
         fputs(buf, stdout);
