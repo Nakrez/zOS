@@ -11,4 +11,12 @@ struct dirent {
     char d_name[NAME_MAX];
 };
 
+typedef struct {
+    int fd;
+
+    struct dirent dp;
+
+    int index;
+} DIR;
+
 #endif /* !LIBC_DIRENT_H */
