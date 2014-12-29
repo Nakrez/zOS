@@ -16,6 +16,7 @@ char *strcat(char *dest, const char *src);
 
 void *memcpy(void *dest, const void *src, size_t size);
 void *memset(void *ptr, int value, size_t num);
+int memcmp(const void *s1, const void *s2, size_t n);
 
 char *strtok_r(char *str, const char *delim, char **saveptr);
 
