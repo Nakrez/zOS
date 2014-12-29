@@ -133,7 +133,7 @@ struct process *process_create(int type, uintptr_t code, int flags,
     }
 
     /* Create main thread */
-    if (thread_create(process, code, argv, 0) < 0)
+    if (thread_create(process, code, argv, 1) < 0)
         goto error;
 
     klist_add(&processes, &process->list);

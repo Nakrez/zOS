@@ -11,6 +11,7 @@
 #include <arch/mmu.h>
 
 /* FIXME: Disgusting */
+/* FIXME: If deep_argv_copy is set we modify argv, don't do that ! */
 static int i386_setup_stack(char *stack, paddr_t phy_stack, char *argv[],
                             int deep_argv_copy)
 {
