@@ -36,7 +36,8 @@ void cpu_initialize(void)
 
     console_message(T_OK, "%u CPU initialized", CPU_COUNT);
 
-    idle = process_create(PROCESS_TYPE_KERNEL, (uintptr_t)idle_thread, 0);
+    idle = process_create(PROCESS_TYPE_KERNEL, (uintptr_t)idle_thread, 0,
+                          NULL);
 
     cpus[0].scheduler.idle = klist_elem(idle->threads.next, struct thread,
                                         list);

@@ -164,10 +164,12 @@ void process_initialize(void);
  * \param   code    Memory location of ELF binary, if PROCESS_FLAGS_LOAD is
  *                  set, otherwise interpreted has entry point
  * \param   flags   Change the behaviour of the function
+ * \brief   argv        The argument to pass to the new binary
  *
  * \return  The new process if everything went well, NULL otherwise
  */
-struct process *process_create(int type, uintptr_t code, int flags);
+struct process *process_create(int type, uintptr_t code, int flags,
+                               char *argv[]);
 
 /**
  * \brief   Get a process from it PID

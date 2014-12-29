@@ -90,7 +90,8 @@ static pid_t process_new_pid(void)
     return -1;
 }
 
-struct process *process_create(int type, uintptr_t code, int flags)
+struct process *process_create(int type, uintptr_t code, int flags,
+                               char *argv[])
 {
     pid_t pid;
     struct process *process;
@@ -132,7 +133,7 @@ struct process *process_create(int type, uintptr_t code, int flags)
     }
 
     /* Create main thread */
-    if (thread_create(process, code, NULL, 0) < 0)
+    if (thread_create(process, code, argv, 0) < 0)
         goto error;
 
     klist_add(&processes, &process->list);
