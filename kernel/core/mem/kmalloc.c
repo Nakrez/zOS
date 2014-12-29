@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <kernel/zos.h>
 #include <kernel/panic.h>
 #include <kernel/console.h>
@@ -138,6 +140,30 @@ void kfree(void *ptr)
     kmerge(blk);
 
     spinlock_unlock(&kmalloc_lock);
+}
+
+void *krealloc(void *ptr, size_t new_size)
+{
+    void *new_area;
+    struct kmalloc_blk *old_blk;
+
+    if (!ptr)
+        return kmalloc(new_size);
+
+    old_blk = ptr;
+    --old_blk;
+
+    if (old_blk->ptr != ptr)
+        kernel_panic("krealloc junk ptr");
+
+    if (!(new_area = kmalloc(new_size)))
+        return NULL;
+
+    memcpy(new_area, ptr, new_size > old_blk->size ? old_blk->size : new_size);
+
+    kfree(ptr);
+
+    return new_area;
 }
 
 void kmalloc_dump(void)

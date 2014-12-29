@@ -7,6 +7,7 @@
 
 void kmalloc_initialize(struct boot_info *boot);
 void *kmalloc(size_t size);
+void *krealloc(void *ptr, size_t new_size);
 void kfree(void *ptr);
 void kmalloc_dump(void);
 
