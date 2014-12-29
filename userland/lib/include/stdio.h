@@ -12,6 +12,8 @@
 # define STDOUT_FILENO 1
 # define STDERR_FILENO 2
 
+# define EOF -1
+
 struct _IO_FILE;
 
 typedef struct _IO_FILE FILE;
