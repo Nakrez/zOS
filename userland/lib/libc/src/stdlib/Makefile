@@ -1,6 +1,6 @@
 CURDIR := userland/lib/libc/src/stdlib
 
-OBJ-y := malloc.o
+OBJ-y := malloc.o getenv.o
 
 LIBSUBDIRS-y :=
 
