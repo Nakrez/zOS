@@ -256,6 +256,12 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
 
         if (!(part = strtok_r(NULL, "/", &path_left)))
         {
+            if ((inode->type_perm & EXT2_TYPE_MOUNT_PT) == EXT2_TYPE_MOUNT_PT)
+            {
+                response->ret = LOOKUP_RES_ENTER_MOUNT;
+                response->dev = inode->lower_size;
+            }
+
             ext2_icache_release(ext2, inode_nb);
 
             break;
