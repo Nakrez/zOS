@@ -15,7 +15,7 @@ int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
 {
     int ret;
     int processed = 0;
-    int path_len = strlen(path);
+    int path_len = strlen(path) + 1;
     struct mount_entry *root = vfs_root_get();
     char *copied_path = kmalloc(path_len + 1);
     uid_t uid;
@@ -36,6 +36,7 @@ int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
     if (!copied_path)
         return -ENOMEM;
 
+    copied_path[path_len] = 0;
     strcpy(copied_path, path);
 
     while (1)
@@ -76,9 +77,10 @@ int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
             break;
         else
         {
+            char old = copied_path[res->processed - 1];
             copied_path[res->processed - 1] = 0;
             root = vfs_mount_pt_get(copied_path);
-            copied_path[res->processed - 1] = '/';
+            copied_path[res->processed - 1] = old;
         }
     }
 
