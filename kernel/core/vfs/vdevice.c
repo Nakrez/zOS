@@ -1,3 +1,28 @@
+/*
+ * zOS
+ * Copyright (C) 2014 - 2015 Baptiste Covolato
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with zOS.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * \file    kernel/core/vfs/vdevice.c
+ * \brief   Implementation of virtual devices management
+ *
+ * \author  Baptiste Covolato
+ */
+
 #include <string.h>
 
 #include <kernel/errno.h>
@@ -14,7 +39,7 @@
 static struct vdevice devices[VFS_MAX_DEVICE];
 static spinlock_t device_lock = SPINLOCK_INIT;
 
-static dev_t device_create(pid_t pid, const char __user* name, vop_t ops,
+static dev_t device_create(pid_t pid, const char *name, vop_t ops,
                            struct vdevice **device)
 {
     int found = 0;
@@ -28,7 +53,6 @@ static dev_t device_create(pid_t pid, const char __user* name, vop_t ops,
 
     for (int i = 0; i < VFS_MAX_DEVICE; ++i)
     {
-        /* FIXME: User access */
         if (devices[i].active && strcmp(devices[i].name, name) == 0)
             found = 1;
         if (!(*device) && !devices[i].active)
@@ -48,7 +72,6 @@ static dev_t device_create(pid_t pid, const char __user* name, vop_t ops,
                 return -ENOMEM;
             }
 
-            /* FIXME: User access !!! */
             strcpy(devices[i].name, name);
 
             devices[i].id = i;
