@@ -22,5 +22,6 @@
 # define EBADE 52 /* Invalid exchange */
 # define ENODATA 61 /* No data available */
 # define ELIBBAD 80 /* Accessing a corrupted shared library */
+# define EDQUOT 122 /* Quota exceeded */
 
 #endif /* !ERRNO_H */
