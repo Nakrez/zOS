@@ -48,7 +48,8 @@ int vfs_initialize(void)
 
     console_message(T_OK, "Tmpfs mounted on /");
 
-    if (vfs_mkdir(NULL, "/dev", 0755) < 0)
+    if (vfs_mkdir(NULL, "/dev", VFS_PERM_USER_RWX | VFS_PERM_GROUP_RX |
+                                VFS_PERM_OTHER_RW) < 0)
     {
         console_message(T_ERR, "Fail to create /dev");
 

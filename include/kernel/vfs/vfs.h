@@ -133,6 +133,93 @@
 # define VFS_OPS_GETDIRENT (1 << 11)
 
 /**
+ * \def VFS_PERM_OTHER_R
+ * Represent read permission for other
+ *
+ * \def VFS_PERM_OTHER_W
+ * Represent write permission for other
+ *
+ * \def VFS_PERM_OTHER_X
+ * Represent execute permission for other
+ */
+# define VFS_PERM_OTHER_R 0x004
+# define VFS_PERM_OTHER_W 0x002
+# define VFS_PERM_OTHER_X 0x001
+
+/**
+ * \def VFS_PERM_GROUP_R
+ * Represent read permission for group
+ *
+ * \def VFS_PERM_GROUP_W
+ * Represent write permission for group
+ *
+ * \def VFS_PERM_GROUP_X
+ * Represent execute permission for group
+ */
+# define VFS_PERM_GROUP_R 0x020
+# define VFS_PERM_GROUP_W 0x010
+# define VFS_PERM_GROUP_X 0x008
+
+/**
+ * \def VFS_PERM_USER_R
+ * Represent read permission for user
+ *
+ * \def VFS_PERM_USER_W
+ * Represent write permission for user
+ *
+ * \def VFS_PERM_USER_X
+ * Represent execute permission for user
+ */
+# define VFS_PERM_USER_R 0x100
+# define VFS_PERM_USER_W 0x080
+# define VFS_PERM_USER_X 0x040
+
+/**
+ * \def VFS_PERM_OTHER_RX
+ * Represent read and execute permission for other
+ *
+ * \def VFS_PERM_OTHER_RW
+ * Represent read and write permission for other
+ *
+ * \def VFS_PERM_OTHER_RWX
+ * Represent read, write and execute permission for other
+ */
+# define VFS_PERM_OTHER_RX (VFS_PERM_OTHER_R | VFS_PERM_OTHER_X)
+# define VFS_PERM_OTHER_RW (VFS_PERM_OTHER_R | VFS_PERM_OTHER_W)
+# define VFS_PERM_OTHER_RWX (VFS_PERM_OTHER_R | VFS_PERM_OTHER_W | \
+                             VFS_PERM_OTHER_X)
+
+/**
+ * \def VFS_PERM_GROUP_RX
+ * Represent read and execute permission for group
+ *
+ * \def VFS_PERM_GROUP_RW
+ * Represent read and write permission for group
+ *
+ * \def VFS_PERM_GROUP_RWX
+ * Represent read, write and execute permission for group
+ */
+# define VFS_PERM_GROUP_RX (VFS_PERM_GROUP_R | VFS_PERM_GROUP_X)
+# define VFS_PERM_GROUP_RW (VFS_PERM_GROUP_R | VFS_PERM_GROUP_W)
+# define VFS_PERM_GROUP_RWX (VFS_PERM_GROUP_R | VFS_PERM_GROUP_W | \
+                             VFS_PERM_GROUP_X)
+
+/**
+ * \def VFS_PERM_USER_RX
+ * Represent read and execute permission for user
+ *
+ * \def VFS_PERM_USER_RW
+ * Represent read and write permission for user
+ *
+ * \def VFS_PERM_USER_RWX
+ * Represent read, write and execute permission for user
+ */
+# define VFS_PERM_USER_RX (VFS_PERM_USER_R | VFS_PERM_USER_X)
+# define VFS_PERM_USER_RW (VFS_PERM_USER_R | VFS_PERM_USER_W)
+# define VFS_PERM_USER_RWX (VFS_PERM_USER_R | VFS_PERM_USER_W | \
+                             VFS_PERM_USER_X)
+
+/**
  * \brief   Initialize kernel VFS mechanism
  *
  * Mount temporary filesystem to / and create /dev directory.
