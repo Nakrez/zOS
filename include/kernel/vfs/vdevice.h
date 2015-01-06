@@ -36,8 +36,7 @@ struct vdevice {
  *          -ENOMEM: Cannot allocate memory
  *          -EEXIST: Device already exists
  */
-dev_t device_create(pid_t pid, const char __user* name, vop_t ops,
-                    struct vdevice **device);
+dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops);
 
 /* Get device structure from device id
  *

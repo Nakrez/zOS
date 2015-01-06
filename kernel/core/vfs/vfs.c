@@ -41,34 +41,3 @@ int vfs_initialize(void)
 
     return 0;
 }
-
-dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops)
-{
-    int res;
-    struct vdevice *device = NULL;
-    char *node_path;
-
-    res = device_create(pid, name, ops, &device);
-
-    if (res < 0)
-        return res;
-
-    /*
-     * If mknod fails we don't really care because the device exists node the
-     * node in the FS, but it can be created later
-     */
-
-    /* 5 = strlen("/dev/") */
-    if (!(node_path = kmalloc(5 + strlen(name) + 1)))
-        return device->id;
-
-    strcpy(node_path, "/dev/");
-
-    strcat(node_path, name);
-
-    vfs_mknod(thread_current(), node_path, perm, device->id);
-
-    kfree(node_path);
-
-    return device->id;
-}

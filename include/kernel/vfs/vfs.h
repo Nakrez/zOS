@@ -30,6 +30,5 @@
 # define VFS_OPS_GETDIRENT (1 << 11)
 
 int vfs_initialize(void);
-dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops);
 
 #endif /* !VFS_H */
