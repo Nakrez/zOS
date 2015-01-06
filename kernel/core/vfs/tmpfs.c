@@ -1,37 +1,264 @@
+/*
+ * zOS
+ * Copyright (C) 2014 - 2015 Baptiste Covolato
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with zOS.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * \file    kernel/core/vfs/tmpfs.c
+ * \brief   Implementation of temporary filesystem
+ *
+ * \todo    Code is shared between tmpfs_mkdir/tmpfs_mknod
+ * \todo    Make tmpfs fit on the data size given
+ * \todo    tmpfs_cleanup()
+ *
+ * \author  Baptiste Covolato
+ */
+
 #include <string.h>
 
 #include <kernel/errno.h>
 
 #include <kernel/mem/kmalloc.h>
 
+#include <kernel/vfs/vfs.h>
 #include <kernel/vfs/tmpfs.h>
 
-void *tmpfs_initialize(void)
+# define TMPFS_DATA_SIZE (256 * KB)
+
+/**
+ * \brief   Allocate an inode into a tmpfs
+ *
+ * \param   sb  The super block of the tmpfs
+ *
+ * \return  The number of the inode if success
+ * \return  -1 if error
+ */
+static int tmpfs_alloc_inode(struct tmpfs_sb *sb)
 {
-    struct tmpfs_root *root = kmalloc(sizeof (struct tmpfs_root));
+    spinlock_lock(&sb->inode_table_lock);
 
-    if (!root)
-        return NULL;
-
-    root->inode_table = kmalloc(sizeof (struct tmpfs_node *) *
-                                TMPFS_INODE_TABLE_INIT_SIZE);
-
-    if (!root->inode_table)
+    /* Find a free spot */
+    for (size_t i = 0; i < sb->inode_table_size; ++i)
     {
-        kfree(root);
+        if (!sb->inode_table[i])
+        {
+            if (!(sb->inode_table[i] = kmalloc(sizeof (struct tmpfs_node))))
+                goto error;
 
-        return NULL;
+            spinlock_unlock(&sb->inode_table_lock);
+
+            return i;
+        }
     }
 
-    root->inode_table_size = TMPFS_INODE_TABLE_INIT_SIZE;
-    root->inode_current = 1;
+    /* Reallocate the inode table */
+    struct tmpfs_node **tmp = krealloc(sb->inode_table,
+                                       sizeof (struct tmpfs_node *) *
+                                       sb->inode_table_size * 2);
+    /* The index of the future new spot in the inode table */
+    size_t index = sb->inode_table_size;
 
-    klist_head_init(&root->root_sons);
+    if (!tmp)
+        goto error;
 
-    memset(root->inode_table, 0, sizeof (struct tmpfs_node *) *
+    sb->inode_table = tmp;
+
+    /* Set the new part of the table as NULL */
+    memset(sb->inode_table + sb->inode_table_size, 0, sb->inode_table_size *
+           sizeof (struct tmpfs_node *));
+
+    sb->inode_table_size *= 2;
+
+    if (!(sb->inode_table[index] = kmalloc(sizeof (struct tmpfs_node))))
+        goto error;
+
+    spinlock_unlock(&sb->inode_table_lock);
+
+    return index;
+
+error:
+    spinlock_unlock(&sb->inode_table_lock);
+
+    /* Only memory allocation problem could occur */
+    return -ENOMEM;
+}
+
+/**
+ * \brief   Add a new entry to a directory
+ *
+ * \param   dir     The directory
+ * \param   name    The name of the entry
+ * \param   inode   The inode of the entry
+ *
+ * \return  0: Success
+ * \return  -ENOMEM: Not enough memory
+ */
+static int tmpfs_add_dirent(struct tmpfs_node *dir, const char *name,
+                            ino_t inode)
+{
+    struct tmpfs_dirent *dirent;
+
+    if (!(dirent = kmalloc(sizeof (struct tmpfs_dirent))))
+        return -ENOMEM;
+
+    if (!(dirent->name = kmalloc(strlen(name) + 1)))
+    {
+        kfree(dirent);
+
+        return -ENOMEM;
+    }
+
+    dirent->inode = inode;
+    strcpy(dirent->name, name);
+
+    klist_add_back(&dir->entries, &dirent->next);
+
+    return 0;
+}
+
+/**
+ * \brief   This function initialize directory block content with dir "." and
+ *          ".."
+ *
+ * \todo    cleanup on error
+ *
+ * \param   dir         The node of the directory
+ * \param   parent      The inode number of the parent directory
+ * \param   dir_inode   The inode number of the directory
+ *
+ * \return  0: Success
+ * \return  -ENOMEM: Not enough memory
+ */
+static int tmpfs_init_dir_content(struct tmpfs_node *dir, ino_t parent,
+                                  ino_t dir_inode)
+{
+    int ret;
+
+    klist_head_init(&dir->entries);
+
+    if ((ret = tmpfs_add_dirent(dir, ".", dir_inode)) < 0)
+        return ret;
+
+    if ((ret = tmpfs_add_dirent(dir, "..", parent)) < 0)
+        return ret;
+
+    return 0;
+}
+
+/**
+ * \brief   Initialize root node of a tmpfs
+ *
+ * \todo    Do something for the root uid, gid and default perm
+ * \todo    Free resources when error
+ * \todo    ".." should point to the previous dir
+ *
+ * \param   sb  The super block of the tmpfs
+ *
+ * \return  0: OK
+ * \return  -ENOMEM: Not enough memory
+ */
+static int tmpfs_init_root(struct tmpfs_sb *sb)
+{
+    struct tmpfs_node *root;
+    int ret;
+
+    /* Allocate the root node structure */
+    if (tmpfs_alloc_inode(sb) != TMPFS_ROOT_INODE)
+        return -ENOMEM;
+
+    root = sb->inode_table[TMPFS_ROOT_INODE];
+
+    /* \0 */
+    if (!(root->name = kmalloc(1)))
+        return -ENOMEM;
+
+    *(root->name) = '\0';
+
+    root->inode = TMPFS_ROOT_INODE;
+
+    root->uid = 0;
+    root->gid = 0;
+    root->type_perm = TMPFS_TYPE_DIR | VFS_PERM_USER_RWX;
+
+    spinlock_init(&root->lock);
+
+    /* Create "." and ".." both poiting on root */
+    ret = tmpfs_init_dir_content(root, TMPFS_ROOT_INODE, TMPFS_ROOT_INODE);
+
+    if (ret < 0)
+        return ret;
+
+    return 0;
+}
+
+static void *tmpfs_initialize(void)
+{
+    struct tmpfs_sb *sb = kmalloc(sizeof (struct tmpfs_sb));
+
+    if (!sb)
+        return NULL;
+
+    /* Set this in case of error */
+    sb->blocks = NULL;
+    sb->block_free = NULL;
+    sb->inode_table = NULL;
+
+    /* Allocate inode table */
+    sb->inode_table = kmalloc(sizeof (struct tmpfs_node *) *
+                              TMPFS_INODE_TABLE_INIT_SIZE);
+
+    if (!sb->inode_table)
+        goto error;
+
+    sb->inode_table_size = TMPFS_INODE_TABLE_INIT_SIZE;
+
+    /* Allocate datas */
+    /* FIXME: Make size of tmpfs dynamic instead of TMPFS_DATA_SIZE */
+    if (!(sb->blocks = kmalloc(TMPFS_DATA_SIZE)))
+        goto error;
+
+    /* Allocate bitmap */
+    if (!(sb->block_free = kmalloc(TMPFS_DATA_SIZE / TMPFS_BLOCK_SIZE)))
+        goto error;
+
+    spinlock_init(&sb->inode_table_lock);
+    spinlock_init(&sb->lock_block);
+
+    /* Initialize inode table with NULL ptrs */
+    memset(sb->inode_table, 0, sizeof (struct tmpfs_node *) *
            TMPFS_INODE_TABLE_INIT_SIZE);
 
-    return root;
+    /* Mark all blocks as free */
+    memset(sb->block_free, 1, TMPFS_DATA_SIZE / TMPFS_BLOCK_SIZE);
+
+    if (tmpfs_init_root(sb) < 0)
+        goto error;
+
+    return sb;
+
+error:
+    if (sb)
+    {
+        kfree(sb->inode_table);
+        kfree(sb->blocks);
+        kfree(sb->block_free);
+        kfree(sb);
+    }
+
+    return NULL;
 }
 
 static int tmpfs_lookup(struct mount_entry *root, const char *path,
@@ -43,31 +270,32 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
     int found = 0;
     char *part;
     char *path_left;
-    char *path_copy = kmalloc(strlen(path) + 1);
-    struct tmpfs_root *sb = root->private;
-    struct klist *node_list = &sb->root_sons;
-    struct tmpfs_node *node = NULL;
-    struct tmpfs_node *tmp;
-
-    if (!path_copy)
-        return -ENOMEM;
+    char *path_copy;
+    struct tmpfs_sb *sb = root->private;
+    struct tmpfs_node *node = sb->inode_table[TMPFS_ROOT_INODE];
+    struct tmpfs_dirent *dirent;
 
     ret->processed = 0;
 
-    if (*path == '/')
-        ret->processed = 1;
-
-    if (klist_empty(node_list))
+    /* Do we look for root */
+    if (!strcmp(path, "") || !strcmp(path, "/"))
     {
-        ret->inode = 0;
-        ret->dev = -1;
-        ret->ret = RES_KO;
+        ret->inode = TMPFS_ROOT_INODE;
+        ret->dev = TMPFS_DEV_ID;
+        ret->ret = RES_OK;
 
-        kfree(path_copy);
+        /* ret->processed = 1; */
 
         return 0;
     }
 
+    if (!(path_copy = kmalloc(strlen(path) + 1)))
+        return -ENOMEM;
+
+    if (*path == '/')
+        ret->processed = 1;
+
+    /* Ignore leading / */
     if (*path == '/')
         strcpy(path_copy, path + 1);
     else
@@ -77,12 +305,15 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
 
     while (part)
     {
-        klist_for_each_elem(node_list, tmp, brothers)
+        struct tmpfs_node *tmp = node;
+        spinlock_lock(&node->lock);
+
+        klist_for_each_elem(&node->entries, dirent, next)
         {
-            if (!strcmp(part, tmp->name))
+            if (!strcmp(part, dirent->name))
             {
-                node_list = &tmp->sons;
-                node = tmp;
+                /* Get inode structure from inode table */
+                node = sb->inode_table[dirent->inode];
 
                 found = 1;
 
@@ -90,23 +321,14 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
             }
         }
 
+        spinlock_unlock(&tmp->lock);
+
         if (!found)
         {
-            if (!node)
-            {
-                ret->inode = 0;
-                ret->dev = -1;
-                ret->ret = RES_KO;
-            }
-            else
-            {
-                ret->inode = node->inode;
-                ret->dev = node->dev;
-                ret->ret = RES_KO;
-            }
-
-
             kfree(path_copy);
+
+            ret->inode = node->inode;
+            ret->ret = RES_KO;
 
             return 0;
         }
@@ -115,10 +337,13 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
 
         ret->processed += path_left - part;
 
-        if (node->type == TMPFS_TYPE_MOUNT)
+        /* Something is mounted on this directory */
+        if (node->type_perm & TMPFS_TYPE_MOUNT)
         {
             ret->ret = RES_ENTER_MOUNT;
-            ret->dev = node->dev;
+
+            /* When the type is a mount point the size is the device id */
+            ret->dev = node->size;
             ret->inode = node->inode;
 
             kfree(path_copy);
@@ -130,8 +355,8 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
     }
 
     ret->inode = node->inode;
-    ret->dev = node->dev;
     ret->ret = RES_OK;
+    ret->dev = node->size;
 
     kfree(path_copy);
 
@@ -141,8 +366,11 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
 static int tmpfs_mkdir(struct mount_entry *root, const char *path, ino_t inode,
                        uid_t uid, gid_t gid, mode_t mode)
 {
-    struct tmpfs_root *sb = root->private;
-    struct tmpfs_node *new_node;
+    int ret;
+    int new_dir_inode;
+    struct tmpfs_sb *sb = root->private;
+    struct tmpfs_node *dir = sb->inode_table[inode];
+    struct tmpfs_node *new_dir;
 
     if (!*path)
         return -EEXIST;
@@ -150,34 +378,33 @@ static int tmpfs_mkdir(struct mount_entry *root, const char *path, ino_t inode,
     if (strchr(path, '/'))
         return -ENOENT;
 
-    if (!(new_node = kmalloc(sizeof (struct tmpfs_node))))
+    /* Allocate new inode */
+    if ((new_dir_inode = tmpfs_alloc_inode(sb)) < 0)
         return -ENOMEM;
 
-    if (!(new_node->name = kmalloc(strlen(path) + 1)))
-    {
-        kfree(new_node);
+    new_dir = sb->inode_table[new_dir_inode];
 
+    /* FIXME: Remove new_dir_inode */
+    if (!(new_dir->name = kmalloc(strlen(path) + 1)))
         return -ENOMEM;
-    }
 
-    strcpy(new_node->name, path);
+    /* Fill/Init inode structure */
+    strcpy(new_dir->name, path);
 
-    new_node->inode = sb->inode_current++;
-    new_node->type = TMPFS_TYPE_DIR;
-    new_node->uid = uid;
-    new_node->gid = gid;
-    new_node->perm = mode;
-    new_node->dev = -1;
-    new_node->content = NULL;
+    new_dir->inode = new_dir_inode;
+    new_dir->type_perm = TMPFS_TYPE_DIR | (mode & (VFS_PERM_USER_RWX |
+                                                   VFS_PERM_GROUP_RWX |
+                                                   VFS_PERM_OTHER_RWX));
+    new_dir->uid = uid;
+    new_dir->gid = gid;
 
-    klist_head_init(&new_node->sons);
+    klist_head_init(&new_dir->entries);
+    spinlock_init(&new_dir->lock);
 
-    sb->inode_table[new_node->inode] = new_node;
-
-    if (inode == 0)
-        klist_add(&sb->root_sons, &new_node->brothers);
-    else
-        klist_add(&sb->inode_table[inode]->sons, &new_node->brothers);
+    /* We add it to it parent dirent list */
+    /* FIXME: Cleanup */
+    if ((ret = tmpfs_add_dirent(dir, path, new_dir->inode)) < 0)
+        return ret;
 
     return 0;
 }
@@ -185,8 +412,11 @@ static int tmpfs_mkdir(struct mount_entry *root, const char *path, ino_t inode,
 static int tmpfs_mknod(struct mount_entry *root, const char *path, ino_t inode,
                        uid_t uid, gid_t gid, mode_t mode, dev_t dev)
 {
-    struct tmpfs_root *sb = root->private;
-    struct tmpfs_node *new_node;
+    int ret;
+    int new_ent_inode;
+    struct tmpfs_sb *sb = root->private;
+    struct tmpfs_node *dir = sb->inode_table[inode];
+    struct tmpfs_node *new_ent;
 
     if (!*path)
         return -EEXIST;
@@ -194,47 +424,48 @@ static int tmpfs_mknod(struct mount_entry *root, const char *path, ino_t inode,
     if (strchr(path, '/'))
         return -ENOENT;
 
-    if (!(new_node = kmalloc(sizeof (struct tmpfs_node))))
+    /* Allocate new inode */
+    if ((new_ent_inode = tmpfs_alloc_inode(sb)) < 0)
         return -ENOMEM;
 
-    if (!(new_node->name = kmalloc(strlen(path) + 1)))
-    {
-        kfree(new_node);
+    new_ent = sb->inode_table[new_ent_inode];
 
+    /* FIXME: Remove new_ent_inode */
+    if (!(new_ent->name = kmalloc(strlen(path) + 1)))
         return -ENOMEM;
-    }
 
-    strcpy(new_node->name, path);
+    /* Fill/Init inode structure */
+    strcpy(new_ent->name, path);
 
-    new_node->inode = sb->inode_current++;
-    new_node->type = TMPFS_TYPE_DEV;
-    new_node->uid = uid;
-    new_node->gid = gid;
-    new_node->perm = mode;
-    new_node->dev = dev;
-    new_node->content = NULL;
+    new_ent->inode = new_ent_inode;
+    new_ent->type_perm = TMPFS_TYPE_DEV | (mode & (VFS_PERM_USER_RWX |
+                                                   VFS_PERM_GROUP_RWX |
+                                                   VFS_PERM_OTHER_RWX));
+    new_ent->uid = uid;
+    new_ent->gid = gid;
+    new_ent->size = dev;
 
-    klist_head_init(&new_node->sons);
+    spinlock_init(&new_ent->lock);
 
-    sb->inode_table[new_node->inode] = new_node;
+    /* We add it to it parent dirent list */
+    /* FIXME: Cleanup */
+    if ((ret = tmpfs_add_dirent(dir, path, new_ent->inode)) < 0)
+        return ret;
 
-    if (inode == 0)
-        klist_add(&sb->root_sons, &new_node->brothers);
-    else
-        klist_add(&sb->inode_table[inode]->sons, &new_node->brothers);
     return 0;
 }
 
 static int tmpfs_mount(struct mount_entry *root, ino_t inode, int mount_pt_nb)
 {
-    struct tmpfs_root *sb = root->private;
+    struct tmpfs_sb *sb = root->private;
+    struct tmpfs_node *dir = sb->inode_table[inode];
 
-    if (sb->inode_table[inode]->type != TMPFS_TYPE_DIR)
+    if (!(dir->type_perm & TMPFS_TYPE_DIR))
         return -ENOTDIR;
 
     /* TODO: Check busy */
-    sb->inode_table[inode]->dev = mount_pt_nb;
-    sb->inode_table[inode]->type = TMPFS_TYPE_MOUNT;
+    dir->size = mount_pt_nb;
+    dir->type_perm |= TMPFS_TYPE_MOUNT;
 
     return 0;
 }

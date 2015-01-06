@@ -78,6 +78,7 @@ int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
         else
         {
             char old = copied_path[res->processed - 1];
+
             copied_path[res->processed - 1] = 0;
             root = vfs_mount_pt_get(copied_path);
             copied_path[res->processed - 1] = old;
