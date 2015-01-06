@@ -5,6 +5,9 @@
 #  define NULL ((void *)0)
 # endif /* !NULL */
 
+# define KB (1024)
+# define MB (KB * 1024)
+
 typedef __builtin_va_list va_list;
 
 # define __user

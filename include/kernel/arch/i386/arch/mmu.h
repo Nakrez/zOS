@@ -1,6 +1,8 @@
 #ifndef I386_MMU_H
 # define I386_MMU_H
 
+# include <kernel/zos.h>
+
 # define PD_PRESENT (1 << 0)
 # define PD_WRITE (1 << 1)
 # define PD_USER (1 << 2)
@@ -30,8 +32,6 @@
  * Kernel will always be able to work between 0xC0000000 and 0xC0400000
  * Extendable heap is extra allocatable memory for the kernel
  */
-# define MB 1024 * 1024
-
 # define KERNEL_EXHEAP_START 0xC0400000
 # define KERNEL_EXHEAP_END (KERNEL_BEGIN + KERNEL_EXTRA_PT_COUNT * 4 * MB)
 
