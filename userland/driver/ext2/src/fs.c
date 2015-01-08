@@ -202,6 +202,7 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
     struct ext2_inode *inode = ext2_icache_request(ext2, 2);
     uint32_t inode_nb = 2;
     uint32_t tmp;
+    char *path_complete = malloc(strlen(req->path) + 1);
     char *part;
     char *path_left;
 
@@ -211,6 +212,11 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
 
     if (!inode)
         return LOOKUP_RES_KO;
+
+    if (!(path_complete = malloc(strlen(req->path) + 1)))
+        return LOOKUP_RES_KO;
+
+    strcpy(path_complete, req->path);
 
     while (*req->path == '/')
     {
@@ -234,6 +240,13 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
             response->ret = LOOKUP_RES_ENTER_MOUNT;
             response->dev = inode->lower_size;
             ext2_icache_release(ext2, inode_nb);
+
+            /*
+             * If we enter a mount point we did not processed the / which is
+             * the root inside the mount point
+             */
+            if (path_complete[response->processed - 1] == '/')
+                --response->processed;
 
             break;
         }
@@ -261,7 +274,13 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
             {
                 response->ret = LOOKUP_RES_ENTER_MOUNT;
                 response->dev = inode->lower_size;
-                ++response->processed;
+
+                /*
+                 * If we enter a mount point we did not processed the / which
+                 * is the root inside the mount point
+                 */
+                if (path_complete[response->processed - 1] == '/')
+                    --response->processed;
             }
 
             ext2_icache_release(ext2, inode_nb);
@@ -271,6 +290,8 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
     }
 
     response->inode = inode_nb;
+
+    free(path_complete);
 
     if (response->ret == -1)
     {

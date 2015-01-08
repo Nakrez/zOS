@@ -346,6 +346,13 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
             ret->dev = node->size;
             ret->inode = node->inode;
 
+            /*
+             * If we enter a mount point we did not processed the / which is
+             * the root inside the mount point
+             */
+            if (path[ret->processed - 1] == '/')
+                --ret->processed;
+
             kfree(path_copy);
 
             return 0;
