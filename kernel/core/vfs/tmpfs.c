@@ -491,6 +491,14 @@ static int tmpfs_open(struct mount_entry *root, ino_t inode, pid_t pid,
     return 0;
 }
 
+static int tmpfs_close(struct mount_entry *root, ino_t inode)
+{
+    (void) root;
+    (void) inode;
+
+    return 0;
+}
+
 static void tmpfs_cleanup(void *data)
 {
     (void)data;
@@ -503,5 +511,6 @@ struct fs_ops tmpfs_ops = {
     .mknod = tmpfs_mknod,
     .mount = tmpfs_mount,
     .open = tmpfs_open,
+    .close = tmpfs_close,
     .cleanup = tmpfs_cleanup,
 };
