@@ -536,6 +536,45 @@ static int tmpfs_open(struct mount_entry *root, ino_t inode, pid_t pid,
     return 0;
 }
 
+static int tmpfs_getdirent(struct mount_entry *root, ino_t inode,
+                           struct dirent *dirent, int index)
+{
+    struct tmpfs_sb *sb = root->private;
+    struct tmpfs_node *dir = sb->inode_table[inode];
+    struct tmpfs_dirent *ent;
+    int i = 0;
+
+    /* XXX: Possible ? */
+    if (!dir)
+        return -ENOENT;
+
+    if (index < 0)
+        return -EINVAL;
+
+    spinlock_lock(&dir->lock);
+
+    klist_for_each_elem(&dir->entries, ent, next)
+    {
+        if (i == index)
+        {
+            spinlock_unlock(&dir->lock);
+
+            dirent->d_ino = ent->inode;
+            strcpy(dirent->d_name, ent->name);
+
+            /* FIXME: DIR_OK */
+            return 1;
+        }
+
+        ++i;
+    }
+
+    spinlock_unlock(&dir->lock);
+
+    /* FIXME: DIR_KO */
+    return 0;
+}
+
 static int tmpfs_close(struct mount_entry *root, ino_t inode)
 {
     (void) root;
@@ -557,6 +596,7 @@ struct fs_ops tmpfs_ops = {
     .stat = tmpfs_stat,
     .mount = tmpfs_mount,
     .open = tmpfs_open,
+    .getdirent = tmpfs_getdirent,
     .close = tmpfs_close,
     .cleanup = tmpfs_cleanup,
 };

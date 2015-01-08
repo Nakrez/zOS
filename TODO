@@ -45,7 +45,6 @@
 [VFS]
 
 - Add write operations
-- Add getdirent() support on tmpfs
 - Add shared memory for operations such as read/write...
 
 [ARCH]
