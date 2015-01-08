@@ -220,6 +220,20 @@
                              VFS_PERM_USER_X)
 
 /**
+ * \dev VFS_FTYPE_FILE
+ * Numeric identifier of files
+ *
+ * \dev VFS_FTYPE_DEV
+ * Numeric identifier of devices
+ *
+ * \dev VFS_FTYPE_DIR
+ * Numeric identifier of directories
+ */
+# define VFS_FTYPE_FILE 0x8000
+# define VFS_FTYPE_DEV 0x2000
+# define VFS_FTYPE_DIR 0x4000
+
+/**
  * \brief   Initialize kernel VFS mechanism
  *
  * Mount temporary filesystem to / and create /dev directory.
