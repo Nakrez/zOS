@@ -86,6 +86,8 @@ int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
 
     *mount_pt = root;
 
+    res->processed = processed;
+
     kfree(copied_path);
 
     return processed;
