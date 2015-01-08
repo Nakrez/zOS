@@ -23,6 +23,7 @@
  * \todo    Code is shared between tmpfs_mkdir/tmpfs_mknod
  * \todo    Make tmpfs fit on the data size given
  * \todo    tmpfs_cleanup()
+ * \todo    Handle time creation/access/status changed
  *
  * \author  Baptiste Covolato
  */
@@ -462,6 +463,50 @@ static int tmpfs_mknod(struct mount_entry *root, const char *path, ino_t inode,
     return 0;
 }
 
+static int tmpfs_stat(struct mount_entry *root, uid_t uid, gid_t gid,
+                      ino_t inode, struct stat *stat)
+{
+    (void) uid;
+    (void) gid;
+
+    struct tmpfs_sb *sb = root->private;
+    struct tmpfs_node *node = sb->inode_table[inode];
+
+    if (!node)
+        return -ENOENT;
+
+    stat->st_dev = TMPFS_DEV_ID;
+    stat->st_ino = inode;
+
+    /* Convert TMPFS file type to VFS file type */
+    stat->st_mode = node->type_perm & 0777;
+
+    if (node->type_perm & TMPFS_TYPE_DIR)
+        stat->st_mode |= VFS_FTYPE_DIR;
+    if (node->type_perm & TMPFS_TYPE_DEV)
+        stat->st_mode |= VFS_FTYPE_DEV;
+    if (node->type_perm & TMPFS_TYPE_FILE)
+        stat->st_mode |= VFS_FTYPE_FILE;
+
+    stat->st_nlink = 0;
+    stat->st_uid = node->uid;
+    stat->st_gid = node->gid;
+
+    /* This field will be valid only if the node is a device */
+    stat->st_rdev = node->size;
+
+    stat->st_size = node->size;
+
+    stat->st_blksize = node->size / TMPFS_BLOCK_SIZE;
+    stat->st_blocks = node->size / 512;
+
+    stat->st_atime = 0;
+    stat->st_mtime = 0;
+    stat->st_ctime = 0;
+
+    return 0;
+}
+
 static int tmpfs_mount(struct mount_entry *root, ino_t inode, int mount_pt_nb)
 {
     struct tmpfs_sb *sb = root->private;
@@ -509,6 +554,7 @@ struct fs_ops tmpfs_ops = {
     .lookup = tmpfs_lookup,
     .mkdir = tmpfs_mkdir,
     .mknod = tmpfs_mknod,
+    .stat = tmpfs_stat,
     .mount = tmpfs_mount,
     .open = tmpfs_open,
     .close = tmpfs_close,
