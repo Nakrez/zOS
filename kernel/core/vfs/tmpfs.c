@@ -281,6 +281,9 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
     /* Do we look for root */
     if (!strcmp(path, "") || !strcmp(path, "/"))
     {
+        if (!strcmp(path, "/"))
+            ret->processed = 1;
+
         ret->inode = TMPFS_ROOT_INODE;
         ret->dev = TMPFS_DEV_ID;
         ret->ret = RES_OK;
