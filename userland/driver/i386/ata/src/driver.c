@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <thread.h>
 
 #include <zos/print.h>
 
@@ -146,12 +147,34 @@ static struct driver_ops ata_ops = {
     .read = ata_global_read,
 };
 
-static void driver_partition_thread(void *param)
+static void driver_partition_thread(int argc, void *argv[])
 {
-    (void)param;
+    char name[20];
+    struct driver device_driver;
+    struct ata_private device_private;
 
-    while (1)
-        ;
+    if (argc != 2)
+    {
+        uprint("Partition thread was not called with proper parameters");
+
+        return;
+    }
+
+    device_private.device = argv[0];
+    device_private.partition = (int)argv[1];
+    device_driver.private = &device_private;
+
+    sprintf(name, "ata-disk%ip%i", device_private.device->id,
+            device_private.partition + 1);
+
+    if (driver_create(name, 0600, &ata_ops, &device_driver) < 0)
+    {
+        uprint("Cannot spawn ata partition device driver");
+
+        return;
+    }
+
+    driver_loop(&device_driver);
 }
 
 void driver_device_thread(int argc, void *argv[])
@@ -169,9 +192,7 @@ void driver_device_thread(int argc, void *argv[])
     for (int i = 0; i < 4; ++i)
     {
         if (device->partitions[i].present)
-        {
-
-        }
+            thread_create(driver_partition_thread, 2, device, i);
     }
 
     sprintf(ata_name, "ata-disk%i", device->id);
