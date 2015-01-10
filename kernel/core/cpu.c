@@ -46,7 +46,7 @@ void cpu_initialize(void)
 
     /* FIXME: Add idle thread to cpu scheduler */
     for (int i = 1; i < CPU_COUNT; ++i)
-        thread_create(idle, (uintptr_t)idle_thread, NULL, 0);
+        thread_create(idle, (uintptr_t)idle_thread, 0, NULL, 0);
 
     console_message(T_OK, "Kernel idle process initialized");
 }

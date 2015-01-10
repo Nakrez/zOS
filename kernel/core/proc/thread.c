@@ -35,8 +35,8 @@ static int thread_new_tid(struct process *p)
     return -1;
 }
 
-int thread_create(struct process *process, uintptr_t code, char *argv[],
-                  int deep_argv_copy)
+int thread_create(struct process *process, uintptr_t code, int argc,
+                  char *argv[], int deep_argv_copy)
 {
     int tid;
     struct thread *thread;
@@ -69,7 +69,7 @@ int thread_create(struct process *process, uintptr_t code, char *argv[],
     memset(thread->interrupts, 0, sizeof (thread->interrupts));
     memset(&thread->event, 0, sizeof (thread->event));
 
-    if (!glue_call(thread, create, process, thread, code, argv,
+    if (!glue_call(thread, create, process, thread, code, argc, argv,
                    deep_argv_copy))
     {
         as_unmap(&kernel_as, (vaddr_t)thread, AS_UNMAP_RELEASE);
@@ -87,9 +87,17 @@ int thread_create(struct process *process, uintptr_t code, char *argv[],
 
 int thread_update_exec(struct thread *thread, uintptr_t eip, char *argv[])
 {
+    int argc = 0;
+
     thread->tid = 0;
 
-    if (!glue_call(thread, create, thread->parent, thread, eip, argv, 1))
+    if (argv)
+    {
+        for (; argv[argc]; ++argc)
+            ;
+    }
+
+    if (!glue_call(thread, create, thread->parent, thread, eip, argc, argv, 1))
         return -1;
 
     return 0;

@@ -12,8 +12,8 @@
 
 /* FIXME: Disgusting */
 /* FIXME: If deep_argv_copy is set we modify argv, don't do that ! */
-static int i386_setup_stack(char *stack, paddr_t phy_stack, char *argv[],
-                            int deep_argv_copy)
+static int i386_setup_stack(char *stack, paddr_t phy_stack, int argc,
+                            char *argv[], int deep_argv_copy)
 {
     /* Stack layout
      * -------------
@@ -24,7 +24,6 @@ static int i386_setup_stack(char *stack, paddr_t phy_stack, char *argv[],
      * -- argv[0] --
      * --  argc   --
      */
-    int argc = 0;
     const char *stack_base = stack;
     uintptr_t *stack_ptr;
     char *kstack = (void *)as_map(&kernel_as, 0, (paddr_t)phy_stack, PAGE_SIZE,
@@ -43,18 +42,18 @@ static int i386_setup_stack(char *stack, paddr_t phy_stack, char *argv[],
     if (argv)
     {
         /* Copy argv content */
-        for (; argv[argc]; ++argc)
+        for (int i = 0; i < argc; ++i)
         {
             if (deep_argv_copy)
             {
-                int len = strlen(argv[argc]) + 1;
+                int len = strlen(argv[i]) + 1;
 
                 kstack -= len;
                 stack -= len;
 
-                memcpy(kstack, argv[argc], len);
+                memcpy(kstack, argv[i], len);
 
-                argv[argc] = stack;
+                argv[i] = stack;
 
                 if (len % 16)
                 {
@@ -133,7 +132,7 @@ static int i386_setup_stack(char *stack, paddr_t phy_stack, char *argv[],
 }
 
 int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip,
-                       char *argv[], int deep_argv_copy)
+                       int argc, char *argv[], int deep_argv_copy)
 {
     if (p->type == PROCESS_TYPE_KERNEL)
     {
@@ -183,7 +182,7 @@ int i386_thread_create(struct process *p, struct thread *t, uintptr_t eip,
         t->regs.esp += (PAGE_SIZE - 4) & 0xFFFFFFF0;
 
         t->regs.esp -= (uintptr_t)i386_setup_stack((void *)t->regs.esp,
-                                                   phy_stack, argv,
+                                                   phy_stack, argc, argv,
                                                    deep_argv_copy);
     }
 

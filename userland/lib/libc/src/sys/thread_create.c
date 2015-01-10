@@ -32,7 +32,10 @@ int thread_create(thread_callback_t entry, int argc, ...)
 
     argv[i + 1] = NULL;
 
-    SYSCALL2(SYS_THREAD_CREATE, thread_entry, argv, ret);
+    /* We added one parameter (the entry point of libc thread wrapper) */
+    ++argc;
+
+    SYSCALL3(SYS_THREAD_CREATE, thread_entry, argc, argv, ret);
 
     free(argv);
 
