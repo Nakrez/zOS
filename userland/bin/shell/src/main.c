@@ -34,26 +34,26 @@ static struct command *command_new(void)
     return command;
 }
 
-static int command_append(struct command **command, char *arg)
+static int command_append(struct command *command, char *arg)
 {
-    if ((*command)->max_size == (*command)->size)
+    if (command->max_size == command->size)
     {
-        struct command *tmp;
+        char **tmp;
 
-        (*command)->max_size *= 2;
-        tmp = realloc(*command, sizeof (char *) * (*command)->max_size);
+        command->max_size *= 2;
+        tmp = realloc(command->argv, sizeof (char *) * command->max_size);
 
         if (!tmp)
         {
-            (*command)->max_size /= 2;
+            command->max_size /= 2;
 
             return -1;
         }
 
-        *command = tmp;
+        command->argv = tmp;
     }
 
-    (*command)->argv[(*command)->size++] = arg;
+    command->argv[command->size++] = arg;
 
     return 0;
 }
@@ -145,7 +145,7 @@ static void execute(char *buf)
 
     while (arg)
     {
-        if (command_append(&cmd, arg) < 0)
+        if (command_append(cmd, arg) < 0)
         {
             command_free(cmd);
 
@@ -160,7 +160,7 @@ static void execute(char *buf)
         arg = strtok_r(NULL, " ", &rest);
     }
 
-    command_append(&cmd, NULL);
+    command_append(cmd, NULL);
 
     command_execute(cmd);
 
