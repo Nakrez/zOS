@@ -48,7 +48,11 @@ static int vfs_check_mount_pts(dev_t dev, const char *mount_path)
             /* Remounting root with regular fs when its tmpfs is allowed */
             if (dev != -1 && mount_points[i].dev == -1
                 && !strcmp(mount_path, "/"))
+            {
+                spinlock_unlock(&mount_lock);
+
                 return 0;
+            }
 
             spinlock_unlock(&mount_lock);
 
