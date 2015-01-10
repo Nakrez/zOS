@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -39,8 +40,28 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    device = argv[1];
-    mount_pt = argv[2];
+    if (argc == 4 && !strcmp(argv[1], "--daemon"))
+    {
+        device = argv[2];
+        mount_pt = argv[3];
+
+        int pid = fork();
+
+        if (pid < 0)
+        {
+            uprint("Fail to daemonize ext2 driver");
+
+            return 1;
+        }
+
+        if (pid)
+            return 0;
+    }
+    else
+    {
+        device = argv[1];
+        mount_pt = argv[2];
+    }
 
     char *tmp = strrchr(device, '/');
 
