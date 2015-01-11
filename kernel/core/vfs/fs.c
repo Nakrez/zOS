@@ -13,6 +13,7 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
                       gid_t gid, struct resp_lookup *ret)
 {
     int res;
+    int path_empty = 0;
     struct vdevice *device;
     struct message *message;
     struct message *response;
@@ -25,6 +26,12 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
 
     if (!(message = message_alloc(sizeof (struct req_lookup))))
         return -ENOMEM;
+
+    if (!strcmp("", path))
+    {
+        path_empty = 1;
+        path = "/";
+    }
 
     request = MESSAGE_EXTRACT(struct req_lookup, message);
 
@@ -71,7 +78,12 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
 
     ret->ret = answer->ret;
     ret->inode = answer->inode;
-    ret->processed = answer->processed;
+
+    if (path_empty)
+        ret->processed = 0;
+    else
+        ret->processed = answer->processed;
+
     ret->dev = answer->dev;
 
     message_free(message);
