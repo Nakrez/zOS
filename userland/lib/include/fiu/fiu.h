@@ -24,6 +24,7 @@ struct fiu_ops {
     int (*lookup)(struct fiu_internal *, struct req_lookup *,
                   struct resp_lookup *);
     int (*stat)(struct fiu_internal *, struct req_stat *, struct stat *);
+    int (*mount)(struct fiu_internal *, struct req_mount *);
     int (*open)(struct fiu_internal *, struct req_open *, struct resp_open *);
     int (*read)(struct fiu_internal *, struct req_rdwr *, size_t *);
     int (*getdirent)(struct fiu_internal *, struct req_getdirent*,

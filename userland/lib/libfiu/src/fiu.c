@@ -20,6 +20,9 @@ static int fiu_capabilities(struct fiu_internal *fiu)
     if (fiu->ops->stat)
         fiu->capabilities |= VFS_OPS_STAT;
 
+    if (fiu->ops->mount)
+        fiu->capabilities |= VFS_OPS_MOUNT;
+
     if (fiu->ops->open)
         fiu->capabilities |= VFS_OPS_OPEN;
     else
@@ -87,6 +90,16 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
 
                 device_send_response(fiu->dev_id, mid, &resp,
                                      sizeof (struct resp_stat));
+            }
+            break;
+        case VFS_MOUNT:
+            {
+                struct resp_mount resp;
+
+                resp.ret = fiu->ops->mount(fiu, (void *)buf);
+
+                device_send_response(fiu->dev_id, mid, &resp,
+                                     sizeof (struct resp_mount));
             }
             break;
         case VFS_OPEN:
