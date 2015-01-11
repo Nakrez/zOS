@@ -338,3 +338,28 @@ int ext2fs_stat(struct fiu_internal *fiu, struct req_stat *req,
 
     return 0;
 }
+
+int ext2fs_mount(struct fiu_internal *fiu, struct req_mount *req)
+{
+    struct ext2fs *ext2 = fiu->private;
+    struct ext2_inode *inode;
+
+    /* FIXME: ENOENT */
+    if (!(inode = ext2_icache_request(ext2, req->inode)))
+        return -1;
+
+    if ((inode->type_perm & EXT2_TYPE_DIRECTORY) != EXT2_TYPE_DIRECTORY)
+    {
+        ext2_icache_release(ext2, req->inode);
+
+        /* FIXME: ENOTDIR */
+        return -1;
+    }
+
+    inode->type_perm |= EXT2_TYPE_MOUNT_PT;
+    inode->lower_size = req->mount_nb;
+
+    /* The inode is not released to keep these mount information */
+
+    return 0;
+}

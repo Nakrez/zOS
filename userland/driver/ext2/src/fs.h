@@ -100,4 +100,6 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
 int ext2fs_stat(struct fiu_internal *fiu, struct req_stat *req,
                 struct stat *response);
 
+int ext2fs_mount(struct fiu_internal *fiu, struct req_mount *req);
+
 #endif /* !EXT2_FS_H */
