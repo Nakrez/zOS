@@ -85,11 +85,11 @@ static int do_mount(struct thread *t, const char *mount_path, int mount_pt_nb)
 
     ret = vfs_lookup(t, mount_path, &res, &mount_pt);
 
-    if (!mount_pt->ops->mount)
-        return -ENOSYS;
-
     if (ret < 0)
         return ret;
+
+    if (!mount_pt->ops->mount)
+        return -ENOSYS;
 
     if (ret != path_size)
         return -ENOENT;
