@@ -10,6 +10,10 @@ config BUILD_KBD
     bool "Keyboard driver"
     default y
 
+config BUILD_NULL
+    bool "Null driver"
+    default y
+
 config BUILD_VIDEO
     bool "Video driver"
     default y
