@@ -146,6 +146,48 @@ end:
     return res;
 }
 
+static int fiu_mount(struct mount_entry *root, ino_t inode, int mount_nb)
+{
+    int res;
+    struct vdevice *device;
+    struct message *message;
+    struct message *response;
+    struct req_mount *request;
+    struct resp_mount *answer;
+
+    if (!(device = device_get(root->dev)))
+        return -ENODEV;
+
+    if (!(device->ops & VFS_OPS_MOUNT))
+        return -ENOSYS;
+
+    if (!(message = message_alloc(sizeof (struct req_mount))))
+        return -ENOMEM;
+
+    request = MESSAGE_EXTRACT(struct req_mount, message);
+
+    request->inode = inode;
+    request->mount_nb = mount_nb;
+
+    message->mid = (message->mid & ~0xFF) | VFS_MOUNT;
+
+    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
+    {
+        message_free(message);
+
+        return res;
+    }
+
+    answer = MESSAGE_EXTRACT(struct resp_mount, response);
+
+    res = answer->ret;
+
+    message_free(message);
+    message_free(response);
+
+    return res;
+}
+
 static int fiu_open(struct mount_entry *root, ino_t inode, pid_t pid,
                     uid_t uid, gid_t gid, int flags, mode_t mode)
 {
@@ -216,6 +258,7 @@ static int fiu_close(struct mount_entry *root, ino_t inode)
 struct fs_ops fiu_ops = {
     .lookup = fiu_lookup,
     .stat = fiu_stat,
+    .mount = fiu_mount,
     .open = fiu_open,
     .read = fiu_read,
     .getdirent = fiu_getdirent,
