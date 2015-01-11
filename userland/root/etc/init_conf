@@ -1,4 +1,5 @@
-/bin/kbd
-/bin/video
-/bin/tty_ctrl
+/bin/null
+/bin/kbd,/dev/null
+/bin/video,/dev/null
+/bin/tty_ctrl,/dev/null
 /bin/shell,/dev/tty0
