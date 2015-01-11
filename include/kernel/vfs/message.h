@@ -147,4 +147,16 @@ struct resp_getdirent {
     struct dirent dirent;
 };
 
+/* Mount request */
+struct req_mount {
+    ino_t inode;
+
+    int mount_nb;
+};
+
+/* Mount response */
+struct resp_mount {
+    int ret;
+};
+
 #endif /* !VFS_MESSAGE_H */
