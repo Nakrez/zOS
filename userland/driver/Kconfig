@@ -14,6 +14,10 @@ config BUILD_NULL
     bool "Null driver"
     default y
 
+config BUILD_RAMD
+    bool "Ram disk driver"
+    default y
+
 config BUILD_VIDEO
     bool "Video driver"
     default y
