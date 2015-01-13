@@ -82,8 +82,8 @@ int ext2fs_read(struct fiu_internal *fiu, struct req_rdwr *req, size_t *size)
 int ext2fs_getdirent(struct fiu_internal *fiu, struct req_getdirent *req,
                      struct dirent *dirent)
 {
-    int ret = 9;
-    void *block;
+    int ret;
+    void *block = NULL;
     size_t dir_offset = 0;
     size_t block_offset = 0;
     uint32_t data_block;
