@@ -14,7 +14,7 @@ int iob_putu(struct _IO_FILE *stream, unsigned int num, unsigned int base)
     {
         char c = num % base;
 
-        if (num > base)
+        if (num >= base)
             iob_putu(stream, num / base, base);
 
         if (c < 10)
