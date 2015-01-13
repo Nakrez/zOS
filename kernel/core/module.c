@@ -84,7 +84,7 @@ static int split_args(const char *cmdline, char ***argv)
     return 0;
 
 error:
-    if (argv)
+    if (*argv)
     {
         for (int i = 0; (*argv)[i]; ++i)
             kfree((*argv)[i]);
