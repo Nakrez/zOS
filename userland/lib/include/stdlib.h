@@ -15,4 +15,6 @@ void free(void *ptr);
 
 char *getenv(const char *name);
 
+long int strtol(const char *nptr, char **endptr, int base);
+
 #endif /* !LIBC_STDLIB_H */
