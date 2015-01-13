@@ -31,12 +31,16 @@ static void cat_file(const char *filename)
     {
         fprintf(stderr, "%s: Cannot stat\n", filename);
 
+        fclose(file);
+
         return;
     }
 
     if (S_ISDIR(s.st_mode))
     {
         fprintf(stderr, "%s: Is a directory\n", filename);
+
+        fclose(file);
 
         return;
     }
