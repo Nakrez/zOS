@@ -7,8 +7,9 @@ int ext2_block_fetch(struct fiu_internal *fiu, void *buffer, uint32_t block)
 {
     int res;
     struct ext2fs *ext2 = fiu->private;
+    off_t block_off = block * (off_t)ext2->block_size;
 
-    if ((res = lseek(ext2->fd, block * ext2->block_size, SEEK_SET)) < 0)
+    if ((res = lseek(ext2->fd, block_off, SEEK_SET)) < 0)
         return res;
 
     if ((res = read(ext2->fd, buffer, ext2->block_size)) < 0)

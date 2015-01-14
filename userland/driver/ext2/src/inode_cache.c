@@ -26,8 +26,8 @@ int ext2_icache_initialize(struct ext2fs *ext2)
 struct ext2_inode *ext2_icache_request(struct ext2fs *ext2, ino_t inode)
 {
     int i;
-    int group;
-    int index;
+    uint64_t group;
+    uint64_t index;
     int ret;
 
     for (i = 0; i < EXT2_INODE_CACHE_SIZE; ++i)
@@ -63,8 +63,10 @@ struct ext2_inode *ext2_icache_request(struct ext2fs *ext2, ino_t inode)
     index = (inode - 1) % ext2->sb.inode_per_group;
     group = (inode - 1) / ext2->sb.inode_per_group;
 
-    if (lseek(ext2->fd, ext2->grp_table[group].inode_table * ext2->block_size +
-                        index * ext2->sb.sizeof_inode, SEEK_SET) < 0)
+    off_t lseek_off = (off_t)ext2->grp_table[group].inode_table *
+                      ext2->block_size + index * ext2->sb.sizeof_inode;
+
+    if (lseek(ext2->fd, lseek_off, SEEK_SET) < 0)
         return NULL;
 
     ret = read(ext2->fd, &ext2->inode_cache[i].cinode,
