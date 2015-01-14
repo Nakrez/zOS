@@ -18,8 +18,8 @@ struct malloc_chunk {
     struct malloc_chunk *prev;
 };
 
-static struct malloc_chunk *chunks = NULL;
-static spinlock_t malloc_lock = SPINLOCK_INIT;
+static struct malloc_chunk *chunks;
+static spinlock_t malloc_lock;
 
 static struct malloc_chunk *request_memory(size_t size)
 {
@@ -61,6 +61,16 @@ static void malloc_split_block(struct malloc_chunk *chunk, size_t size)
     chunk->free = 0;
 }
 
+int malloc_initialize(void)
+{
+    if (!(chunks = request_memory(PAGE_SIZE)))
+        return -1;
+
+    spinlock_init(&malloc_lock);
+
+    return 0;
+}
+
 void *malloc(size_t size)
 {
     struct malloc_chunk *tmp;
@@ -71,13 +81,6 @@ void *malloc(size_t size)
     size = ALIGN_UP(size, sizeof (char *));
 
     spinlock_lock(&malloc_lock);
-
-    if (!chunks && !(chunks = request_memory(size)))
-    {
-        spinlock_unlock(&malloc_lock);
-
-        return NULL;
-    }
 
     tmp = chunks;
 
