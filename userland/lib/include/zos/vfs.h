@@ -99,7 +99,7 @@ struct req_rdwr {
 
     size_t size;
 
-    size_t off;
+    uint64_t off;
 
     void *data;
 };
