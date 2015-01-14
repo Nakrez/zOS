@@ -15,7 +15,7 @@ $(_BIN): $($(_BIN)_LIBS) $($(BIN-y)_OBJ)
 $(_BIN)_OBJ := $($(BIN-y)_OBJ)
 
 $(_BIN):
-	$(call run,LD,$(LD) $($@_LDFLAGS) $($@_OBJ) $($@_LIBS) -o $@)
+	$(call run,LD,$(LD) $($@_LDFLAGS) $($@_OBJ) $($@_LIBS) -lgcc -o $@)
 
 INSTALL_BIN += rootfs/$(INSTALL_DIR)/$(BIN-y)
 

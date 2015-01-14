@@ -9,6 +9,6 @@ OBJ-$(CONFIG_TIMER) += pit.o
 OBJ-$(CONFIG_PROCESS) += thread.o tss.o
 OBJ-$(CONFIG_SCHEDULER) += scheduler.o
 
-BINSUBDIRS-y := debug
+BINSUBDIRS-y :=
 
 include $(SRCDIR)/mk/binsubdirs.mk
