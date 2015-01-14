@@ -126,7 +126,7 @@ int ide_wait_status(struct ide_device *device, int timeout, uint8_t check_true,
     int elapsed = 0;
     uint8_t status;
 
-    while (elapsed < timeout)
+    while (!timeout || (elapsed < timeout))
     {
         status = ide_read_reg(device, ATA_REG_STATUS);
 
@@ -134,7 +134,9 @@ int ide_wait_status(struct ide_device *device, int timeout, uint8_t check_true,
             return 1;
 
         usleep(10);
-        elapsed += 10;
+
+        if (timeout)
+            elapsed += 10;
     }
 
     return 0;

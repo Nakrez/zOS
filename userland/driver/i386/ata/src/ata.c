@@ -27,7 +27,7 @@ static int ata_rdwr_pio(struct ide_device *device, int op, void *buf,
 
     for (size_t i = 0; i < sec_count; ++i)
     {
-        if (!ide_wait_status(device, ATA_TIMEOUT, ATA_SR_RDY, ATA_SR_BSY))
+        if (!ide_wait_status(device, 0, ATA_SR_RDY, ATA_SR_BSY))
             return 0;
 
         if (op == ATA_OP_READ)
