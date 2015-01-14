@@ -7,7 +7,7 @@
 
 #include <zos/print.h>
 
-# define INIT_CONF_TIMEOUT 5000
+# define INIT_CONF_TIMEOUT 20000
 # define INIT_CONF_WAIT 100
 # define INIT_CONF_PATH "/etc/init_conf"
 # define INIT_READ_SIZE 4096
