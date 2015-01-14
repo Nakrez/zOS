@@ -202,7 +202,7 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
     struct ext2_inode *inode = ext2_icache_request(ext2, 2);
     uint32_t inode_nb = 2;
     uint32_t tmp;
-    char *path_complete = malloc(strlen(req->path) + 1);
+    char *path_complete;
     char *part;
     char *path_left;
 
