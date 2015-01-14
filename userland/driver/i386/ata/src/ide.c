@@ -166,7 +166,8 @@ static int ide_device_identify(struct ide_device *device, uint32_t command)
         return 0;
 
     /* Read configuration */
-    ide_read_words(device, ATA_REG_DATA, (uint16_t *)&device->infos, 512);
+    ide_read_words(device, ATA_REG_DATA, (uint16_t *)&device->infos,
+                   sizeof (device->infos) / sizeof (uint16_t));
 
     /* Wait for DRQ and BSY flags to clear */
     if (!ide_wait_status(device, ATA_TIMEOUT, 0, ATA_SR_DRQ | ATA_SR_BSY))
