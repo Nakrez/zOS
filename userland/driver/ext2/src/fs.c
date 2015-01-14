@@ -33,7 +33,7 @@ static int ext2fs_load_group_table(struct ext2fs *ext2)
     if (!ext2->grp_table)
         return 0;
 
-    offset = ext2->block_size == 1024 ? 2048 : ext2->sb.block_size;
+    offset = ext2->block_size == 1024 ? 2048 : ext2->block_size;
 
     if (lseek(ext2->fd, offset, SEEK_SET) < 0)
         return 0;
