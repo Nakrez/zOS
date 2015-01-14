@@ -9,7 +9,7 @@
 #include "inode_cache.h"
 #include "block.h"
 
-# define EXT2FS_OPEN_TIMEOUT 1000
+# define EXT2FS_OPEN_TIMEOUT 10000
 # define EXT2FS_OPEN_RETRY 50
 
 static int ext2fs_load_group_table(struct ext2fs *ext2)
