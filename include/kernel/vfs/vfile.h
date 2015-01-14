@@ -19,7 +19,7 @@ struct vfile {
     char mode;
 
     /* Current offset in the file */
-    size_t offset;
+    off_t offset;
 
     ino_t inode;
 
