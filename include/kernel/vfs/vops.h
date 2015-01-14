@@ -45,7 +45,7 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode);
 int vfs_read(struct thread *t, int fd, void *buf, size_t count);
 int vfs_write(struct thread *t, int fd, const void *buf, size_t count);
 int vfs_close(struct thread *t, int fd);
-int vfs_lseek(struct thread *t, int fd, int offset, int whence);
+int vfs_lseek(struct thread *t, int fd, off_t offset, int whence);
 int vfs_ioctl(struct thread *t, int fd, int req, int *argp);
 int vfs_dup(struct thread *t, int oldfd);
 int vfs_dup2(struct thread *t, int oldfd, int newfd);

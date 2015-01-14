@@ -94,8 +94,10 @@ int sys_vfs_close(struct syscall *interface)
 int sys_vfs_lseek(struct syscall *interface)
 {
     int fd = interface->arg1;
-    int off = interface->arg2;
-    int whence = interface->arg3;
+    uint64_t off_high = (uint64_t)interface->arg2 & 0xFFFFFFFF;
+    uint64_t off_low = (uint64_t)interface->arg3 & 0xFFFFFFFF;
+    off_t off = off_high << 32 | off_low;
+    int whence = interface->arg4;
 
     return vfs_lseek(thread_current(), fd, off, whence);
 }
