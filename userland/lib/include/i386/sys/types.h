@@ -28,7 +28,7 @@ typedef __u16 gid_t;
 typedef __i32 blksize_t;
 typedef __u64 blkcnt_t;
 
-typedef __i32 off_t;
+typedef __i64 off_t;
 
 typedef __u32 vop_t;
 
