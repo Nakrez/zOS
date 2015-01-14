@@ -14,7 +14,7 @@
 
 # define IRQ_USER_BEGIN 0x21
 # define IRQ_USER_END 0x2F
-# define IRQ_USER_SIZE (IRQ_USER_END - IRQ_USER_BEGIN)
+# define IRQ_USER_SIZE (1 + IRQ_USER_END - IRQ_USER_BEGIN)
 
 struct idt_ptr
 {
