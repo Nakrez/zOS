@@ -220,13 +220,13 @@
                              VFS_PERM_USER_X)
 
 /**
- * \dev VFS_FTYPE_FILE
+ * \def VFS_FTYPE_FILE
  * Numeric identifier of files
  *
- * \dev VFS_FTYPE_DEV
+ * \def VFS_FTYPE_DEV
  * Numeric identifier of devices
  *
- * \dev VFS_FTYPE_DIR
+ * \def VFS_FTYPE_DIR
  * Numeric identifier of directories
  */
 # define VFS_FTYPE_FILE 0x8000
