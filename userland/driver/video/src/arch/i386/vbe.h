@@ -44,4 +44,7 @@ struct vbe {
     } cursor;
 };
 
+uint16_t bga_read_register(uint16_t index);
+int vbe_initialize(struct video *video);
+
 #endif /* !VBE_H */

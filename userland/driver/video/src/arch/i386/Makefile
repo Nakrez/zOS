@@ -1,6 +1,6 @@
 CURDIR := userland/driver/video/src/arch/i386
 
-OBJ-y := vbe.o
+OBJ-y := init.o vbe.o fallback.o
 
 BINSUBDIRS-y :=
 

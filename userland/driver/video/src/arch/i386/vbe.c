@@ -10,7 +10,7 @@
 #include "vbe.h"
 #include "../../font.h"
 
-static uint16_t bga_read_register(uint16_t index)
+uint16_t bga_read_register(uint16_t index)
 {
     outw(VBE_DISPI_IOPORT_INDEX, index);
 
@@ -189,17 +189,9 @@ static int vbe_write(struct video *video, struct req_rdwr *req, size_t *size)
     return 0;
 }
 
-int video_initialize(struct video *video)
+int vbe_initialize(struct video *video)
 {
     struct vbe *vbe;
-    uint16_t vbe_index = bga_read_register(VBE_DISPI_INDEX_ID);
-
-    if (vbe_index < VBE_DIPSI_ID0 || vbe_index > VBE_DIPSI_ID5)
-    {
-        uprint("Video: VBE Extended version not supported");
-
-        return -1;
-    }
 
     if (!(vbe = malloc(sizeof (struct vbe))))
         return -1;
