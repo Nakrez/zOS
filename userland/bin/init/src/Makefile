@@ -1,6 +1,6 @@
 CURDIR := userland/bin/init/src
 
-OBJ-y := main.o
+OBJ-y := main.o config.o exec.o
 
 BINSUBDIRS-y :=
 

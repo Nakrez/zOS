@@ -1,5 +1,16 @@
-/bin/null
-/bin/kbd,/dev/null
-/bin/video,/dev/null
-/bin/tty_ctrl,/dev/null
-/bin/shell,/dev/tty0
+# priority,binary,argv,tty,device
+# device is not mandatory
+# put it to make init wait for it
+
+# High priority driver
+0,/bin/null,,,null
+
+# Common driver (keyboard, video, ...)
+1,/bin/kbd,,/dev/null,
+1,/bin/video,,/dev/null,
+
+# TTY
+2,/bin/tty_ctrl,,/dev/null,
+
+# Userland programs (shell, log, login, ...)
+3,/bin/shell,,/dev/tty0,
