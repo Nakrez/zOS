@@ -67,6 +67,8 @@ static syscall_callback syscalls[] =
     sys_vfs_dup2,
 
     sys_vfs_getdirent,
+
+    sys_vfs_device_exists,
 };
 
 void syscall_handler(struct irq_regs *regs)

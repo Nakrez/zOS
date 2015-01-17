@@ -166,3 +166,10 @@ int sys_vfs_getdirent(struct syscall *interface)
 
     return vfs_getdirent(thread_current(), fd, dirent, index);
 }
+
+int sys_vfs_device_exists(struct syscall *interface)
+{
+    char *device = (void *)interface->arg1;
+
+    return device_exists(device);
+}
