@@ -99,6 +99,16 @@ dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops);
 struct vdevice *device_get(dev_t dev);
 
 /**
+ * \brief   Check if a device exists
+ *
+ * \param   name    The name of the device
+ *
+ * \return  1: The device exists
+ * \return  0: The device does not exists
+ */
+int device_exists(const char *name);
+
+/**
  * \brief   Receive a buffer from device inbox
  *
  * \param   dev     The device id of the device

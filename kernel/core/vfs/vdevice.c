@@ -146,6 +146,17 @@ struct vdevice *device_get(dev_t dev)
     return &devices[dev];
 }
 
+int device_exists(const char *name)
+{
+    for (int i = 0; i < VFS_MAX_DEVICE; ++i)
+    {
+        if (devices[i].active && !strcmp(devices[i].name, name))
+            return 1;
+    }
+
+    return 0;
+}
+
 int device_recv_request(dev_t dev, char *buf, size_t size)
 {
     int pid = thread_current()->parent->pid;
