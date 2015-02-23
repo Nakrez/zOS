@@ -6,7 +6,7 @@ if [ $# -ge 1 ]; then
     echo -e '\t$BUILD_PATH: Directory used to build files (/tmp)'
     echo -e '\t$TARGET: Target architecture (i686-elf)'
     echo -e '\t$PREFIX: Installation path (/opt/cross)'
-    echo -e '\t$BINUTILS_VERSION: Version of binutils to download (2.24)'
+    echo -e '\t$BINUTILS_VERSION: Version of binutils to download (2.25)'
     echo -e '\t$GCC_VERSION: Version of gcc to download (4.9.2)'
 
     exit 0
@@ -17,7 +17,7 @@ CURDIR=`pwd`
 BUILD_PATH=${BUILD_PATH-"/tmp"}
 
 TARGET=${TARGET-"i686-elf"}
-BINUTILS_VERSION=${BINUTILS_VERSION-"2.24"}
+BINUTILS_VERSION=${BINUTILS_VERSION-"2.25"}
 GCC_VERSION=${GCC_VERSION-"4.9.2"}
 PREFIX=${PREFIX-"/opt/cross"}
 
