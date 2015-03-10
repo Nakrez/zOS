@@ -97,7 +97,7 @@ int ext2fs_initialize(struct ext2fs *ext2, const char *disk)
     if (!ext2_icache_initialize(ext2))
         return 0;
 
-    return (fiu_cache_initialize(&ext2->fiu, 64, ext2->block_size,
+    return (fiu_cache_initialize(ext2->fiu, 64, ext2->block_size,
                                  ext2_block_fetch, ext2_block_flush) == 0);
 }
 
@@ -115,7 +115,7 @@ uint32_t inode_find_in_dir(struct ext2fs *ext2, struct ext2_inode *inode,
     if (!inode_block_data(ext2, inode, 0, &block_num))
         return 0;
 
-    if (!(block = fiu_cache_request(&ext2->fiu, block_num)))
+    if (!(block = fiu_cache_request(ext2->fiu, block_num)))
         return 0;
 
     dirent = block;
@@ -146,19 +146,19 @@ uint32_t inode_find_in_dir(struct ext2fs *ext2, struct ext2_inode *inode,
         {
             offset_block = offset % ext2->block_size;
 
-            fiu_cache_release(&ext2->fiu, block_num);
+            fiu_cache_release(ext2->fiu, block_num);
 
             if (!inode_block_data(ext2, inode, offset, &block_num))
                 return 0;
 
-            if (!(block = fiu_cache_request(&ext2->fiu, block_num)))
+            if (!(block = fiu_cache_request(ext2->fiu, block_num)))
                 return 0;
         }
 
         dirent = (void *)((char *)block + offset_block);
     }
 
-    fiu_cache_release(&ext2->fiu, block_num);
+    fiu_cache_release(ext2->fiu, block_num);
 
     return res;
 }

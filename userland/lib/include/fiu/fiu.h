@@ -3,9 +3,12 @@
 
 # include <zos/vfs.h>
 
+# include <fiu/opts.h>
 # include <fiu/block_cache.h>
 
 struct fiu_internal {
+    char *device_name;
+
     dev_t dev_id;
 
     int running;
@@ -20,6 +23,7 @@ struct fiu_internal {
 };
 
 struct fiu_ops {
+    void *(*fill_private)(struct fiu_internal *fiu, struct fiu_opts *opts);
     void (*root_remount)(struct fiu_internal *, struct req_root_remount *);
     int (*lookup)(struct fiu_internal *, struct req_lookup *,
                   struct resp_lookup *);
@@ -35,6 +39,6 @@ struct fiu_ops {
 int fiu_create(const char *name, int perm, struct fiu_ops *ops,
                struct fiu_internal *fiu);
 
-int fiu_main(struct fiu_internal *fiu, const char *mount_path);
+int fiu_main(int argc, char **argv, struct fiu_ops *ops);
 
 #endif /* !LIBFIU_FIU_H */

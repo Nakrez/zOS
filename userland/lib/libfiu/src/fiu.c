@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <zos/device.h>
 #include <zos/print.h>
@@ -179,17 +181,58 @@ static int fiu_loop(struct fiu_internal *fiu)
     return res;
 }
 
-int fiu_main(struct fiu_internal *fiu, const char *mount_path)
+void fiu_help(const char *bin_name, FILE *output)
+{
+    fprintf(output, "%s [OPTS] [BLOCK_DEVICE] MOUNT_DIRECTORY", bin_name);
+}
+
+int fiu_main(int argc, char **argv, struct fiu_ops *ops)
 {
     int ret;
+    struct fiu_opts opts;
+    struct fiu_internal fiu;
 
-    if (fiu->dev_id < 0)
-        return fiu->dev_id;
+    ret = fiu_parse_opts(argc, argv, &opts);
 
-    ret = mount(fiu->dev_id, mount_path);
+    if (ret < 0)
+    {
+        fiu_help(argv[0], stderr);
+
+        return ret;
+    }
+    else if (opts.help)
+    {
+        fiu_help(argv[0], stdout);
+
+        return 0;
+    }
+
+    if (opts.daemon)
+    {
+        pid_t pid;
+
+        if ((pid = fork()) < 0)
+            return pid;
+
+        if (pid)
+            return 0;
+    }
+
+    if (ops->fill_private)
+    {
+        fiu.private = ops->fill_private(&fiu, &opts);
+
+        if (!fiu.private)
+            return 1;
+    }
+
+    if ((ret = fiu_create(fiu.device_name, opts.mode, ops, &fiu)) < 0)
+        return -ret;
+
+    ret = mount(fiu.dev_id, opts.dir);
 
     if (ret < 0)
         return ret;
 
-    return fiu_loop(fiu);
+    return fiu_loop(&fiu);
 }

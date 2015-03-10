@@ -79,7 +79,7 @@ struct ext2_cinode;
 struct ext2fs {
     int fd;
 
-    struct fiu_internal fiu;
+    struct fiu_internal *fiu;
 
     size_t block_size;
 

@@ -54,7 +54,7 @@ int ext2fs_read(struct fiu_internal *fiu, struct req_rdwr *req, size_t *size)
             return -1;
         }
 
-        if (!(block = fiu_cache_request(&ext2->fiu, data_block)))
+        if (!(block = fiu_cache_request(ext2->fiu, data_block)))
         {
             ext2_icache_release(ext2, req->inode);
 
@@ -71,7 +71,7 @@ int ext2fs_read(struct fiu_internal *fiu, struct req_rdwr *req, size_t *size)
         *size += read_size;
         req->data = (char *)req->data + read_size;
 
-        fiu_cache_release(&ext2->fiu, data_block);
+        fiu_cache_release(ext2->fiu, data_block);
     }
 
     ext2_icache_release(ext2, req->inode);
@@ -109,7 +109,7 @@ int ext2fs_getdirent(struct fiu_internal *fiu, struct req_getdirent *req,
         goto end;
     }
 
-    if (!(block = fiu_cache_request(&ext2->fiu, data_block)))
+    if (!(block = fiu_cache_request(ext2->fiu, data_block)))
     {
         ret = -1;
 
@@ -149,7 +149,7 @@ int ext2fs_getdirent(struct fiu_internal *fiu, struct req_getdirent *req,
                 goto end;
             }
 
-            if (!(block = fiu_cache_request(&ext2->fiu, data_block)))
+            if (!(block = fiu_cache_request(ext2->fiu, data_block)))
             {
                 ret = -1;
 
