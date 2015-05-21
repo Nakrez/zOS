@@ -6,9 +6,9 @@
 #include <kernel/mem/kmalloc.h>
 
 #include <kernel/proc/process.h>
+#include <kernel/proc/kthread.h>
 
 static struct cpu *cpus;
-static struct process *idle;
 
 static void idle_thread(void)
 {
@@ -21,6 +21,8 @@ static void idle_thread(void)
 
 void cpu_initialize(void)
 {
+    struct thread *t_idle;
+
     cpus = kmalloc(sizeof (struct cpu) * CPU_COUNT);
 
     if (!cpus)
@@ -36,17 +38,16 @@ void cpu_initialize(void)
 
     console_message(T_OK, "%u CPU initialized", CPU_COUNT);
 
-    idle = process_create(PROCESS_TYPE_KERNEL, (uintptr_t)idle_thread, 0,
-                          NULL);
-
-    cpus[0].scheduler.idle = klist_elem(idle->threads.next, struct thread,
-                                        list);
-
-    klist_del(cpus[0].scheduler.threads.next);
+    kthread_initialize();
 
     /* FIXME: Add idle thread to cpu scheduler */
-    for (int i = 1; i < CPU_COUNT; ++i)
-        thread_create(idle, (uintptr_t)idle_thread, 0, NULL, 0);
+    for (int i = 0; i < CPU_COUNT; ++i) {
+        t_idle = kthread_create((uintptr_t)idle_thread, 0, NULL);
+        if (!t_idle)
+            kernel_panic("Cannot allocate idle threads");
+
+        cpus[i].scheduler.idle = t_idle;
+    }
 
     console_message(T_OK, "Kernel idle process initialized");
 }

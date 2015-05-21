@@ -139,9 +139,11 @@ struct process *process_create(int type, uintptr_t code, int flags,
             ;
     }
 
-    /* Create main thread */
-    if (thread_create(process, code, argc, argv,
-                      THREAD_CREATEF_DEEP_ARGV_COPY) < 0)
+    /* Create main thread, code == 0 is used by kthread_initialize() to create
+     * the kernel process
+     */
+    if (code && thread_create(process, code, argc, argv,
+                              THREAD_CREATEF_DEEP_ARGV_COPY) < 0)
         goto error;
 
     klist_add(&processes, &process->list);
