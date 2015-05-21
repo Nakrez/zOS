@@ -36,6 +36,9 @@
 
 # include <arch/cpu.h>
 
+# define THREAD_CREATEF_NOSTART_THREAD (1 << 0)
+# define THREAD_CREATEF_DEEP_ARGV_COPY (1 << 1)
+
 /**
  * \brief   Maxium number of thread per process
  */
@@ -163,17 +166,16 @@ extern struct thread_glue thread_glue_dispatcher;
  * \brief   Create a new thread inside a process
  * \todo    Use regular error code (ERRNO)
  *
- * \param   process         The process that will be the thread's parent
- * \param   code            The pointer to the thread entry point
- * \param   argc            The number of argument passed to the thread
- * \param   argv            The argument passed to the thread
- * \param   deep_argv_copy  If set the argument will be copied to the thread
- *                          stack
+ * \param   process The process that will be the thread's parent
+ * \param   code    The pointer to the thread entry point
+ * \param   argc    The number of argument passed to the thread
+ * \param   argv    The argument passed to the thread
+ * \param   flags   Change thread_create() behaviour
  *
  * \return  The thread id if everything went well, -1 otherwise
  */
 int thread_create(struct process *process, uintptr_t code, int argc,
-                  char *argv[], int deep_argv_copy);
+                  char *argv[], int flags);
 
 /**
  * \brief   Update thread argument and entry point

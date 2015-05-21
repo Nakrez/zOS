@@ -61,7 +61,7 @@ static int thread_new_tid(struct process *p)
 }
 
 int thread_create(struct process *process, uintptr_t code, int argc,
-                  char *argv[], int deep_argv_copy)
+                  char *argv[], int flags)
 {
     int tid;
     struct thread *thread;
@@ -95,7 +95,7 @@ int thread_create(struct process *process, uintptr_t code, int argc,
     memset(&thread->event, 0, sizeof (thread->event));
 
     if (!glue_call(thread, create, process, thread, code, argc, argv,
-                   deep_argv_copy))
+                   flags & THREAD_CREATEF_DEEP_ARGV_COPY))
     {
         as_unmap(&kernel_as, (vaddr_t)thread, AS_UNMAP_RELEASE);
         return -1;
@@ -105,7 +105,8 @@ int thread_create(struct process *process, uintptr_t code, int argc,
 
     klist_add(&process->threads, &thread->list);
 
-    cpu_add_thread(thread);
+    if (!(flags & THREAD_CREATEF_NOSTART_THREAD))
+        cpu_add_thread(thread);
 
     return thread->tid;
 }
