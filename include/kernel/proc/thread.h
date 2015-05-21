@@ -178,6 +178,16 @@ int thread_create(struct process *process, uintptr_t code, int argc,
                   char *argv[], int flags);
 
 /**
+ *  \brief  Get a thread from a TID
+ *
+ *  \param  p   The process that contains the thread
+ *  \param  tid The thread ID of your thread
+ *
+ *  \return The thread if it exists, NULL otherwise
+ */
+struct thread *thread_get(struct process *p, pid_t tid);
+
+/**
  * \brief   Update thread argument and entry point
  * \todo    Use regular error code (ERRNO)
  *

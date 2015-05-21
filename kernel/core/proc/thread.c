@@ -111,6 +111,26 @@ int thread_create(struct process *process, uintptr_t code, int argc,
     return thread->tid;
 }
 
+struct thread *thread_get(struct process *p, pid_t tid)
+{
+    struct thread *t;
+
+    spinlock_lock(&p->plock);
+
+    klist_for_each(&p->threads, tlist, list) {
+        t = klist_elem(tlist, struct thread, list);
+
+        if (t->tid == tid) {
+            spinlock_unlock(&p->plock);
+            return t;
+        }
+    }
+
+    spinlock_unlock(&p->plock);
+
+    return NULL;
+}
+
 int thread_update_exec(struct thread *thread, uintptr_t eip, char *argv[])
 {
     int argc = 0;
