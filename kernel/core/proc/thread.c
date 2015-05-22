@@ -64,6 +64,7 @@ int thread_create(struct process *process, uintptr_t code, int argc,
                   char *argv[], int flags)
 {
     int tid;
+    vaddr_t thread_kstack;
     struct thread *thread;
 
     if (!code)
@@ -76,11 +77,12 @@ int thread_create(struct process *process, uintptr_t code, int argc,
      * Allocate one entire page because thread structure is located on the
      * kernel stack
      */
-    thread = (void *)(as_map(&kernel_as, 0, 0, PAGE_SIZE, AS_MAP_WRITE) +
-             PAGE_SIZE - sizeof (struct thread));
-
-    if (!thread)
+    thread_kstack = as_map(&kernel_as, 0, 0, PAGE_SIZE, AS_MAP_WRITE);
+    if (!thread_kstack)
         return -1;
+
+    thread = (void *)((uintptr_t)thread_kstack + PAGE_SIZE -
+                      sizeof (struct thread));
 
     thread->parent = process;
     thread->tid = tid;
