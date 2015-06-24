@@ -28,6 +28,7 @@
 #include <kernel/console.h>
 #include <kernel/panic.h>
 #include <kernel/cpu.h>
+#include <kernel/timer.h>
 
 #include <kernel/mem/kmalloc.h>
 
@@ -209,8 +210,7 @@ void thread_sleep(struct thread *thread, size_t ms, struct irq_regs *regs)
 
     thread_save_state(thread, regs);
 
-    timer_register(thread->cpu, TIMER_CALLBACK | TIMER_ONE_SHOT,
-                   data, ms, timer_callback_sleep);
+    timer_register(TIMER_ONESHOT, ms, timer_callback_sleep, data);
 
     thread_block(thread, SCHED_EV_TIMER, data, NULL);
 }

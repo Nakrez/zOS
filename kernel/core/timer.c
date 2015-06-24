@@ -1,5 +1,32 @@
+/*
+ * zOS
+ * Copyright (C) 2014 - 2015 Baptiste Covolato
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with zOS.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * \file    kernel/core/timer.c
+ * \brief   Function implementation for timer management
+ *
+ * \author  Baptiste Covolato
+ */
+
 #include <kernel/zos.h>
+#include <kernel/errno.h>
 #include <kernel/panic.h>
+#include <kernel/time.h>
 #include <kernel/timer.h>
 #include <kernel/cpu.h>
 #include <kernel/scheduler.h>
@@ -14,9 +41,7 @@ void timer_initialize(void)
     glue_call(timer, init);
 
     for (int i = 0; i < TIMER_NUM; ++i)
-    {
         timers[i].free = 1;
-    }
 
     spinlock_init(&timer_lock);
 }
@@ -26,23 +51,17 @@ void timer_handler(struct irq_regs *regs)
     struct timer_entry *timer;
     struct cpu *cpu = cpu_get(cpu_id_get());
 
-    klist_for_each(&cpu->timers, tlist, list)
-    {
+    ++ticks;
+
+    klist_for_each(&cpu->timers, tlist, list) {
         timer = klist_elem(tlist, struct timer_entry, list);
 
-        --timer->count;
+        if (timer->next == ticks) {
+            timer->callback(timer->data);
 
-        if (!timer->count)
-        {
-            if (timer->type & TIMER_CALLBACK)
-                timer->callback(timer->data);
-            else
-                kernel_panic("Timer message not implemented");
-
-            if (timer->type & TIMER_INFINITE)
-                timer->count = timer->timer;
-            else
-            {
+            if (timer->type & TIMER_PERIODIC)
+                timer->next = timer_ticks_get() + timer->value;
+            else {
                 klist_del(&timer->list);
                 timer->free = 1;
             }
@@ -61,36 +80,28 @@ static int timer_new(void)
     return -1;
 }
 
-int timer_register(int cpu_id, int type, int data, size_t time,
-                   void (*callback)(int))
+int timer_register(int type, tick_t time, timer_callback_t callback, long data)
 {
+    struct cpu *cpu = cpu_get(cpu_id_get());
     int timer;
-    struct cpu *cpu = cpu_get(cpu_id);
 
-    if (!cpu)
-        return 0;
+    if (type != TIMER_ONESHOT && type != TIMER_PERIODIC)
+        return -EINVAL;
 
-    if (!(type & TIMER_CALLBACK) && !(type & TIMER_MESSAGE))
-        return 0;
-
-    if (!(type & TIMER_ONE_SHOT) && !(type & TIMER_INFINITE))
-        return 0;
-
-    if ((type & TIMER_CALLBACK) && !callback)
-        return 0;
+    if (!callback)
+        return -EINVAL;
 
     if (!time)
-        return 0;
+        return -EINVAL;
 
     spinlock_lock(&timer_lock);
 
     timer = timer_new();
 
-    if (timer < 0)
-    {
+    if (timer < 0) {
         spinlock_unlock(&timer_lock);
 
-        return 0;
+        return -1;
     }
 
     timers[timer].free = 0;
@@ -98,10 +109,10 @@ int timer_register(int cpu_id, int type, int data, size_t time,
     spinlock_unlock(&timer_lock);
 
     timers[timer].type = type;
-    timers[timer].data = data;
-    timers[timer].timer = time / TIMER_GRANULARITY;
-    timers[timer].count = time / TIMER_GRANULARITY;
+    timers[timer].value = time;
+    timers[timer].next = timer_ticks_get() + time;
     timers[timer].callback = callback;
+    timers[timer].data = data;
 
     klist_add(&cpu->timers, &timers[timer].list);
 

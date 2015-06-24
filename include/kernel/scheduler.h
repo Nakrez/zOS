@@ -1,15 +1,18 @@
 #ifndef SCHEDULER_H
 # define SCHEDULER_H
 
-# include <kernel/timer.h>
 # include <kernel/klist.h>
+# include <kernel/time.h>
 
 # include <kernel/proc/thread.h>
 
 # include <arch/cpu.h>
 # include <arch/spinlock.h>
 
-# define SCHEDULER_TIME 10 / TIMER_GRANULARITY
+/**
+ *  \brief  The value (in tick) where the scheduler will be ran
+ */
+# define SCHEDULER_TIME 10
 
 struct scheduler
 {

@@ -1,5 +1,5 @@
 #include <kernel/types.h>
-#include <kernel/timer.h>
+#include <kernel/time.h>
 #include <kernel/panic.h>
 
 #include <arch/pit.h>
@@ -7,7 +7,7 @@
 
 void pit_initialize(void)
 {
-    uint32_t pit_value = PIT_RATE / 1000 / TIMER_GRANULARITY;
+    uint32_t pit_value = PIT_RATE / TICK_PER_SEC;
 
     if (pit_value == 0 || pit_value > PIT_VALUE_MAX)
         kernel_panic("Fail to calculate correct value for the PIT");
