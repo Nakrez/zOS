@@ -5,6 +5,7 @@ OBJ-y := main.o string.o
 OBJ-$(CONFIG_CONSOLE) += console.o
 OBJ-$(CONFIG_PANIC) += panic.o
 OBJ-$(CONFIG_INTERRUPT) += interrupt.o
+OBJ-$(CONFIG_TIMER) += time.o
 OBJ-$(CONFIG_TIMER) += timer.o
 OBJ-$(CONFIG_SCHEDULER) += cpu.o
 OBJ-$(CONFIG_SYSCALL) += syscall.o

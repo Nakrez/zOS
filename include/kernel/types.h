@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # include <arch/types.h>
 
+# define UINT_MAX (~0U)
+
+# define TICK_MAX (UINT_MAX - 1)
+
 typedef __i8 int8_t;
 typedef __u8 uint8_t;
 
@@ -56,5 +60,7 @@ typedef __u64 blkcnt_t;
 typedef __i64 off_t;
 
 typedef __u32 vop_t;
+
+typedef __u32 tick_t;
 
 #endif /* !TYPES_H */
