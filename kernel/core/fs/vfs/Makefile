@@ -1,6 +1,6 @@
 CURDIR := kernel/core/fs/vfs
 
-OBJ-y := vfs.o vchannel.o vdevice.o message.o mount.o fs.o tmpfs.o
+OBJ-y := vfs.o vchannel.o vdevice.o message.o mount.o fs.o
 
 BINSUBDIRS-y :=
 

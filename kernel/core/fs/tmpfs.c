@@ -17,7 +17,7 @@
  */
 
 /**
- * \file    kernel/core/vfs/tmpfs.c
+ * \file    kernel/core/fs/tmpfs.c
  * \brief   Implementation of temporary filesystem
  *
  * \todo    Code is shared between tmpfs_mkdir/tmpfs_mknod
@@ -35,7 +35,7 @@
 #include <kernel/mem/kmalloc.h>
 
 #include <kernel/fs/vfs.h>
-#include <kernel/fs/vfs/tmpfs.h>
+#include <kernel/fs/tmpfs.h>
 
 # define TMPFS_DATA_SIZE (256 * KB)
 

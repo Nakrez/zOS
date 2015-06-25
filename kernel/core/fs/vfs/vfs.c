@@ -33,8 +33,8 @@
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
+#include <kernel/fs/tmpfs.h>
 
-#include <kernel/fs/vfs/tmpfs.h>
 #include <kernel/fs/vfs/vops.h>
 #include <kernel/fs/vfs/vdevice.h>
 

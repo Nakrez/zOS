@@ -7,10 +7,11 @@
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
+#include <kernel/fs/tmpfs.h>
+
 #include <kernel/fs/vfs/vops.h>
 #include <kernel/fs/vfs/vdevice.h>
 #include <kernel/fs/vfs/fs.h>
-#include <kernel/fs/vfs/tmpfs.h>
 #include <kernel/fs/vfs/mount.h>
 
 #include <arch/spinlock.h>
