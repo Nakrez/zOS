@@ -4,7 +4,7 @@
 #include <kernel/panic.h>
 #include <kernel/scheduler.h>
 
-#include <kernel/vfs/vops.h>
+#include <kernel/fs/vfs/vops.h>
 
 #include <kernel/mem/kmalloc.h>
 

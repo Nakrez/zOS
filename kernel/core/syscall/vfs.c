@@ -3,10 +3,11 @@
 
 #include <kernel/proc/thread.h>
 
-#include <kernel/vfs/vfs.h>
-#include <kernel/vfs/mount.h>
-#include <kernel/vfs/vops.h>
-#include <kernel/vfs/vdevice.h>
+#include <kernel/fs/vfs.h>
+
+#include <kernel/fs/vfs/mount.h>
+#include <kernel/fs/vfs/vops.h>
+#include <kernel/fs/vfs/vdevice.h>
 
 int sys_vfs_device_create(struct syscall *interface)
 {

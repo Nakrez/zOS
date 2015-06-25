@@ -15,7 +15,7 @@
 
 #include <kernel/proc/process.h>
 
-#include <kernel/vfs/vfs.h>
+#include <kernel/fs/vfs.h>
 
 void kernel_main(struct boot_info *boot)
 {
