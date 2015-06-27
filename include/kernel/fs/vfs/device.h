@@ -99,6 +99,16 @@ dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops);
 struct device *device_get(dev_t dev);
 
 /**
+ *  \brief  Get device structure from name
+ *
+ *  \param  name    The name of the device you want to get
+ *
+ * \return  The device corresponding to \a dev, if it exists
+ * \return  -1: device does not exist or \a dev is invalid
+ */
+dev_t device_get_from_name(const char *name);
+
+/**
  * \brief   Check if a device exists
  *
  * \param   name    The name of the device
