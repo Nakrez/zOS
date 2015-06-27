@@ -6,8 +6,9 @@
 
 #include <kernel/proc/thread.h>
 
+#include <kernel/fs/vfs.h>
 #include <kernel/fs/vfs/vops.h>
-#include <kernel/fs/vfs/fs.h>
+#include <kernel/fs/vfs/message.h>
 #include <kernel/fs/vfs/mount.h>
 
 int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,

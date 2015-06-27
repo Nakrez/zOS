@@ -30,7 +30,9 @@
 # include <kernel/klist.h>
 # include <kernel/types.h>
 
-# include <kernel/fs/vfs/fs.h>
+# include <kernel/fs/vfs.h>
+
+# include <arch/spinlock.h>
 
 # define TMPFS_DEV_ID -1
 

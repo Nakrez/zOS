@@ -4,8 +4,9 @@
 
 #include <kernel/proc/thread.h>
 
+#include <kernel/fs/vfs.h>
 #include <kernel/fs/vfs/vops.h>
-#include <kernel/fs/vfs/fs.h>
+#include <kernel/fs/vfs/message.h>
 
 int vfs_mkdir(struct thread *t, const char *path, mode_t mode)
 {

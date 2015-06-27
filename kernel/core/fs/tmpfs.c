@@ -37,6 +37,11 @@
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/tmpfs.h>
 
+#include <kernel/fs/vfs/message.h>
+#include <kernel/fs/vfs/mount.h>
+
+#include <arch/spinlock.h>
+
 # define TMPFS_DATA_SIZE (256 * KB)
 
 /**

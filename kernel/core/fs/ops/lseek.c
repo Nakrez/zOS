@@ -5,8 +5,8 @@
 
 #include <kernel/proc/thread.h>
 
+#include <kernel/fs/vfs.h>
 #include <kernel/fs/vfs/vops.h>
-#include <kernel/fs/vfs/fs.h>
 
 int vfs_lseek(struct thread *t, int fd, off_t offset, int whence)
 {

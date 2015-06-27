@@ -1,6 +1,6 @@
 CURDIR := kernel/core/fs
 
-OBJ-y := tmpfs.o
+OBJ-y := tmpfs.o fui.o
 
 BINSUBDIRS-y := vfs ops
 

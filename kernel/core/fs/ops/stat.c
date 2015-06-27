@@ -6,8 +6,8 @@
 
 #include <kernel/fs/vfs.h>
 
+#include <kernel/fs/vfs.h>
 #include <kernel/fs/vfs/vops.h>
-#include <kernel/fs/vfs/fs.h>
 #include <kernel/fs/vfs/message.h>
 
 int vfs_stat(struct thread *t, const char *path, struct stat *buf)
