@@ -129,7 +129,7 @@ struct process
     /**
      * \brief   The file slots
      */
-    struct vfile files[PROCESS_MAX_OPEN_FD + 1];
+    struct file files[PROCESS_MAX_OPEN_FD + 1];
 
     /**
      * \brief   The list of threads

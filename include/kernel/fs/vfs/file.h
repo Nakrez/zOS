@@ -13,7 +13,7 @@
 /* Special mode for fd being used by the driver to get messages */
 # define VFS_MODE_CHANNEL (1 << 3)
 
-struct vfile {
+struct file {
     int used;
 
     char mode;
