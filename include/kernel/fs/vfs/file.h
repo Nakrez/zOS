@@ -1,5 +1,5 @@
-#ifndef FS_VFS_VFILE_H
-# define FS_VFS_VFILE_H
+#ifndef FS_VFS_FILE_H
+# define FS_VFS_FILE_H
 
 # include <kernel/types.h>
 
@@ -28,4 +28,4 @@ struct vfile {
     struct mount_entry *mount;
 };
 
-#endif /* !FS_VFS_VFILE_H */
+#endif /* !FS_VFS_FILE_H */

@@ -30,7 +30,7 @@
 
 # include <kernel/mem/as.h>
 
-# include <kernel/fs/vfs/vfile.h>
+# include <kernel/fs/vfs/file.h>
 
 # include <arch/cpu.h>
 # include <arch/spinlock.h>
