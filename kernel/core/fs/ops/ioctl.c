@@ -10,7 +10,7 @@ int vfs_ioctl(struct thread *t, int fd, int req, int *argp)
 {
     int ret;
     struct process *p;
-    struct vdevice *device;
+    struct device *device;
     struct message *message;
     struct message *response;
     struct req_ioctl *request;

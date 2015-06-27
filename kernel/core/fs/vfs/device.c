@@ -36,11 +36,11 @@
 
 #include <arch/spinlock.h>
 
-static struct vdevice devices[VFS_MAX_DEVICE];
+static struct device devices[VFS_MAX_DEVICE];
 static spinlock_t device_lock = SPINLOCK_INIT;
 
 static dev_t device_create(pid_t pid, const char *name, vop_t ops,
-                           struct vdevice **device)
+                           struct device **device)
 {
     int found = 0;
 
@@ -107,7 +107,7 @@ static dev_t device_create(pid_t pid, const char *name, vop_t ops,
 dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops)
 {
     int res;
-    struct vdevice *device = NULL;
+    struct device *device = NULL;
     char *node_path;
 
     res = device_create(pid, name, ops, &device);
@@ -135,7 +135,7 @@ dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops)
     return device->id;
 }
 
-struct vdevice *device_get(dev_t dev)
+struct device *device_get(dev_t dev)
 {
     if (dev < 0 || dev >= VFS_MAX_DEVICE)
         return NULL;
@@ -207,7 +207,7 @@ int device_open(dev_t dev, ino_t inode, pid_t pid, uid_t uid, gid_t gid,
                 int flags, mode_t mode)
 {
     int ret = 0;
-    struct vdevice *device;
+    struct device *device;
     struct message *message;
     struct message *response;
     struct req_open *request;
@@ -259,7 +259,7 @@ int device_read_write(struct process *process, dev_t dev, struct req_rdwr *req,
                       char *buf, int op)
 {
     int res;
-    struct vdevice *device;
+    struct device *device;
     struct process *pdevice;
     struct message *message = NULL;
     struct req_rdwr *request;
@@ -338,7 +338,7 @@ end:
 int device_close(dev_t dev, ino_t inode)
 {
     int res;
-    struct vdevice *device;
+    struct device *device;
     struct message *message;
     struct message *response;
     struct req_close *request;

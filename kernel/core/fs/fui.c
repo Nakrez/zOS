@@ -13,7 +13,7 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
 {
     int res;
     int path_empty = 0;
-    struct vdevice *device;
+    struct device *device;
     struct message *message;
     struct message *response;
     struct req_lookup *request;
@@ -99,7 +99,7 @@ static int fiu_stat(struct mount_entry *root, uid_t uid, gid_t gid,
                     ino_t inode, struct stat *buf)
 {
     int res;
-    struct vdevice *device;
+    struct device *device;
     struct message *message;
     struct message *response;
     struct req_stat *request;
@@ -148,7 +148,7 @@ end:
 static int fiu_mount(struct mount_entry *root, ino_t inode, int mount_nb)
 {
     int res;
-    struct vdevice *device;
+    struct device *device;
     struct message *message;
     struct message *response;
     struct req_mount *request;
@@ -203,7 +203,7 @@ static int fiu_getdirent(struct mount_entry *root, ino_t inode,
                          struct dirent *d, int index)
 {
     int res;
-    struct vdevice *device;
+    struct device *device;
     struct message *message;
     struct message *response;
     struct req_getdirent *request;

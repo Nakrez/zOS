@@ -41,7 +41,7 @@
 /**
  * \brief   The internal representation of a virtual device
  */
-struct vdevice {
+struct device {
     /**
      * \brief   The name of the device
      */
@@ -96,7 +96,7 @@ dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops);
  * \return  The device corresponding to \a dev, if it exists
  * \return  NULL: device does not exist or \a dev is invalid
  */
-struct vdevice *device_get(dev_t dev);
+struct device *device_get(dev_t dev);
 
 /**
  * \brief   Check if a device exists

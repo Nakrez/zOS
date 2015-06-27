@@ -100,7 +100,7 @@ static int do_mount(struct thread *t, const char *mount_path, int mount_pt_nb)
 
 static void vfs_remount_root_message(dev_t dev, const char *path, int mount_nb)
 {
-    struct vdevice *device;
+    struct device *device;
     struct message *message;
     struct req_root_remount *request;
 
