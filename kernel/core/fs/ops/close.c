@@ -5,7 +5,7 @@
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
-#include <kernel/fs/vfs/vdevice.h>
+#include <kernel/fs/vfs/device.h>
 
 int vfs_close(struct thread *t, int fd)
 {

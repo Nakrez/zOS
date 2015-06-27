@@ -17,7 +17,7 @@
  */
 
 /**
- * \file    kernel/core/vfs/vdevice.c
+ * \file    kernel/core/vfs/device.c
  * \brief   Implementation of virtual devices management
  *
  * \author  Baptiste Covolato
@@ -32,7 +32,7 @@
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
-#include <kernel/fs/vfs/vdevice.h>
+#include <kernel/fs/vfs/device.h>
 
 #include <arch/spinlock.h>
 

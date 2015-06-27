@@ -17,15 +17,15 @@
  */
 
 /**
- * \file    include/kernel/vfs/vdevice.h
+ * \file    include/kernel/vfs/device.h
  * \brief   Function prototypes and structures related to virtual devices
  *          management.
  *
  * \author  Baptiste Covolato
  */
 
-#ifndef FS_VFS_VDEVICE_H
-# define FS_VFS_VDEVICE_H
+#ifndef FS_VFS_DEVICE_H
+# define FS_VFS_DEVICE_H
 
 # include <kernel/types.h>
 # include <kernel/zos.h>
@@ -206,4 +206,4 @@ int device_close(dev_t dev, ino_t inode);
  */
 int device_destroy(pid_t pid, dev_t dev);
 
-#endif /* !FS_VFS_VDEVICE_H */
+#endif /* !DEVICE_H */

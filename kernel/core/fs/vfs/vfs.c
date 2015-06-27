@@ -36,7 +36,7 @@
 #include <kernel/fs/tmpfs.h>
 
 #include <kernel/fs/vfs/vops.h>
-#include <kernel/fs/vfs/vdevice.h>
+#include <kernel/fs/vfs/device.h>
 
 int vfs_initialize(void)
 {

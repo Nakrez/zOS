@@ -11,7 +11,7 @@
 #include <kernel/fs/fui.h>
 
 #include <kernel/fs/vfs/vops.h>
-#include <kernel/fs/vfs/vdevice.h>
+#include <kernel/fs/vfs/device.h>
 #include <kernel/fs/vfs/mount.h>
 
 #include <arch/spinlock.h>

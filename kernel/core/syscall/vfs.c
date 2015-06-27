@@ -7,7 +7,7 @@
 
 #include <kernel/fs/vfs/mount.h>
 #include <kernel/fs/vfs/vops.h>
-#include <kernel/fs/vfs/vdevice.h>
+#include <kernel/fs/vfs/device.h>
 
 int sys_vfs_device_create(struct syscall *interface)
 {

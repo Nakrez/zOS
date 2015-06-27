@@ -4,7 +4,7 @@
 
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/vfs/message.h>
-#include <kernel/fs/vfs/vdevice.h>
+#include <kernel/fs/vfs/device.h>
 
 int vfs_ioctl(struct thread *t, int fd, int req, int *argp)
 {
