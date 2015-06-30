@@ -89,13 +89,13 @@ static int do_mount(struct thread *t, const char *mount_path, int mount_pt_nb)
     if (ret < 0)
         return ret;
 
-    if (!mount_pt->ops->mount)
+    if (!mount_pt->fs_ops->mount)
         return -ENOSYS;
 
     if (ret != path_size)
         return -ENOENT;
 
-    return mount_pt->ops->mount(mount_pt, res.inode, mount_pt_nb);
+    return mount_pt->fs_ops->mount(mount_pt, res.inode, mount_pt_nb);
 }
 
 static void vfs_remount_root_message(dev_t dev, const char *path, int mount_nb)
@@ -127,14 +127,14 @@ int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
 {
     int ret;
     int mount_nb;
-    struct fs_operation *ops;
+    struct fs_operation *fs_ops;
 
     if (dev == TMPFS_DEV_ID)
-        ops = &tmpfs_fs_ops;
+        fs_ops = &tmpfs_fs_ops;
     else if (!device_get(dev))
         return -EBADF;
     else
-        ops = &fiu_fs_ops;
+        fs_ops = &fiu_fs_ops;
 
     if ((mount_nb = vfs_check_mount_pts(dev, mount_path)) < 0)
         return mount_nb;
@@ -156,9 +156,9 @@ int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
     else if ((ret = do_mount(t, mount_path, mount_nb)) < 0)
         return ret;
 
-    if (ops->init)
+    if (fs_ops->init)
     {
-        if (!(mount_points[mount_nb].private = ops->init()))
+        if (!(mount_points[mount_nb].private = fs_ops->init()))
         {
             mount_points[mount_nb].used = 0;
 
@@ -168,8 +168,8 @@ int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
 
     if (!(mount_points[mount_nb].path = kmalloc(strlen(mount_path) + 1)))
     {
-        if (ops->cleanup)
-            ops->cleanup(mount_points[mount_nb].private);
+        if (fs_ops->cleanup)
+            fs_ops->cleanup(mount_points[mount_nb].private);
 
         mount_points[mount_nb].used = 0;
 
@@ -178,7 +178,7 @@ int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
 
     strcpy(mount_points[mount_nb].path, mount_path);
 
-    mount_points[mount_nb].ops = ops;
+    mount_points[mount_nb].fs_ops = fs_ops;
     mount_points[mount_nb].dev = dev;
 
     return 0;

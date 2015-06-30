@@ -24,8 +24,8 @@ int vfs_close(struct thread *t, int fd)
     if (p->files[fd].dev >= 0)
         ret = device_close(p->files[fd].dev, p->files[fd].inode);
     else
-        ret = p->files[fd].mount->ops->close(p->files[fd].mount,
-                                             p->files[fd].inode);
+        ret = p->files[fd].mount->fs_ops->close(p->files[fd].mount,
+                                                p->files[fd].inode);
 
     if (ret < 0)
         return ret;

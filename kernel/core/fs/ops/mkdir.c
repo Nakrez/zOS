@@ -32,12 +32,12 @@ int vfs_mkdir(struct thread *t, const char *path, mode_t mode)
     if ((ret = vfs_lookup(t, path, &res, &mount_pt)) < 0)
         return ret;
 
-    if (!mount_pt->ops->mkdir)
+    if (!mount_pt->fs_ops->mkdir)
         return -ENOSYS;
 
     if (ret == path_size)
         return -EEXIST;
 
-    return mount_pt->ops->mkdir(mount_pt, path + ret, res.inode, uid, gid,
-                                mode);
+    return mount_pt->fs_ops->mkdir(mount_pt, path + ret, res.inode, uid, gid,
+                                   mode);
 }

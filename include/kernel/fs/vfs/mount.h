@@ -11,7 +11,7 @@ struct mount_entry {
 
     dev_t dev;
 
-    struct fs_operation *ops;
+    struct fs_operation *fs_ops;
 
     /* Private data, only used by kernel file system */
     void *private;

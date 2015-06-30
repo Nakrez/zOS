@@ -33,11 +33,11 @@ int vfs_write(struct thread *t, int fd, const void *buf, size_t count)
                                 VFS_WRITE);
     else
     {
-        if (!p->files[fd].mount->ops->write)
+        if (!p->files[fd].mount->fs_ops->write)
             return -ENOSYS;
 
-        ret = p->files[fd].mount->ops->write(p->files[fd].mount, p, &request,
-                                             buf);
+        ret = p->files[fd].mount->fs_ops->write(p->files[fd].mount, p, &request,
+                                                buf);
     }
 
     if (ret < 0)

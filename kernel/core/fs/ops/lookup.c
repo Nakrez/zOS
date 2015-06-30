@@ -48,14 +48,14 @@ int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
             return -ENOENT;
         }
 
-        if (!root->ops->lookup)
+        if (!root->fs_ops->lookup)
         {
             kfree(copied_path);
 
             return -ENOSYS;
         }
 
-        ret = root->ops->lookup(root, path + processed, uid, gid, res);
+        ret = root->fs_ops->lookup(root, path + processed, uid, gid, res);
 
         if (ret < 0)
         {

@@ -39,7 +39,7 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
     if ((ret = vfs_lookup(t, path, &res, &mount_pt)) < 0)
         return ret;
 
-    if (!mount_pt->ops->open)
+    if (!mount_pt->fs_ops->open)
         return -ENOSYS;
 
     /* FIXME: Allow file creation */
@@ -50,8 +50,8 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
         return fd;
 
     if (res.dev < 0)
-        ret = mount_pt->ops->open(mount_pt, res.inode, process->pid, uid, gid,
-                                  flags, mode);
+        ret = mount_pt->fs_ops->open(mount_pt, res.inode, process->pid, uid, gid,
+                                     flags, mode);
     else
         ret = device_open(res.dev, -1, process->pid, uid, gid, flags, mode);
 

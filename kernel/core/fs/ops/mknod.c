@@ -32,12 +32,12 @@ int vfs_mknod(struct thread *t, const char *path, mode_t mode, uint16_t dev)
     if ((ret = vfs_lookup(t, path, &res, &mount_pt)) < 0)
         return ret;
 
-    if (!mount_pt->ops->mknod)
+    if (!mount_pt->fs_ops->mknod)
         return -ENOSYS;
 
     if (ret == path_size)
         return -EEXIST;
 
-    return mount_pt->ops->mknod(mount_pt, path + ret, res.inode, uid, gid,
-                                mode, dev);
+    return mount_pt->fs_ops->mknod(mount_pt, path + ret, res.inode, uid, gid,
+                                   mode, dev);
 }

@@ -37,10 +37,10 @@ int vfs_stat(struct thread *t, const char *path, struct stat *buf)
     if (path_size != lookup.processed)
         return -ENOENT;
 
-    if (!mount_pt->ops->stat)
+    if (!mount_pt->fs_ops->stat)
         return -ENOSYS;
 
-    return mount_pt->ops->stat(mount_pt, uid, gid, lookup.inode, buf);
+    return mount_pt->fs_ops->stat(mount_pt, uid, gid, lookup.inode, buf);
 }
 
 int vfs_fstat(struct thread *t, int fd, struct stat *buf)
@@ -68,9 +68,9 @@ int vfs_fstat(struct thread *t, int fd, struct stat *buf)
     if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
         return -EINVAL;
 
-    if (!p->files[fd].mount->ops->stat)
+    if (!p->files[fd].mount->fs_ops->stat)
         return -ENOSYS;
 
-    return p->files[fd].mount->ops->stat(p->files[fd].mount, uid, gid,
-                                         p->files[fd].inode, buf);
+    return p->files[fd].mount->fs_ops->stat(p->files[fd].mount, uid, gid,
+                                            p->files[fd].inode, buf);
 }
