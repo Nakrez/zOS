@@ -254,7 +254,7 @@ static int fiu_close(struct mount_entry *root, ino_t inode)
     return device_close(root->dev, inode);
 }
 
-struct fs_ops fiu_ops = {
+struct fs_operation fiu_fs_ops = {
     .lookup = fiu_lookup,
     .stat = fiu_stat,
     .mount = fiu_mount,

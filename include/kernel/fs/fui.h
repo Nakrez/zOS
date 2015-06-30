@@ -3,6 +3,6 @@
 
 # include <kernel/fs/vfs.h>
 
-extern struct fs_ops fiu_ops;
+extern struct fs_operation fiu_fs_ops;
 
 #endif /* !FS_FUI_H */

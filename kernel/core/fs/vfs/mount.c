@@ -127,14 +127,14 @@ int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
 {
     int ret;
     int mount_nb;
-    struct fs_ops *ops;
+    struct fs_operation *ops;
 
     if (dev == TMPFS_DEV_ID)
-        ops = &tmpfs_ops;
+        ops = &tmpfs_fs_ops;
     else if (!device_get(dev))
         return -EBADF;
     else
-        ops = &fiu_ops;
+        ops = &fiu_fs_ops;
 
     if ((mount_nb = vfs_check_mount_pts(dev, mount_path)) < 0)
         return mount_nb;

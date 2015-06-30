@@ -157,6 +157,6 @@ struct tmpfs_sb {
     spinlock_t lock_block;
 };
 
-extern struct fs_ops tmpfs_ops;
+extern struct fs_operation tmpfs_fs_ops;
 
 #endif /* !FS_VFS_TMPFS_H */

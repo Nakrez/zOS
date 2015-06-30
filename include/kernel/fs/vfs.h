@@ -243,7 +243,7 @@ struct dirent;
 /**
  *  \brief  File system operation.
  */
-struct fs_ops {
+struct fs_operation {
     void *(*init)(void);
     int (*lookup)(struct mount_entry *, const char *, uid_t, gid_t,
                   struct resp_lookup *);

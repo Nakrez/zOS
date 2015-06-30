@@ -596,7 +596,7 @@ static void tmpfs_cleanup(void *data)
     (void)data;
 }
 
-struct fs_ops tmpfs_ops = {
+struct fs_operation tmpfs_fs_ops = {
     .init = tmpfs_initialize,
     .lookup = tmpfs_lookup,
     .mkdir = tmpfs_mkdir,
