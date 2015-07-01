@@ -37,7 +37,6 @@
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/tmpfs.h>
 
-#include <kernel/fs/vfs/file.h>
 #include <kernel/fs/vfs/message.h>
 #include <kernel/fs/vfs/mount.h>
 

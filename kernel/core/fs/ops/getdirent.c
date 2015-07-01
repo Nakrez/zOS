@@ -4,6 +4,7 @@
 
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/vfs/vops.h>
+#include <kernel/fs/vfs/mount.h>
 
 int vfs_getdirent(struct thread *t, int fd, struct dirent *dirent, int index)
 {

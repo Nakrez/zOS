@@ -30,7 +30,7 @@
 
 # include <kernel/mem/as.h>
 
-# include <kernel/fs/vfs/file.h>
+# include <kernel/fs/vfs.h>
 
 # include <arch/cpu.h>
 # include <arch/spinlock.h>
@@ -73,6 +73,8 @@
  * \brief   Status returned by a process if it segv
  */
 # define PROCESS_CODE_SEGV 128
+
+struct thread;
 
 /**
  * \brief   Represents a process in the kernel

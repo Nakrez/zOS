@@ -7,6 +7,7 @@
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/vfs/vops.h>
 #include <kernel/fs/vfs/message.h>
+#include <kernel/fs/vfs/mount.h>
 
 int vfs_mkdir(struct thread *t, const char *path, mode_t mode)
 {

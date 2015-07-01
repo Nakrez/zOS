@@ -8,6 +8,7 @@
 #include <kernel/fs/vfs/vops.h>
 #include <kernel/fs/vfs/device.h>
 #include <kernel/fs/vfs/message.h>
+#include <kernel/fs/vfs/mount.h>
 
 int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
 {

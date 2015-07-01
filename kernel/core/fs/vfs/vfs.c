@@ -37,6 +37,7 @@
 
 #include <kernel/fs/vfs/vops.h>
 #include <kernel/fs/vfs/device.h>
+#include <kernel/fs/vfs/mount.h>
 
 int vfs_initialize(void)
 {

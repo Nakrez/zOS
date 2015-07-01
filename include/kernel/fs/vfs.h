@@ -239,7 +239,24 @@ struct stat;
 struct req_rdwr;
 struct process;
 struct dirent;
-struct file;
+struct file_operation;
+
+struct file {
+    int used;
+
+    char mode;
+
+    /* Current offset in the file */
+    off_t offset;
+
+    ino_t inode;
+
+    dev_t dev;
+
+    struct file_operation *f_ops;
+
+    struct mount_entry *mount;
+};
 
 /**
  *  \brief  File system operation.
