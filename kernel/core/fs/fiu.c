@@ -183,18 +183,6 @@ static int fiu_mount(struct mount_entry *root, ino_t inode, int mount_nb)
     return res;
 }
 
-static int fiu_open(struct file *file, ino_t inode, pid_t pid, uid_t uid,
-                    gid_t gid, int flags, mode_t mode)
-{
-    return device_open(file->inode->dev, inode, pid, uid, gid, flags, mode);
-}
-
-static int fiu_read(struct file *file, struct process *process,
-                    struct req_rdwr *req, void *buf)
-{
-    return device_read_write(process, file->inode->dev, req, buf, VFS_READ);
-}
-
 static int fiu_getdirent(struct mount_entry *root, ino_t inode,
                          struct dirent *d, int index)
 {
@@ -245,6 +233,24 @@ end:
     return res;
 }
 
+static int fiu_open(struct file *file, ino_t inode, pid_t pid, uid_t uid,
+                    gid_t gid, int flags, mode_t mode)
+{
+    return device_open(file->inode->dev, inode, pid, uid, gid, flags, mode);
+}
+
+static int fiu_read(struct file *file, struct process *process,
+                    struct req_rdwr *req, void *buf)
+{
+    return device_read_write(process, file->inode->dev, req, buf, VFS_READ);
+}
+
+static int fiu_write(struct file *file, struct process *process,
+                     struct req_rdwr *req, void *buf)
+{
+    return device_read_write(process, file->inode->dev, req, buf, VFS_WRITE);
+}
+
 static int fiu_close(struct file *file, ino_t inode)
 {
     return device_close(file->inode->dev, inode);
@@ -260,5 +266,6 @@ struct fs_operation fiu_fs_ops = {
 struct file_operation fiu_f_ops = {
     .open = fiu_open,
     .read = fiu_read,
+    .write = fiu_write,
     .close = fiu_close,
 };

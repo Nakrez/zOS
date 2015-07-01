@@ -344,7 +344,7 @@ struct file_operation {
     int (*open)(struct file *, ino_t, pid_t, uid_t, gid_t, int, mode_t);
     int (*read)(struct file *, struct process *, struct req_rdwr *, void *buf);
     int (*write)(struct file *, struct process *, struct req_rdwr *,
-                 const void *buf);
+                 void *buf);
     int (*close)(struct file *, ino_t);
 };
 
