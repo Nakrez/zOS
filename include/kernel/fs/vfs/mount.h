@@ -7,7 +7,6 @@ struct mount_entry {
     int used;
 
     char *path;
-    struct vnode *node;
 
     dev_t dev;
 
