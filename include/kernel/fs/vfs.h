@@ -241,6 +241,58 @@ struct process;
 struct dirent;
 struct file_operation;
 
+/**
+ *  \brief  Attribute related to a file
+ */
+struct inode {
+    /**
+     *  \brief  The mode of the file
+     */
+    mode_t mode;
+
+    /**
+     *  \brief  The user id of the file
+     */
+    uid_t uid;
+
+    /**
+     *  \brief  The group id of the file
+     */
+    gid_t gid;
+
+    /**
+     *  \brief  The inode number of the file
+     */
+    ino_t inode;
+
+    /**
+     *  XXX: For now this is not true it contains the device of the file system
+     *
+     *  \brief  The device id of the file if the file is a device
+     */
+    dev_t dev;
+
+    /**
+     *  \brief  The size of the file
+     */
+    off_t size;
+
+    /**
+     *  \brief  The time of the last access to the file
+     */
+    time_t a_time;
+
+    /**
+     *  \brief  The last modification time of the file
+     */
+    time_t m_time;
+
+    /**
+     *  \brief  The last change time of the inode
+     */
+    time_t c_time;
+};
+
 struct file {
     int used;
 
