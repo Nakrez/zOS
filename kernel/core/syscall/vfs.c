@@ -4,7 +4,7 @@
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
-#include <kernel/fs/fui.h>
+#include <kernel/fs/fiu.h>
 
 #include <kernel/fs/vfs/mount.h>
 #include <kernel/fs/vfs/vops.h>
