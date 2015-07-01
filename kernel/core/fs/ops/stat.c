@@ -41,7 +41,7 @@ int vfs_stat(struct thread *t, const char *path, struct stat *buf)
     if (!mount_pt->fs_ops->stat)
         return -ENOSYS;
 
-    return mount_pt->fs_ops->stat(mount_pt, uid, gid, lookup.inode, buf);
+    return mount_pt->fs_ops->stat(mount_pt, uid, gid, lookup.inode.inode, buf);
 }
 
 int vfs_fstat(struct thread *t, int fd, struct stat *buf)

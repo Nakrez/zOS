@@ -283,22 +283,23 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
 
     ret->processed = 0;
 
+    /* XXX: Fix this, this is not used for now */
+    memset(&ret->inode, 0, sizeof (struct inode));
+
     /* Do we look for root */
-    if (!strcmp(path, "") || !strcmp(path, "/"))
-    {
+    if (!strcmp(path, "") || !strcmp(path, "/")) {
         if (!strcmp(path, "/"))
             ret->processed = 1;
 
-        ret->inode = TMPFS_ROOT_INODE;
-        ret->dev = TMPFS_DEV_ID;
         ret->ret = RES_OK;
-
-        /* ret->processed = 1; */
+        ret->inode.inode = TMPFS_ROOT_INODE;
+        ret->inode.dev = TMPFS_DEV_ID;
 
         return 0;
     }
 
-    if (!(path_copy = kmalloc(strlen(path) + 1)))
+    path_copy = kmalloc(strlen(path) + 1);
+    if (!path_copy)
         return -ENOMEM;
 
     if (*path == '/')
@@ -312,15 +313,12 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
 
     part = strtok_r(path_copy, "/", &path_left);
 
-    while (part)
-    {
+    while (part) {
         struct tmpfs_node *tmp = node;
         spinlock_lock(&node->lock);
 
-        klist_for_each_elem(&node->entries, dirent, next)
-        {
-            if (!strcmp(part, dirent->name))
-            {
+        klist_for_each_elem(&node->entries, dirent, next) {
+            if (!strcmp(part, dirent->name)) {
                 /* Get inode structure from inode table */
                 node = sb->inode_table[dirent->inode];
 
@@ -332,11 +330,11 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
 
         spinlock_unlock(&tmp->lock);
 
-        if (!found)
-        {
+        if (!found) {
             kfree(path_copy);
 
-            ret->inode = node->inode;
+            ret->inode.inode = node->inode;
+
             ret->ret = RES_KO;
 
             return 0;
@@ -347,13 +345,12 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
         ret->processed += path_left - part;
 
         /* Something is mounted on this directory */
-        if (node->type_perm & TMPFS_TYPE_MOUNT)
-        {
+        if (node->type_perm & TMPFS_TYPE_MOUNT) {
             ret->ret = RES_ENTER_MOUNT;
 
             /* When the type is a mount point the size is the device id */
-            ret->dev = node->size;
-            ret->inode = node->inode;
+            ret->inode.dev = node->size;
+            ret->inode.inode = node->inode;
 
             /*
              * If we enter a mount point we did not processed the / which is
@@ -370,9 +367,9 @@ static int tmpfs_lookup(struct mount_entry *root, const char *path,
         part = strtok_r(NULL, "/", &path_left);
     }
 
-    ret->inode = node->inode;
+    ret->inode.inode = node->inode;
+    ret->inode.dev = node->size;
     ret->ret = RES_OK;
-    ret->dev = node->size;
 
     kfree(path_copy);
 

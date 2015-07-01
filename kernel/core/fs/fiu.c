@@ -21,14 +21,15 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
     struct resp_lookup *answer;
     struct process *pdevice;
 
-    if (!(device = device_get(root->dev)))
+    device = device_get(root->dev);
+    if (!device)
         return -ENODEV;
 
-    if (!(message = message_alloc(sizeof (struct req_lookup))))
+    message = message_alloc(sizeof (struct req_lookup));
+    if (!message)
         return -ENOMEM;
 
-    if (!strcmp("", path))
-    {
+    if (!strcmp("", path)) {
         path_empty = 1;
         path = "/";
     }
@@ -40,19 +41,14 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
     request->path_size = strlen(path);
     request->path = (void *)as_map(pdevice->as, 0, 0, request->path_size,
                                    AS_MAP_USER | AS_MAP_WRITE);
-
-    if (!request->path)
-    {
+    if (!request->path) {
         message_free(message);
-
         return -ENOMEM;
     }
 
     res = as_copy(thread_current()->parent->as, pdevice->as, path,
                   request->path, request->path_size + 1);
-
-    if (res < 0)
-    {
+    if (res < 0) {
         as_unmap(pdevice->as, (vaddr_t)request->path, AS_UNMAP_RELEASE);
 
         message_free(message);
@@ -65,8 +61,8 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
 
     message->mid = (message->mid & ~0xFF) | VFS_LOOKUP;
 
-    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
-    {
+    res = channel_send_recv(device->channel, message, &response);
+    if (res < 0 ) {
         as_unmap(pdevice->as, (vaddr_t)request->path, AS_UNMAP_RELEASE);
 
         message_free(message);
@@ -77,14 +73,13 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
     answer = MESSAGE_EXTRACT(struct resp_lookup, response);
 
     ret->ret = answer->ret;
-    ret->inode = answer->inode;
 
     if (path_empty)
         ret->processed = 0;
     else
         ret->processed = answer->processed;
 
-    ret->dev = answer->dev;
+    memcpy(&ret->inode, &answer->inode, sizeof (struct inode));
 
     message_free(message);
     message_free(response);

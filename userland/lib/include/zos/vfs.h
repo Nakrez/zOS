@@ -33,6 +33,24 @@
 # define VFS_OPS_IOCTL (1 << 10)
 # define VFS_OPS_GETDIRENT (1 << 11)
 
+/**
+ *  \brief  See the structure that is in the kernel
+ */
+struct inode {
+    mode_t mode;
+
+    uid_t uid;
+    gid_t gid;
+    ino_t inode;
+    dev_t dev;
+
+    off_t size;
+
+    time_t a_time;
+    time_t m_time;
+    time_t c_time;
+};
+
 /*
  * Special request emitted by the kernel when remounting root with userland
  * file system driver
@@ -58,9 +76,8 @@ struct req_lookup {
 /* Lookup response */
 struct resp_lookup {
     int ret;
-    ino_t inode;
-    int16_t processed;
-    dev_t dev;
+    int processed;
+    struct inode inode;
 };
 
 /* Stat request */

@@ -181,13 +181,12 @@ void ext2_root_remount(struct fiu_internal *fiu, struct req_root_remount *req)
     if (ret != LOOKUP_RES_OK)
         return;
 
-    if (!(inode = ext2_icache_request(ext2, resp.inode)))
+    inode = ext2_icache_request(ext2, resp.inode.inode);
+    if (!inode)
         return;
 
-    if ((inode->type_perm & EXT2_TYPE_DIRECTORY) != EXT2_TYPE_DIRECTORY)
-    {
-        ext2_icache_release(ext2, resp.inode);
-
+    if ((inode->type_perm & EXT2_TYPE_DIRECTORY) != EXT2_TYPE_DIRECTORY) {
+        ext2_icache_release(ext2, resp.inode.inode);
         return;
     }
 
@@ -208,7 +207,10 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
 
     response->ret = -1;
     response->processed = 0;
-    response->dev = -1;
+
+    memset(&response->inode, 0, sizeof (struct inode));
+
+    response->inode.dev = -1;
 
     if (!inode)
         return LOOKUP_RES_KO;
@@ -238,7 +240,7 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
         if ((inode->type_perm & EXT2_TYPE_MOUNT_PT) == EXT2_TYPE_MOUNT_PT)
         {
             response->ret = LOOKUP_RES_ENTER_MOUNT;
-            response->dev = inode->lower_size;
+            response->inode.dev = inode->lower_size;
             ext2_icache_release(ext2, inode_nb);
 
             /*
@@ -273,7 +275,7 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
             if ((inode->type_perm & EXT2_TYPE_MOUNT_PT) == EXT2_TYPE_MOUNT_PT)
             {
                 response->ret = LOOKUP_RES_ENTER_MOUNT;
-                response->dev = inode->lower_size;
+                response->inode.dev = inode->lower_size;
 
                 /*
                  * If we enter a mount point we did not processed the / which
@@ -289,7 +291,7 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
         }
     }
 
-    response->inode = inode_nb;
+    response->inode.inode = inode_nb;
 
     free(path_complete);
 

@@ -39,6 +39,6 @@ int vfs_mkdir(struct thread *t, const char *path, mode_t mode)
     if (ret == path_size)
         return -EEXIST;
 
-    return mount_pt->fs_ops->mkdir(mount_pt, path + ret, res.inode, uid, gid,
-                                   mode);
+    return mount_pt->fs_ops->mkdir(mount_pt, path + ret, res.inode.inode, uid,
+                                   gid, mode);
 }

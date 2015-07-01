@@ -95,7 +95,7 @@ static int do_mount(struct thread *t, const char *mount_path, int mount_pt_nb)
     if (ret != path_size)
         return -ENOENT;
 
-    return mount_pt->fs_ops->mount(mount_pt, res.inode, mount_pt_nb);
+    return mount_pt->fs_ops->mount(mount_pt, res.inode.inode, mount_pt_nb);
 }
 
 static void vfs_remount_root_message(dev_t dev, const char *path, int mount_nb)

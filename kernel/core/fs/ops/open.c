@@ -61,22 +61,22 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
 
     inode->mode = mode;
 
-    if (res.dev < 0) {
+    if (res.inode.dev < 0) {
         file->mount = mount_pt;
         file->f_ops = mount_pt->f_ops;
 
         inode->dev = mount_pt->dev;
 
-        inode_open = res.inode;
+        inode_open = res.inode.inode;
     } else {
         struct device *device;
 
-        device = device_get(res.dev);
+        device = device_get(res.inode.dev);
 
         file->mount = NULL;
         file->f_ops = device->f_ops;
 
-        inode->dev = res.dev;
+        inode->dev = res.inode.dev;
 
         inode_open = -1;
     }

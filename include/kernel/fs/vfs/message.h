@@ -4,6 +4,7 @@
 # include <kernel/types.h>
 # include <kernel/klist.h>
 
+# include <kernel/fs/vfs.h>
 # include <kernel/fs/vfs/vops.h>
 
 # define MESSAGE_EXTRACT(type, msg) ((type *)(msg + 1))
@@ -50,9 +51,8 @@ struct req_lookup {
 /* Lookup response */
 struct resp_lookup {
     int ret;
-    ino_t inode;
     int16_t processed;
-    dev_t dev;
+    struct inode inode;
 };
 
 /* Stat request */
