@@ -52,7 +52,8 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
 
     if (res.dev < 0) {
         file->mount = mount_pt;
-        file->dev = -1;
+        file->inode = res.inode;
+        file->dev = mount_pt->dev;
         file->f_ops = mount_pt->f_ops;
     } else {
         struct device *device;
@@ -61,6 +62,7 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
 
         file->mount = NULL;
         file->dev = res.dev;
+        file->inode = -1;
         file->f_ops = device->f_ops;
     }
 
@@ -69,7 +71,7 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
         return -ENOSYS;
     }
 
-    ret = file->f_ops->open(file, res.inode, process->pid, uid, gid, flags,
+    ret = file->f_ops->open(file, file->inode, process->pid, uid, gid, flags,
                             mode);
     if (ret < 0) {
         process_free_fd(process, fd);
