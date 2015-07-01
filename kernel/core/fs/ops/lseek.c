@@ -10,6 +10,7 @@
 
 int vfs_lseek(struct thread *t, int fd, off_t offset, int whence)
 {
+    struct file *file;
     struct process *process;
 
     /* Kernel request */
@@ -25,38 +26,33 @@ int vfs_lseek(struct thread *t, int fd, off_t offset, int whence)
     if (fd < 0 || fd > PROCESS_MAX_OPEN_FD)
         return -EINVAL;
 
-    if (!process->files[fd].used)
+    file = &process->files[fd];
+
+    if (!file->used)
         return -EINVAL;
 
-    if (whence & VFS_SEEK_SET)
-    {
+    if (whence & VFS_SEEK_SET) {
         if (offset < 0)
             return -EINVAL;
 
-        process->files[fd].offset = offset;
-    }
-    else if (whence & VFS_SEEK_CUR)
-    {
-        size_t old_off = process->files[fd].offset;
+        file->offset = offset;
+    } else if (whence & VFS_SEEK_CUR) {
+        size_t old_off = file->offset;
 
-        process->files[fd].offset += offset;
+        file->offset += offset;
 
-        if (offset < 0 && process->files[fd].offset > old_off)
-        {
-            process->files[fd].offset = old_off;
-
+        if (offset < 0 && file->offset > old_off) {
+            file->offset = old_off;
             return -EINVAL;
         }
 
-        if (offset > 0 && process->files[fd].offset < old_off)
-        {
+        if (offset > 0 && file->offset < old_off) {
             process->files[fd].offset = old_off;
-
             return -EINVAL;
         }
-    }
-    else
+    } else {
         kernel_panic("VFS_SEEK_END not implemented yet");
+    }
 
     return 0;
 }

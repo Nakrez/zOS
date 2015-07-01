@@ -22,6 +22,6 @@ int vfs_getdirent(struct thread *t, int fd, struct dirent *dirent, int index)
         return -ENOSYS;
 
     return p->files[fd].mount->fs_ops->getdirent(p->files[fd].mount,
-                                                 p->files[fd].inode, dirent,
-                                                 index);
+                                                 p->files[fd].inode->inode,
+                                                 dirent, index);
 }

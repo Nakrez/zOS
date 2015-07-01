@@ -73,5 +73,5 @@ int vfs_fstat(struct thread *t, int fd, struct stat *buf)
         return -ENOSYS;
 
     return p->files[fd].mount->fs_ops->stat(p->files[fd].mount, uid, gid,
-                                            p->files[fd].inode, buf);
+                                            p->files[fd].inode->inode, buf);
 }

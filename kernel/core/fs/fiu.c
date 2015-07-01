@@ -191,13 +191,13 @@ static int fiu_mount(struct mount_entry *root, ino_t inode, int mount_nb)
 static int fiu_open(struct file *file, ino_t inode, pid_t pid, uid_t uid,
                     gid_t gid, int flags, mode_t mode)
 {
-    return device_open(file->dev, inode, pid, uid, gid, flags, mode);
+    return device_open(file->inode->dev, inode, pid, uid, gid, flags, mode);
 }
 
 static int fiu_read(struct file *file, struct process *process,
                     struct req_rdwr *req, void *buf)
 {
-    return device_read_write(process, file->dev, req, buf, VFS_READ);
+    return device_read_write(process, file->inode->dev, req, buf, VFS_READ);
 }
 
 static int fiu_getdirent(struct mount_entry *root, ino_t inode,
@@ -252,7 +252,7 @@ end:
 
 static int fiu_close(struct file *file, ino_t inode)
 {
-    return device_close(file->dev, inode);
+    return device_close(file->inode->dev, inode);
 }
 
 struct fs_operation fiu_fs_ops = {

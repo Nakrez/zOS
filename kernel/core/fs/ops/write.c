@@ -30,7 +30,7 @@ int vfs_write(struct thread *t, int fd, const void *buf, size_t count)
     if (!file->f_ops->write)
         return -ENOSYS;
 
-    request.inode = file->inode;
+    request.inode = file->inode->inode;
     request.size = count;
     request.off = file->offset;
 

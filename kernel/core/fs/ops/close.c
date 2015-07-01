@@ -29,7 +29,7 @@ int vfs_close(struct thread *t, int fd)
         return 0;
     }
 
-    ret = file->f_ops->close(file, file->inode);
+    ret = file->f_ops->close(file, file->inode->inode);
     if (ret < 0)
         return ret;
 

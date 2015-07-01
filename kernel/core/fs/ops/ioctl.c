@@ -25,10 +25,10 @@ int vfs_ioctl(struct thread *t, int fd, int req, int *argp)
     if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
         return -EBADF;
 
-    if (p->files[fd].dev < 0)
+    if (p->files[fd].inode->dev < 0)
         return -ENOTTY;
 
-    if (!(device = device_get(p->files[fd].dev)))
+    if (!(device = device_get(p->files[fd].inode->dev)))
         return -ENODEV;
 
     if (!(device->ops & VFS_OPS_IOCTL))
@@ -39,7 +39,7 @@ int vfs_ioctl(struct thread *t, int fd, int req, int *argp)
 
     request = MESSAGE_EXTRACT(struct req_ioctl, message);
 
-    request->inode = p->files[fd].inode;
+    request->inode = p->files[fd].inode->inode;
     request->request = req;
     request->with_argp = argp != NULL;
 

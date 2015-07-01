@@ -294,19 +294,29 @@ struct inode {
 };
 
 struct file {
+    /**
+     *  \brief  Is the file used
+     */
     int used;
 
-    char mode;
+    /**
+     *  \brief  Attribute about the file
+     */
+    struct inode *inode;
 
-    /* Current offset in the file */
+    /**
+     *  \brief  The current offset in the file
+     */
     off_t offset;
 
-    ino_t inode;
-
-    dev_t dev;
-
+    /**
+     *  \brief  Pointers to operation callbacks
+     */
     struct file_operation *f_ops;
 
+    /**
+     *  \brief  The mount entry this file belongs to
+     */
     struct mount_entry *mount;
 };
 

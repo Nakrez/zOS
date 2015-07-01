@@ -4,6 +4,8 @@
 
 #include <kernel/proc/thread.h>
 
+#include <kernel/mem/kmalloc.h>
+
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/vfs/vops.h>
 #include <kernel/fs/vfs/device.h>
@@ -19,6 +21,8 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
     struct resp_lookup res;
     struct mount_entry *mount_pt;
     struct process *process;
+    struct inode *inode;
+    ino_t inode_open;
     uid_t uid;
     gid_t gid;
 
@@ -43,43 +47,56 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
     if (ret != path_size)
         return -ENOENT;
 
+    inode = kmalloc(sizeof (struct inode));
+    if (!inode)
+        return -ENOMEM;
+
     if ((fd = process_new_fd(process)) < 0)
         return fd;
 
     file = &process->files[fd];
 
+    file->inode = inode;
     file->offset = 0;
-    file->mode = mode;
+
+    inode->mode = mode;
 
     if (res.dev < 0) {
         file->mount = mount_pt;
-        file->inode = res.inode;
-        file->dev = mount_pt->dev;
         file->f_ops = mount_pt->f_ops;
+
+        inode->dev = mount_pt->dev;
+
+        inode_open = res.inode;
     } else {
         struct device *device;
 
         device = device_get(res.dev);
 
         file->mount = NULL;
-        file->dev = res.dev;
-        file->inode = -1;
         file->f_ops = device->f_ops;
+
+        inode->dev = res.dev;
+
+        inode_open = -1;
     }
 
     if (!file->f_ops->open) {
-        process_free_fd(process, fd);
-        return -ENOSYS;
+        ret = -ENOSYS;
+        goto error;
     }
 
-    ret = file->f_ops->open(file, file->inode, process->pid, uid, gid, flags,
+    ret = file->f_ops->open(file, inode_open, process->pid, uid, gid, flags,
                             mode);
-    if (ret < 0) {
-        process_free_fd(process, fd);
-        return ret;
-    }
+    if (ret < 0)
+        goto error;
 
-    file->inode = ret;
+    inode->inode = ret;
 
     return fd;
+
+error:
+    process_free_fd(process, fd);
+    kfree(inode);
+    return ret;
 }
