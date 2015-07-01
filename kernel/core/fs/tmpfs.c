@@ -37,6 +37,7 @@
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/tmpfs.h>
 
+#include <kernel/fs/vfs/file.h>
 #include <kernel/fs/vfs/message.h>
 #include <kernel/fs/vfs/mount.h>
 
@@ -530,10 +531,10 @@ static int tmpfs_mount(struct mount_entry *root, ino_t inode, int mount_pt_nb)
     return 0;
 }
 
-static int tmpfs_open(struct mount_entry *root, ino_t inode, pid_t pid,
-                      uid_t uid, gid_t gid, int flags, mode_t mode)
+static int tmpfs_open(struct file *file, ino_t inode, pid_t pid, uid_t uid,
+                      gid_t gid, int flags, mode_t mode)
 {
-    (void)root;
+    (void)file;
     (void)inode;
     (void)pid;
     (void)uid;
@@ -583,9 +584,9 @@ static int tmpfs_getdirent(struct mount_entry *root, ino_t inode,
     return 0;
 }
 
-static int tmpfs_close(struct mount_entry *root, ino_t inode)
+static int tmpfs_close(struct file *file, ino_t inode)
 {
-    (void) root;
+    (void) file;
     (void) inode;
 
     return 0;
@@ -603,8 +604,11 @@ struct fs_operation tmpfs_fs_ops = {
     .mknod = tmpfs_mknod,
     .stat = tmpfs_stat,
     .mount = tmpfs_mount,
-    .open = tmpfs_open,
     .getdirent = tmpfs_getdirent,
-    .close = tmpfs_close,
     .cleanup = tmpfs_cleanup,
+};
+
+struct file_operation tmpfs_f_ops = {
+    .open = tmpfs_open,
+    .close = tmpfs_close,
 };

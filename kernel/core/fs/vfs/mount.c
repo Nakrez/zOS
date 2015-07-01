@@ -128,13 +128,17 @@ int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
     int ret;
     int mount_nb;
     struct fs_operation *fs_ops;
+    struct file_operation *f_ops;
 
-    if (dev == TMPFS_DEV_ID)
+    if (dev == TMPFS_DEV_ID) {
         fs_ops = &tmpfs_fs_ops;
-    else if (!device_get(dev))
+        f_ops = &tmpfs_f_ops;
+    } else if (!device_get(dev)) {
         return -EBADF;
-    else
+    } else {
         fs_ops = &fiu_fs_ops;
+        f_ops = &fiu_f_ops;
+    }
 
     if ((mount_nb = vfs_check_mount_pts(dev, mount_path)) < 0)
         return mount_nb;
@@ -179,6 +183,7 @@ int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
     strcpy(mount_points[mount_nb].path, mount_path);
 
     mount_points[mount_nb].fs_ops = fs_ops;
+    mount_points[mount_nb].f_ops = f_ops;
     mount_points[mount_nb].dev = dev;
 
     return 0;

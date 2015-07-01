@@ -11,6 +11,7 @@ int vfs_close(struct thread *t, int fd)
 {
     int ret;
     struct process *p;
+    struct file *file;
 
     /* Kernel request */
     if (!t)
@@ -21,12 +22,14 @@ int vfs_close(struct thread *t, int fd)
     if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
         return -EINVAL;
 
-    if (p->files[fd].dev >= 0)
-        ret = device_close(p->files[fd].dev, p->files[fd].inode);
-    else
-        ret = p->files[fd].mount->fs_ops->close(p->files[fd].mount,
-                                                p->files[fd].inode);
+    file = &p->files[fd];
 
+    if (!file->f_ops->close) {
+        process_free_fd(p, fd);
+        return 0;
+    }
+
+    ret = file->f_ops->close(file, file->inode);
     if (ret < 0)
         return ret;
 

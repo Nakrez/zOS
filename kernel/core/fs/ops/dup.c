@@ -28,7 +28,8 @@ int vfs_dup(struct thread *t, int oldfd)
     p->files[newfd].offset = p->files[oldfd].offset;
     p->files[newfd].inode = p->files[oldfd].inode;
     p->files[newfd].dev = p->files[oldfd].dev;
-    p->files[newfd].mount= p->files[oldfd].mount;
+    p->files[newfd].mount = p->files[oldfd].mount;
+    p->files[newfd].f_ops = p->files[oldfd].f_ops;
 
     return newfd;
 }
@@ -61,7 +62,8 @@ int vfs_dup2(struct thread *t, int oldfd, int newfd)
     p->files[newfd].offset = p->files[oldfd].offset;
     p->files[newfd].inode = p->files[oldfd].inode;
     p->files[newfd].dev = p->files[oldfd].dev;
-    p->files[newfd].mount= p->files[oldfd].mount;
+    p->files[newfd].mount = p->files[oldfd].mount;
+    p->files[newfd].f_ops = p->files[oldfd].f_ops;
 
     return newfd;
 }

@@ -14,6 +14,7 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
     int ret;
     int fd;
     int path_size = strlen(path);
+    struct file *file;
     struct resp_lookup res;
     struct mount_entry *mount_pt;
     struct process *process;
@@ -21,26 +22,21 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
     gid_t gid;
 
     /* Kernel request */
-    if (!t)
-    {
+    if (!t) {
         uid = 0;
         gid = 0;
 
         process = process_get(0);
-    }
-    else
-    {
+    } else {
         uid = t->uid;
         gid = t->gid;
 
         process = t->parent;
     }
 
-    if ((ret = vfs_lookup(t, path, &res, &mount_pt)) < 0)
+    ret = vfs_lookup(t, path, &res, &mount_pt);
+    if (ret < 0)
         return ret;
-
-    if (!mount_pt->fs_ops->open)
-        return -ENOSYS;
 
     /* FIXME: Allow file creation */
     if (ret != path_size)
@@ -49,33 +45,38 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
     if ((fd = process_new_fd(process)) < 0)
         return fd;
 
-    if (res.dev < 0)
-        ret = mount_pt->fs_ops->open(mount_pt, res.inode, process->pid, uid, gid,
-                                     flags, mode);
-    else
-        ret = device_open(res.dev, -1, process->pid, uid, gid, flags, mode);
+    file = &process->files[fd];
 
-    if (ret < 0)
-    {
+    file->offset = 0;
+    file->mode = mode;
+
+    if (res.dev < 0) {
+        file->mount = mount_pt;
+        file->dev = -1;
+        file->f_ops = mount_pt->f_ops;
+    } else {
+        struct device *device;
+
+        device = device_get(res.dev);
+
+        file->mount = NULL;
+        file->dev = res.dev;
+        file->f_ops = device->f_ops;
+    }
+
+    if (!file->f_ops->open) {
         process_free_fd(process, fd);
+        return -ENOSYS;
+    }
 
+    ret = file->f_ops->open(file, res.inode, process->pid, uid, gid, flags,
+                            mode);
+    if (ret < 0) {
+        process_free_fd(process, fd);
         return ret;
     }
 
-    process->files[fd].offset = 0;
-    process->files[fd].mode = mode;
-    process->files[fd].inode = ret;
-
-    if (res.dev < 0)
-    {
-        process->files[fd].mount = mount_pt;
-        process->files[fd].dev = -1;
-    }
-    else
-    {
-        process->files[fd].mount = NULL;
-        process->files[fd].dev = res.dev;
-    }
+    file->inode = ret;
 
     return fd;
 }

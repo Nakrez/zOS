@@ -40,6 +40,7 @@ static struct device devices[VFS_MAX_DEVICE];
 static spinlock_t device_lock = SPINLOCK_INIT;
 
 static dev_t device_create(pid_t pid, const char *name, vop_t ops,
+                           struct file_operation *f_ops,
                            struct device **device)
 {
     int found = 0;
@@ -78,6 +79,7 @@ static dev_t device_create(pid_t pid, const char *name, vop_t ops,
             devices[i].active = 1;
             devices[i].pid = pid;
             devices[i].ops = ops;
+            devices[i].f_ops = f_ops;
 
             *device = &devices[i];
         }
@@ -104,13 +106,14 @@ static dev_t device_create(pid_t pid, const char *name, vop_t ops,
     return (*device)->id;
 }
 
-dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops)
+dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops,
+                        struct file_operation *f_ops)
 {
     int res;
     struct device *device = NULL;
     char *node_path;
 
-    res = device_create(pid, name, ops, &device);
+    res = device_create(pid, name, ops, f_ops, &device);
 
     if (res < 0)
         return res;

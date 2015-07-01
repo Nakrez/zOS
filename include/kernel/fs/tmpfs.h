@@ -158,5 +158,6 @@ struct tmpfs_sb {
 };
 
 extern struct fs_operation tmpfs_fs_ops;
+extern struct file_operation tmpfs_f_ops;
 
 #endif /* !FS_VFS_TMPFS_H */

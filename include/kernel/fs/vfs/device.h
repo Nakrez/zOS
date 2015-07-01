@@ -68,6 +68,11 @@ struct device {
     vop_t ops;
 
     /**
+     *  \brief  The file operation associated with the device
+     */
+    struct file_operation *f_ops;
+
+    /**
      * \brief   The channel used to communicate with this device
      */
     struct vchannel *channel;
@@ -76,17 +81,19 @@ struct device {
 /**
  * \brief   Create a new device
  *
- * \param    name    The name of the device
+ * \param   name    The name of the device
  * \param   pid     The pid of the creating process
  * \param   perm    Unix permission for the created node access in /dev
  * \param   ops     Operations supported by the device
+ * \param   f_ops   File operation associated with the device
  *
  * \return  The device id the device was created
  * \return  -EINVAL: Invalid supported operations
  * \return  -ENOMEM: Cannot allocate memory
  * \return  -EEXIST: Device already exists
  */
-dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops);
+dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops,
+                        struct file_operation *f_ops);
 
 /**
  * \brief   Get device structure from device id

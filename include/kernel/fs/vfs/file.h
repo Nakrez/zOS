@@ -13,6 +13,8 @@
 /* Special mode for fd being used by the driver to get messages */
 # define VFS_MODE_CHANNEL (1 << 3)
 
+struct file_operation;
+
 struct file {
     int used;
 
@@ -24,6 +26,8 @@ struct file {
     ino_t inode;
 
     dev_t dev;
+
+    struct file_operation *f_ops;
 
     struct mount_entry *mount;
 };

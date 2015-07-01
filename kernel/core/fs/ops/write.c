@@ -14,6 +14,7 @@ int vfs_write(struct thread *t, int fd, const void *buf, size_t count)
     int ret;
     struct process *p;
     struct req_rdwr request;
+    struct file *file;
 
     /* Kernel request */
     if (!t)
@@ -24,26 +25,20 @@ int vfs_write(struct thread *t, int fd, const void *buf, size_t count)
     if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
         return -EINVAL;
 
-    request.inode = p->files[fd].inode;
+    file = &p->files[fd];
+
+    if (!file->f_ops->write)
+        return -ENOSYS;
+
+    request.inode = file->inode;
     request.size = count;
-    request.off = p->files[fd].offset;
+    request.off = file->offset;
 
-    if (p->files[fd].dev >= 0)
-        ret = device_read_write(p, p->files[fd].dev, &request, (void *)buf,
-                                VFS_WRITE);
-    else
-    {
-        if (!p->files[fd].mount->fs_ops->write)
-            return -ENOSYS;
-
-        ret = p->files[fd].mount->fs_ops->write(p->files[fd].mount, p, &request,
-                                                buf);
-    }
-
+    ret = file->f_ops->write(file, p, &request, buf);
     if (ret < 0)
         return ret;
 
-    p->files[fd].offset = request.off;
+    file->offset = request.off;
 
     return ret;
 }

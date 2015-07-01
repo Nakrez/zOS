@@ -4,6 +4,7 @@
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
+#include <kernel/fs/fui.h>
 
 #include <kernel/fs/vfs/mount.h>
 #include <kernel/fs/vfs/vops.h>
@@ -21,7 +22,7 @@ int sys_vfs_device_create(struct syscall *interface)
     if (thread_current()->uid != 0)
         return -EPERM;
 
-    return vfs_device_create(name, pid, perm, ops);
+    return vfs_device_create(name, pid, perm, ops, &fiu_f_ops);
 }
 
 int sys_vfs_device_recv_request(struct syscall *interface)
