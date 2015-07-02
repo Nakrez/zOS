@@ -42,6 +42,8 @@ int vfs_mknod(struct thread *t, const char *path, mode_t mode, uint16_t dev);
 int vfs_stat(struct thread *t, const char *path, struct stat *buf);
 int vfs_fstat(struct thread *t, int fd, struct stat *buf);
 int vfs_open(struct thread *t, const char *path, int flags, mode_t mode);
+int vfs_open_device(struct thread *t, const char *device_name, int flags,
+                    mode_t mode);
 int vfs_read(struct thread *t, int fd, void *buf, size_t count);
 int vfs_write(struct thread *t, int fd, const void *buf, size_t count);
 int vfs_close(struct thread *t, int fd);
