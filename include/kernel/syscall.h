@@ -84,5 +84,6 @@ int sys_vfs_dup2(struct syscall *interface);
 int sys_vfs_getdirent(struct syscall *interface);
 
 int sys_vfs_device_exists(struct syscall *interface);
+int sys_vfs_open_device(struct syscall *interface);
 
 #endif /* !SYSCALL_H */

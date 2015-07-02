@@ -175,3 +175,12 @@ int sys_vfs_device_exists(struct syscall *interface)
 
     return device_exists(device);
 }
+
+int sys_vfs_open_device(struct syscall *interface)
+{
+    const char *device_name = (void *)interface->arg1;
+    int flags = interface->arg2;
+    int mode = interface->arg3;
+
+    return vfs_open_device(thread_current(), device_name, flags, mode);
+}
