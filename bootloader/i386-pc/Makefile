@@ -42,6 +42,6 @@ endif
 ifeq ($(CONFIG_BUILD_AHCI),y)
 	@echo "module /bin/ahci" >> $@
 endif
-	@echo "module /bin/ext2 /dev/ata-disk0 /" >> $@
+	@echo "module /bin/ext2 ata-disk0 /" >> $@
 	@echo "boot" >> $@
 	@echo "}" >> $@

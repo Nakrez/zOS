@@ -47,7 +47,7 @@ static int ext2fs_load_group_table(struct ext2fs *ext2)
     return (size_t)ret == sizeof (struct ext2_group_descriptor) * gt_size;
 }
 
-int ext2fs_initialize(struct ext2fs *ext2, const char *disk)
+int ext2fs_initialize(struct ext2fs *ext2, const char *device)
 {
     int ret;
     int read_size = 0;
@@ -56,7 +56,7 @@ int ext2fs_initialize(struct ext2fs *ext2, const char *disk)
     /* Wait for the disk driver to be alive */
     while (timeout < EXT2FS_OPEN_TIMEOUT)
     {
-        ext2->fd = open(disk, 0, 0);
+        ext2->fd = open_device(device, 0, 0);
 
         if (ext2->fd >= 0)
             break;
