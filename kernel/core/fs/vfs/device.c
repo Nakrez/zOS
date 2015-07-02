@@ -152,6 +152,9 @@ struct device *device_get(dev_t dev)
 dev_t device_get_from_name(const char *name)
 {
     for (int i = 0; i < VFS_MAX_DEVICE; ++i) {
+        if (!devices[i].active)
+            continue;
+
         if (!strcmp(devices[i].name, name))
             return devices[i].id;
     }
