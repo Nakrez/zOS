@@ -184,4 +184,6 @@ struct resp_mount {
     int ret;
 };
 
+int open_device(const char *device_name, int flags, mode_t mode);
+
 #endif /* !ZOS_VFS_H */

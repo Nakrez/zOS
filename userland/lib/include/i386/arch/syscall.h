@@ -33,6 +33,7 @@
 # define SYS_DUP2 30
 # define SYS_GETDIRENT 31
 # define SYS_DEVICE_EXISTS 32
+# define SYS_OPEN_DEVICE 33
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \
