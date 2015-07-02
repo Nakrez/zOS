@@ -34,7 +34,7 @@ int vfs_write(struct thread *t, int fd, const void *buf, size_t count)
     request.size = count;
     request.off = file->offset;
 
-    ret = file->f_ops->write(file, p, &request, buf);
+    ret = file->f_ops->write(file, p, &request, (void *)buf);
     if (ret < 0)
         return ret;
 
