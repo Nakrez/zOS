@@ -36,16 +36,6 @@
 
 #include "exec.h"
 
-static int tty_ready(const char *tty)
-{
-    struct stat s;
-
-    if (stat(tty, &s) < 0)
-        return 0;
-
-    return 1;
-}
-
 static int exec_entry(struct init_prio_entry *entry)
 {
     int in = -1;
@@ -59,7 +49,7 @@ static int exec_entry(struct init_prio_entry *entry)
 
     if (strlen(entry->tty) > 0)
     {
-        if ((in = open(entry->tty, O_RDWR, 0)) < 0)
+        if ((in = open_device(entry->tty, O_RDWR, 0)) < 0)
             goto error;
 
         if ((out = dup2(in, STDOUT_FILENO)) < 0)
@@ -120,7 +110,7 @@ int init_conf_execute(struct init_conf *config)
                     {
                         /* If we are ready to launch the binary do it */
                         if (strlen(entry->tty) == 0 ||
-                            tty_ready(entry->tty))
+                            device_exists(entry->tty))
                         {
                             if (exec_entry(entry) < 0)
                                 return -1;
