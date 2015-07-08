@@ -37,7 +37,8 @@ struct init_conf *init_conf_create(void)
 {
     struct init_conf *conf;
 
-    if (!(conf = malloc(sizeof (struct init_conf))))
+    conf = malloc(sizeof (struct init_conf));
+    if (!conf)
         return NULL;
 
     conf->number_of_entries = 0;
@@ -56,17 +57,16 @@ static int read_conf_from_fd(int conf_fd, char **config_text)
     if (fstat(conf_fd, &stat) < 0)
         return -1;
 
-    if (!(*config_text = malloc(stat.st_size + 1)))
+    *config_text = malloc(stat.st_size + 1);
+    if (!*config_text)
         return -1;
 
     tmp = *config_text;
 
-    while (stat.st_size > 0)
-    {
-        if ((ret = read(conf_fd, tmp, stat.st_size)) < 0)
-        {
+    while (stat.st_size > 0) {
+        ret = read(conf_fd, tmp, stat.st_size);
+        if (ret < 0) {
             free(*config_text);
-
             return -1;
         }
 
@@ -104,24 +104,22 @@ static int import_entry(char *entry, struct init_conf *conf)
     tty_str = strtok_r(NULL, ",", &save_end);
     device_str = save_end;
 
-    if (!priority_str || !binary_str || !argv_str || !tty_str)
-    {
+    if (!priority_str || !binary_str || !argv_str || !tty_str) {
         uprint("Init: Invalid entry format");
-
         return -1;
     }
 
     priority = strtol(priority_str, &save_end, 10);
 
     if (*save_end != '\0' || priority > INIT_LOWEST_PRIO ||
-        priority < INIT_HIGHEST_PRIO)
-    {
+        priority < INIT_HIGHEST_PRIO) {
         uprint("Init: Invalid priority");
 
         return -1;
     }
 
-    if (!(init_entry = malloc(sizeof (struct init_prio_entry))))
+    init_entry = malloc(sizeof (struct init_prio_entry));
+    if (!init_entry)
         goto mem_error;
 
     init_entry->bin = NULL;
@@ -131,18 +129,21 @@ static int import_entry(char *entry, struct init_conf *conf)
     init_entry->launched = 0;
     init_entry->ready = 0;
 
-    if (!(init_entry->bin = strdup(binary_str)))
+    init_entry->bin = strdup(binary_str);
+    if (!init_entry->bin)
         goto mem_error;
 
-    if (!(init_entry->argv = strdup(argv_str)))
+    init_entry->argv = strdup(argv_str);
+    if (!init_entry->argv)
         goto mem_error;
 
-    if (!(init_entry->tty = strdup(tty_str)))
+    init_entry->tty = strdup(tty_str);
+    if (!init_entry->tty)
         goto mem_error;
 
-    if (device_str && strlen(device_str) > 0)
-    {
-        if (!(init_entry->device = strdup(device_str)))
+    if (device_str && strlen(device_str) > 0) {
+        init_entry->device = strdup(device_str);
+        if (!init_entry->device)
             goto mem_error;
     }
 
@@ -154,8 +155,7 @@ static int import_entry(char *entry, struct init_conf *conf)
 mem_error:
     uprint("Init: Not enough memory");
 
-    if (init_entry)
-    {
+    if (init_entry) {
         free(init_entry->bin);
         free(init_entry->argv);
         free(init_entry->tty);
@@ -178,8 +178,7 @@ int init_conf_parse(int conf_fd, struct init_conf *conf)
 
     cur = config_text;
 
-    while (!end)
-    {
+    while (!end) {
         entry = cur;
 
         while (*cur && *cur != '\n')
@@ -195,8 +194,7 @@ int init_conf_parse(int conf_fd, struct init_conf *conf)
             ++entry;
 
         /* Empty line */
-        if (cur == entry)
-        {
+        if (cur == entry) {
             ++cur;
             continue;
         }
@@ -207,8 +205,7 @@ int init_conf_parse(int conf_fd, struct init_conf *conf)
         if (*entry == '#')
             continue;
 
-        if (import_entry(entry, conf) < 0)
-        {
+        if (import_entry(entry, conf) < 0) {
             free(config_text);
 
             return -1;
@@ -223,30 +220,29 @@ int init_conf_parse(int conf_fd, struct init_conf *conf)
 
 void init_conf_destroy(struct init_conf *conf)
 {
-    struct init_prio_entry *entry;
     struct init_prio_entry *tmp;
 
     if (!conf)
         return;
 
-    for (int i = INIT_HIGHEST_PRIO; i <= INIT_LOWEST_PRIO; ++i)
-    {
-        if (conf->entries[i])
-        {
-            entry = conf->entries[i];
+    for (int i = INIT_HIGHEST_PRIO; i <= INIT_LOWEST_PRIO; ++i) {
+        struct init_prio_entry *entry;
 
-            while (entry)
-            {
-                tmp = entry->next;
+        if (!conf->entries[i])
+            continue;
 
-                free(entry->bin);
-                free(entry->argv);
-                free(entry->tty);
-                free(entry->device);
-                free(entry);
+        entry = conf->entries[i];
 
-                entry = tmp;
-            }
+        while (entry) {
+            tmp = entry->next;
+
+            free(entry->bin);
+            free(entry->argv);
+            free(entry->tty);
+            free(entry->device);
+            free(entry);
+
+            entry = tmp;
         }
     }
 

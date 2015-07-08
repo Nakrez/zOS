@@ -6,11 +6,11 @@
 0,/bin/null,,,null
 
 # Common driver (keyboard, video, ...)
-1,/bin/kbd,,null,
-1,/bin/video,,null,
+1,/bin/kbd,,null,kbd
+1,/bin/video,,null,video
 
 # TTY
-2,/bin/tty_ctrl,,null,
+2,/bin/tty_ctrl,,null,tty0
 
 # Userland programs (shell, log, login, ...)
 3,/bin/shell,,tty0,

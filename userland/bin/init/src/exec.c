@@ -47,23 +47,25 @@ static int exec_entry(struct init_prio_entry *entry)
     sprintf(buf, "Init: Launching %s", entry->bin);
     uprint(buf);
 
-    if (strlen(entry->tty) > 0)
-    {
-        if ((in = open_device(entry->tty, O_RDWR, 0)) < 0)
+    if (strlen(entry->tty) > 0) {
+        in = open_device(entry->tty, O_RDWR, 0);
+        if (in < 0)
             goto error;
 
-        if ((out = dup2(in, STDOUT_FILENO)) < 0)
+        out = dup2(in, STDOUT_FILENO);
+        if (out < 0)
             goto error;
 
-        if ((err = dup2(in, STDERR_FILENO)) < 0)
+        err = dup2(in, STDERR_FILENO);
+        if (err < 0)
             goto error;
     }
 
-    if ((pid = fork()) < 0)
+    pid = fork();
+    if (pid < 0)
         goto error;
 
-    if (!pid)
-    {
+    if (pid == 0) {
         char *argv[] = { entry->bin, NULL };
 
         if (execv(entry->bin, argv) < 0)
@@ -86,58 +88,72 @@ error:
     return -1;
 }
 
-int init_conf_execute(struct init_conf *config)
+static int conf_exec_level(struct init_conf *config, int level)
 {
-    struct init_prio_entry *entry;
+    int count;
+    int count_ready;
+    char buf[100];
 
-    for (int i = INIT_HIGHEST_PRIO; i <= INIT_LOWEST_PRIO; ++i)
-    {
-        if (config->entries[i])
-        {
-            int count;
-            int count_ready;
+    sprintf(buf, "Executing run level %d", level);
+    uprint(buf);
 
-            do
-            {
-                count = 0;
-                count_ready = 0;
+    do {
+        struct init_prio_entry *entry;
 
-                entry = config->entries[i];
+        entry = config->entries[level];
 
-                while (entry)
-                {
-                    if (!entry->launched)
-                    {
-                        /* If we are ready to launch the binary do it */
-                        if (strlen(entry->tty) == 0 ||
-                            device_exists(entry->tty))
-                        {
-                            if (exec_entry(entry) < 0)
-                                return -1;
+        count = 0;
+        count_ready = 0;
 
-                            entry->launched = 1;
-                        }
-                    }
-                    else if (!entry->ready)
-                    {
-                        /* Check if this entry is up and running */
-                        if (!entry->device ||
-                            device_exists(entry->device))
-                        {
-                            entry->ready = 1;
+        while (entry) {
+            if (!entry->launched) {
+                /* If we are ready to launch the binary do it */
+                if (strlen(entry->tty) == 0 ||
+                    device_exists(entry->tty)) {
+                    if (exec_entry(entry) < 0)
+                        return -1;
 
-                            ++count_ready;
-                        }
-                    }
-                    else
-                        ++count_ready;
-
-                    entry = entry->next;
-                    ++count;
+                    entry->launched = 1;
                 }
             }
-            while (count != count_ready);
+
+            if (!entry->ready) {
+                /* Check if this entry is up and running */
+                if (!entry->device ||
+                    device_exists(entry->device)) {
+                    entry->ready = 1;
+
+                    ++count_ready;
+                }
+            } else {
+                ++count_ready;
+            }
+
+            entry = entry->next;
+            ++count;
         }
+
+        /* No need to busy wait. Let time to the binary to be launched.
+         * XXX: Ideally use some event mechanism
+         */
+        usleep(100);
+    }
+    while (count != count_ready);
+
+    return 0;
+}
+
+int init_conf_execute(struct init_conf *config)
+{
+    for (int i = INIT_HIGHEST_PRIO; i <= INIT_LOWEST_PRIO; ++i) {
+        int ret;
+
+        if (!config->entries[i])
+            continue;
+
+        ret = conf_exec_level(config, i);
+        if (ret < 0)
+            return ret;
     }
 
     return 0;
