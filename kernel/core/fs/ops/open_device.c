@@ -59,6 +59,7 @@ int vfs_open_device(struct thread *t, const char *device_name, int flags,
 
     file->offset = 0;
     file->mount = NULL;
+    file->inode->dev = dev_id;
 
     file->f_ops = device->f_ops;
     if (!file->f_ops->open) {
