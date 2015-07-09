@@ -24,7 +24,6 @@ struct fiu_internal {
 
 struct fiu_ops {
     void *(*fill_private)(struct fiu_internal *fiu, struct fiu_opts *opts);
-    void (*root_remount)(struct fiu_internal *, struct req_root_remount *);
     int (*lookup)(struct fiu_internal *, struct req_lookup *,
                   struct resp_lookup *);
     int (*stat)(struct fiu_internal *, struct req_stat *, struct stat *);

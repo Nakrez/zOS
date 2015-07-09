@@ -68,12 +68,6 @@ static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
 
     switch (op)
     {
-        case 0:
-            if (fiu->ops->root_remount)
-                fiu->ops->root_remount(fiu, (void *)buf);
-            else
-                uprint("root_remount() was issued but not catched");
-            break;
         case VFS_LOOKUP:
             {
                 struct resp_lookup resp;

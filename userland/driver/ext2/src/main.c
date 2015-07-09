@@ -55,7 +55,6 @@ void *ext2_fill_private(struct fiu_internal *fiu, struct fiu_opts *opts)
 
 static struct fiu_ops ext2_ops = {
     .fill_private = ext2_fill_private,
-    .root_remount = ext2_root_remount,
     .lookup = ext2fs_lookup,
     .stat = ext2fs_stat,
     .mount = ext2fs_mount,

@@ -163,37 +163,6 @@ uint32_t inode_find_in_dir(struct ext2fs *ext2, struct ext2_inode *inode,
     return res;
 }
 
-void ext2_root_remount(struct fiu_internal *fiu, struct req_root_remount *req)
-{
-    int ret;
-    struct ext2fs *ext2 = fiu->private;
-    struct req_lookup reql;
-    struct resp_lookup resp;
-    struct ext2_inode *inode;
-
-    reql.path = req->path;
-    reql.path_size = strlen(req->path);
-    reql.uid = 0;
-    reql.gid = 0;
-
-    ret = ext2fs_lookup(fiu, &reql, &resp);
-
-    if (ret != LOOKUP_RES_OK)
-        return;
-
-    inode = ext2_icache_request(ext2, resp.inode.inode);
-    if (!inode)
-        return;
-
-    if ((inode->type_perm & EXT2_TYPE_DIRECTORY) != EXT2_TYPE_DIRECTORY) {
-        ext2_icache_release(ext2, resp.inode.inode);
-        return;
-    }
-
-    inode->type_perm |= EXT2_TYPE_MOUNT_PT;
-    inode->lower_size = req->mount_pt;
-}
-
 int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
                   struct resp_lookup *response)
 {
