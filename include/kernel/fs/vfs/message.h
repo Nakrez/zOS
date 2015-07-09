@@ -30,16 +30,6 @@ struct message {
     size_t max_size;
 };
 
-/*
- * Special request emitted by the kernel when remounting root with userland
- * file system driver
- */
-struct req_root_remount {
-    int mount_pt;
-
-    char path[100];
-};
-
 /* Lookup request */
 struct req_lookup {
     char *path;
