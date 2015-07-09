@@ -38,7 +38,7 @@ static int open_io_driver(const char *driver, int flags)
 
     while (timeout < DRIVER_WAIT_TIME)
     {
-        if ((fd = open(driver, flags, 0)) < 0)
+        if ((fd = open_device(driver, flags, 0)) < 0)
         {
             usleep(DRIVER_RETRY_TIME);
             timeout += DRIVER_RETRY_TIME;
@@ -258,10 +258,10 @@ static int init_input_thread(struct tty_ctrl *ctrl)
 
 int tty_ctrl_initialize(struct tty_ctrl *ctrl)
 {
-    if ((ctrl->kbd_fd = open_io_driver("/dev/kbd", O_RDONLY)) < 0)
+    if ((ctrl->kbd_fd = open_io_driver("kbd", O_RDONLY)) < 0)
         return -1;
 
-    if ((ctrl->video_fd = open_io_driver("/dev/video", O_WRONLY)) < 0)
+    if ((ctrl->video_fd = open_io_driver("video", O_WRONLY)) < 0)
         return -1;
 
     if (init_slaves(ctrl, 1) < 0)

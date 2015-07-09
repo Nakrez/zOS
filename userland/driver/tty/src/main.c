@@ -19,7 +19,7 @@ static int tty_wait_ctrl(void)
 
     while (timeout < TTY_WAIT_CTRL)
     {
-        if ((fd = open("/dev/tty", O_RDWR, 0)) < 0)
+        if ((fd = open_device("tty", O_RDWR, 0)) < 0)
         {
             timeout += TTY_WAIT_CTRL;
             usleep(TTY_WAIT_CTRL);
@@ -180,7 +180,7 @@ int main(void)
 
     /*
      * We have to wait for tty controller because it spawns slaves before
-     * initializing /dev/tty
+     * initializing tty device
      */
     if ((tty.tty_ctrl_fd = tty_wait_ctrl()) < 0)
     {
@@ -204,11 +204,11 @@ int main(void)
 
     spinlock_init(&tty.input.lock);
 
-    uprint("tty: Now attached to /dev/tty");
+    uprint("tty: Now attached to tty device");
 
     if (driver_create("tty0", 0600, &tty_ops, &tty.driver) < 0)
     {
-        uprint("tty: Fail to spawn /dev/tty0");
+        uprint("tty: Fail to spawn tty0 device");
 
         return 1;
     }
@@ -220,7 +220,7 @@ int main(void)
         return 1;
     }
 
-    uprint("tty: /dev/tty0 is now ready");
+    uprint("tty: tty0 device is now ready");
 
     tty.driver.private = &tty;
 

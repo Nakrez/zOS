@@ -21,7 +21,7 @@ static int tty_ctrl_open(struct driver *driver, int mid, struct req_open *req,
 
     /*
      * A tty slave just opened us, we need to remember it because only slaves
-     * can read/write from /dev/tty
+     * can read/write from tty device
      */
     if (i != ctrl->nb_slave)
         *inode = req->pid;
@@ -106,14 +106,14 @@ int tty_ctrl_driver(struct tty_ctrl *ctrl)
 {
     if (driver_create("tty", 0600, &tty_ctrl_ops, &ctrl->driver) < 0)
     {
-        uprint("tty_ctrl: Fail to spawn /dev/tty");
+        uprint("tty_ctrl: Fail to spawn tty device");
 
         return 1;
     }
 
     ctrl->driver.private = ctrl;
 
-    uprint("tty_ctrl: /dev/tty is now ready");
+    uprint("tty_ctrl: tty device is now ready");
 
     return driver_loop(&ctrl->driver);
 }
