@@ -7,7 +7,6 @@
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
-#include <kernel/fs/tmpfs.h>
 #include <kernel/fs/fiu.h>
 
 #include <kernel/fs/vfs/vops.h>
@@ -130,10 +129,7 @@ int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
     struct fs_operation *fs_ops;
     struct file_operation *f_ops;
 
-    if (dev == TMPFS_DEV_ID) {
-        fs_ops = &tmpfs_fs_ops;
-        f_ops = &tmpfs_f_ops;
-    } else if (!device_get(dev)) {
+    if (!device_get(dev)) {
         return -EBADF;
     } else {
         fs_ops = &fiu_fs_ops;

@@ -33,7 +33,6 @@
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
-#include <kernel/fs/tmpfs.h>
 
 #include <kernel/fs/vfs/vops.h>
 #include <kernel/fs/vfs/device.h>
@@ -41,31 +40,7 @@
 
 int vfs_initialize(void)
 {
-    if (vfs_mount(NULL, TMPFS_DEV_ID, "/") < 0)
-    {
-        console_message(T_ERR, "Fail to mount tmpfs on /");
-
-        return -1;
-    }
-
-    console_message(T_OK, "Tmpfs mounted on /");
-
-    if (vfs_mkdir(NULL, "/dev", VFS_PERM_USER_RWX | VFS_PERM_GROUP_RX |
-                                VFS_PERM_OTHER_RW) < 0)
-    {
-        console_message(T_ERR, "Fail to create /dev");
-
-        return -1;
-    }
-
-    if (vfs_mount(NULL, TMPFS_DEV_ID, "/dev") < 0)
-    {
-        console_message(T_ERR, "Fail to mount tmpfs on /dev");
-
-        return -1;
-    }
-
-    console_message(T_OK, "Tmpfs mounted on /dev");
+    console_message(T_OK, "VFS initialized");
 
     return 0;
 }
