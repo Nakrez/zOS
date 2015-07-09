@@ -5,6 +5,8 @@
 
 # include <driver/driver.h>
 
+# define TTY_INPUT_BUFFER_SIZE 256
+
 struct tty {
     int tty_ctrl_fd;
 

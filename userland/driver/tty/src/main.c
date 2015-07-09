@@ -17,17 +17,13 @@ static int tty_wait_ctrl(void)
     int timeout = 0;
     int fd;
 
-    while (timeout < TTY_WAIT_CTRL)
-    {
-        if ((fd = open_device("tty", O_RDWR, 0)) < 0)
-        {
-            timeout += TTY_WAIT_CTRL;
-            usleep(TTY_WAIT_CTRL);
+    while (timeout < TTY_WAIT_CTRL) {
+        fd = open_device("tty", O_RDWR, 0);
+        if (fd >= 0)
+            return fd;
 
-            continue;
-        }
-
-        return fd;
+        timeout += TTY_WAIT_CTRL;
+        usleep(TTY_WAIT_CTRL);
     }
 
     return -1;
@@ -37,13 +33,10 @@ static int tty_flush_buffer(struct tty *tty, char *dest, size_t max_size)
 {
     int size = 0;
 
-    while (max_size)
-    {
+    while (max_size) {
         *(dest++) = tty->input.buffer[size];
 
-
-        if (tty->input.buffer[size] == '\n')
-        {
+        if (tty->input.buffer[size] == '\n') {
             --tty->input.nb_line;
 
             ++size;
@@ -70,17 +63,14 @@ static int tty_read(struct driver *driver, int mid, struct req_rdwr *req,
 
     spinlock_lock(&tty->input.lock);
 
-    if (tty->req.mid != 0)
-    {
+    if (tty->req.mid != 0) {
         spinlock_unlock(&tty->input.lock);
 
         /* TODO: EIO */
         return -1;
-    }
-    else if (tty->input.nb_line > 0)
+    } else if (tty->input.nb_line > 0) {
         *size = tty_flush_buffer(tty, req->data, req->size);
-    else
-    {
+    } else {
         memcpy(&tty->req.req, req, sizeof (struct req_rdwr));
 
         tty->req.mid = mid;
@@ -125,10 +115,8 @@ static void tty_input_thread(int argc, void *argv[])
     int ret;
     struct tty *tty = argv[0];
 
-    while (1)
-    {
-        if (tty->input.size == tty->input.max_size)
-        {
+    for (;;) {
+        if (tty->input.size == tty->input.max_size) {
             char *tmp = realloc(tty->input.buffer, tty->input.max_size * 2);
 
             if (!tmp)
@@ -140,12 +128,10 @@ static void tty_input_thread(int argc, void *argv[])
 
         ret = read(tty->tty_ctrl_fd, tty->input.buffer + tty->input.size,
                   tty->input.max_size - tty->input.size);
-
         if (ret < 0)
             continue;
 
-        for (int i = 0; i < ret; ++i)
-        {
+        for (int i = 0; i < ret; ++i) {
             if (tty->input.buffer[tty->input.size] == '\n')
                 ++tty->input.nb_line;
         }
@@ -154,8 +140,7 @@ static void tty_input_thread(int argc, void *argv[])
 
         spinlock_lock(&tty->input.lock);
 
-        if (tty->req.mid && tty->input.nb_line > 0)
-        {
+        if (tty->req.mid && tty->input.nb_line > 0) {
             struct resp_rdwr response;
 
             response.ret = 0;
@@ -174,6 +159,7 @@ static void tty_input_thread(int argc, void *argv[])
 
 int main(void)
 {
+    int ret;
     struct tty tty;
 
     uprint("tty: Initialization");
@@ -182,22 +168,20 @@ int main(void)
      * We have to wait for tty controller because it spawns slaves before
      * initializing tty device
      */
-    if ((tty.tty_ctrl_fd = tty_wait_ctrl()) < 0)
-    {
+    tty.tty_ctrl_fd = tty_wait_ctrl();
+    if (tty.tty_ctrl_fd < 0) {
         uprint("tty: Fail to attach to tty controller");
-
         return 1;
     }
 
-    if (!(tty.input.buffer = malloc(256)))
-    {
+    tty.input.buffer = malloc(TTY_INPUT_BUFFER_SIZE);
+    if (!tty.input.buffer) {
         uprint("tty: Memory exhausted");
-
         return 1;
     }
 
     tty.input.size = 0;
-    tty.input.max_size = 256;
+    tty.input.max_size = TTY_INPUT_BUFFER_SIZE;
     tty.input.nb_line = 0;
 
     tty.req.mid = 0;
@@ -206,17 +190,15 @@ int main(void)
 
     uprint("tty: Now attached to tty device");
 
-    if (driver_create("tty0", 0600, &tty_ops, &tty.driver) < 0)
-    {
+    ret = driver_create("tty0", 0600, &tty_ops, &tty.driver);
+    if (ret < 0) {
         uprint("tty: Fail to spawn tty0 device");
-
         return 1;
     }
 
-    if (thread_create(tty_input_thread, 1, &tty) < 0)
-    {
+    ret = thread_create(tty_input_thread, 1, &tty);
+    if (ret < 0) {
         uprint("tty: Fail to spwan input thread");
-
         return 1;
     }
 
