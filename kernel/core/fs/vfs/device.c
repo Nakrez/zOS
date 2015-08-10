@@ -65,7 +65,7 @@ static dev_t device_create(pid_t pid, const char *name, vop_t ops,
                 return -ENOMEM;
             }
 
-            if (!(devices[i].channel = channel_create()))
+            if (!(devices[i].channel = vchannel_create()))
             {
                 kfree(devices[i].name);
                 spinlock_unlock(&device_lock);
@@ -90,7 +90,7 @@ static dev_t device_create(pid_t pid, const char *name, vop_t ops,
     {
         (*device)->active = 0;
         kfree((*device)->name);
-        channel_destroy((*device)->channel);
+        vchannel_destroy((*device)->channel);
         *device = NULL;
 
         spinlock_unlock(&device_lock);
@@ -186,7 +186,7 @@ int device_recv_request(dev_t dev, char *buf, size_t size)
     if (devices[dev].pid != pid)
         return -EINVAL;
 
-    return channel_recv_request(devices[dev].channel, buf, size);
+    return vchannel_recv_request(devices[dev].channel, buf, size);
 }
 
 int device_send_response(dev_t dev, uint32_t req_id, char *buf, size_t size)
@@ -211,7 +211,7 @@ int device_send_response(dev_t dev, uint32_t req_id, char *buf, size_t size)
 
     message->size = size;
 
-    res = channel_send_response(devices[dev].channel, req_id, message);
+    res = vchannel_send_response(devices[dev].channel, req_id, message);
 
     if (res < 0)
         message_free(message);
@@ -246,7 +246,7 @@ int device_open(dev_t dev, ino_t inode, pid_t pid, uid_t uid, gid_t gid,
 
     message->mid = (message->mid & ~0xFF) | VFS_OPEN;
 
-    if ((ret = channel_send_recv(device->channel, message, &response)) < 0)
+    if ((ret = vchannel_send_recv(device->channel, message, &response)) < 0)
     {
         message_free(message);
 
@@ -320,7 +320,7 @@ int device_read_write(struct process *process, dev_t dev, struct req_rdwr *req,
 
     message->mid = (message->mid & ~0xFF) | op;
 
-    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
+    if ((res = vchannel_send_recv(device->channel, message, &response)) < 0)
         goto end;
 
     answer = MESSAGE_EXTRACT(struct resp_rdwr, response);
@@ -372,7 +372,7 @@ int device_close(dev_t dev, ino_t inode)
 
     message->mid = (message->mid & ~0xFF) | VFS_CLOSE;
 
-    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
+    if ((res = vchannel_send_recv(device->channel, message, &response)) < 0)
     {
         message_free(message);
 

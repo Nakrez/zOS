@@ -61,7 +61,7 @@ static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,
 
     message->mid = (message->mid & ~0xFF) | VFS_LOOKUP;
 
-    res = channel_send_recv(device->channel, message, &response);
+    res = vchannel_send_recv(device->channel, message, &response);
     if (res < 0 ) {
         as_unmap(pdevice->as, (vaddr_t)request->path, AS_UNMAP_RELEASE);
 
@@ -118,7 +118,7 @@ static int fiu_stat(struct mount_entry *root, uid_t uid, gid_t gid,
 
     message->mid = (message->mid & ~0xFF) | VFS_STAT;
 
-    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
+    if ((res = vchannel_send_recv(device->channel, message, &response)) < 0)
     {
         message_free(message);
 
@@ -166,7 +166,7 @@ static int fiu_mount(struct mount_entry *root, ino_t inode, int mount_nb)
 
     message->mid = (message->mid & ~0xFF) | VFS_MOUNT;
 
-    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
+    if ((res = vchannel_send_recv(device->channel, message, &response)) < 0)
     {
         message_free(message);
 
@@ -209,7 +209,7 @@ static int fiu_getdirent(struct mount_entry *root, ino_t inode,
 
     message->mid = (message->mid & ~0xFF) | VFS_GETDIRENT;
 
-    if ((res = channel_send_recv(device->channel, message, &response)) < 0)
+    if ((res = vchannel_send_recv(device->channel, message, &response)) < 0)
     {
         message_free(message);
 

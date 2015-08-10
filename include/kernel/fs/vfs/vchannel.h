@@ -30,7 +30,7 @@ struct vchannel {
 /*
  * Create a new channel, return the channel is success, NULL otherwise
  */
-struct vchannel *channel_create(void);
+struct vchannel *vchannel_create(void);
 
 /*
  * Send a message to the inbox of a channel
@@ -39,7 +39,7 @@ struct vchannel *channel_create(void);
  *          0: success
  *          -ENOMEM: Cannot allocate necessary memory
  */
-int channel_send_request(struct vchannel *chan, struct message *msg);
+int vchannel_send_request(struct vchannel *chan, struct message *msg);
 
 /*
  * Receive a message from the inbox of the channel
@@ -49,7 +49,7 @@ int channel_send_request(struct vchannel *chan, struct message *msg);
  *          -ENODATA: Message was supposed to be here but was not
  *          -EINVAL: Invalid size to receive the buffer
  */
-int channel_recv_request(struct vchannel *chan, char *buf, size_t size);
+int vchannel_recv_request(struct vchannel *chan, char *buf, size_t size);
 
 /*
  * Send a response to a previous request
@@ -58,8 +58,8 @@ int channel_recv_request(struct vchannel *chan, char *buf, size_t size);
  *          0: Success
  *          -ENOMEM: Cannot allocate necessary memory
  */
-int channel_send_response(struct vchannel *chan, uint32_t req_id,
-                          struct message *msg);
+int vchannel_send_response(struct vchannel *chan, uint32_t req_id,
+                           struct message *msg);
 
 /*
  * Receive a response to a request
@@ -68,16 +68,16 @@ int channel_send_response(struct vchannel *chan, uint32_t req_id,
  *          0: Success
  *          -ENODATA: Message was supposed to be here but was not
  */
-int channel_recv_response(struct vchannel *chan, uint32_t req_id,
-                          struct message **msg);
+int vchannel_recv_response(struct vchannel *chan, uint32_t req_id,
+                           struct message **msg);
 
 /* Send a request to a channel and wait for response */
-int channel_send_recv(struct vchannel *channel, struct message *message,
-                      struct message **response);
+int vchannel_send_recv(struct vchannel *channel, struct message *message,
+                       struct message **response);
 
 /*
  * Destroy a channel
  */
-void channel_destroy(struct vchannel *chan);
+void vchannel_destroy(struct vchannel *chan);
 
 #endif /* !FS_VFS_VCHANNEL_H */

@@ -48,7 +48,7 @@ int vfs_ioctl(struct thread *t, int fd, int req, int *argp)
 
     message->mid = (message->mid & ~0xFF) | VFS_IOCTL;
 
-    if ((ret = channel_send_recv(device->channel, message, &response)) < 0)
+    if ((ret = vchannel_send_recv(device->channel, message, &response)) < 0)
     {
         message_free(message);
 

@@ -13,7 +13,7 @@
 
 static int cid = 0;
 
-struct vchannel *channel_create(void)
+struct vchannel *vchannel_create(void)
 {
     struct vchannel *chan = kmalloc(sizeof (struct vchannel));
 
@@ -31,7 +31,7 @@ struct vchannel *channel_create(void)
     return chan;
 }
 
-int channel_send_request(struct vchannel *chan, struct message *msg)
+int vchannel_send_request(struct vchannel *chan, struct message *msg)
 {
     struct msg_list *list;
 
@@ -73,7 +73,7 @@ static int inbox_msg_pop(struct klist *inbox_head, char *buf, size_t size)
     return mid;
 }
 
-int channel_recv_request(struct vchannel *chan, char *buf, size_t size)
+int vchannel_recv_request(struct vchannel *chan, char *buf, size_t size)
 {
     spinlock_lock(&chan->inbox_lock);
 
@@ -105,8 +105,8 @@ int channel_recv_request(struct vchannel *chan, char *buf, size_t size)
     return -ENODATA;
 }
 
-int channel_send_response(struct vchannel *chan, uint32_t req_id,
-                          struct message *msg)
+int vchannel_send_response(struct vchannel *chan, uint32_t req_id,
+                           struct message *msg)
 {
     struct msg_list *list;
 
@@ -150,8 +150,8 @@ static int outbox_msg_pop(struct klist *outbox_head, uint32_t req_id,
     return 0;
 }
 
-int channel_recv_response(struct vchannel *chan, uint32_t req_id,
-                          struct message **msg)
+int vchannel_recv_response(struct vchannel *chan, uint32_t req_id,
+                           struct message **msg)
 {
     spinlock_lock(&chan->outbox_lock);
 
@@ -166,25 +166,25 @@ int channel_recv_response(struct vchannel *chan, uint32_t req_id,
     return -ENODATA;
 }
 
-int channel_send_recv(struct vchannel *channel, struct message *message,
-                      struct message **response)
+int vchannel_send_recv(struct vchannel *channel, struct message *message,
+                       struct message **response)
 {
     int res;
 
-    if ((res = channel_send_request(channel, message)) < 0)
+    if ((res = vchannel_send_request(channel, message)) < 0)
         return res;
 
     /* Block the current thread until we have our answer */
     thread_block(thread_current(), SCHED_EV_RESP, message->mid, NULL);
 
     /* Get our response, thanks to the request id saved */
-    if ((res = channel_recv_response(channel, message->mid, response)) < 0)
+    if ((res = vchannel_recv_response(channel, message->mid, response)) < 0)
         return res;
 
     return 0;
 }
 
-void channel_destroy(struct vchannel *chan)
+void vchannel_destroy(struct vchannel *chan)
 {
     if (!klist_empty(&chan->inbox) || !klist_empty(&chan->outbox))
         kernel_panic("Destroying channel with message...");
