@@ -1,44 +1,60 @@
+#include <kernel/errno.h>
 #include <kernel/syscall.h>
 #include <kernel/interrupt.h>
 
 #include <kernel/proc/thread.h>
+#include <kernel/proc/wait_queue.h>
 
 #include <kernel/scheduler/event.h>
 
-static struct thread *interrupts[IRQ_USER_SIZE];
+struct irq {
+    struct thread *thread;
+
+    struct wait_queue queue;
+};
+
+static struct irq interrupts[IRQ_USER_SIZE];
 
 static void user_interrupt_callback(struct irq_regs *regs)
 {
-    int irq = regs->irq_num;
-    struct thread *thread = interrupts[irq - IRQ_USER_BEGIN];
+    int irq_num = regs->irq_num - IRQ_USER_BEGIN;
+    struct irq *irq = &interrupts[irq_num];
 
-    if (!thread)
+    if (!irq->thread)
         return;
 
-    thread->interrupts[irq - IRQ_USER_BEGIN] |= INTERRUPT_FIRED;
+    irq->thread->interrupts[irq_num] |= INTERRUPT_FIRED;
 
-    scheduler_event_notify(SCHED_EV_INTERRUPT, irq);
+    wait_queue_notify(&irq->queue);
 }
 
 int sys_interrupt_register(struct syscall *interface)
 {
-    int interrupt_id = interface->arg1;
+    int err;
+    int irq_num = interface->arg1;
+    struct irq *irq;
     struct thread *t = thread_current();
 
-    if (interrupt_id < IRQ_USER_BEGIN || interrupt_id > IRQ_USER_END)
-        return -1;
+    if (irq_num < IRQ_USER_BEGIN || irq_num > IRQ_USER_END)
+        return -EINVAL;
 
-    if (t->interrupts[interrupt_id - IRQ_USER_BEGIN] & INTERRUPT_REGISTERED)
-        return 0;
+    irq_num -= IRQ_USER_BEGIN;
 
-    t->interrupts[interrupt_id - IRQ_USER_BEGIN] = INTERRUPT_REGISTERED;
-    interrupts[interrupt_id - IRQ_USER_BEGIN] = t;
+    if (t->interrupts[irq_num] & INTERRUPT_REGISTERED)
+        return -EBUSY;
 
-    if (!interrupt_register(interrupt_id, INTERRUPT_CALLBACK,
-                            user_interrupt_callback))
-    {
-        t->interrupts[interrupt_id - IRQ_USER_BEGIN] = 0;
-        interrupts[interrupt_id - IRQ_USER_BEGIN] = NULL;
+    irq = &interrupts[irq_num];
+
+    t->interrupts[irq_num] = INTERRUPT_REGISTERED;
+    irq->thread = t;
+    wait_queue_init(&irq->queue);
+
+    err = interrupt_register(irq_num, INTERRUPT_CALLBACK,
+                             user_interrupt_callback);
+    if (err < 0) {
+        t->interrupts[irq_num] = 0;
+        irq->thread = NULL;
+        return err;
     }
 
     return 0;
@@ -46,18 +62,19 @@ int sys_interrupt_register(struct syscall *interface)
 
 int sys_interrupt_listen(struct syscall *interface)
 {
+    int irq_num = interface->arg1;
     struct thread *t = thread_current();
 
-    if (interface->arg1 < IRQ_USER_BEGIN || interface->arg1 > IRQ_USER_END)
+    if (irq_num < IRQ_USER_BEGIN || irq_num > IRQ_USER_END)
         return -1;
 
-    if (!(t->interrupts[interface->arg1 - IRQ_USER_BEGIN] &
-          INTERRUPT_REGISTERED))
+    irq_num -= IRQ_USER_BEGIN;
+
+    if (!(t->interrupts[irq_num] & INTERRUPT_REGISTERED))
         return -1;
 
-    if (t->interrupts[interface->arg1 - IRQ_USER_BEGIN] & INTERRUPT_FIRED)
-    {
-        t->interrupts[interface->arg1 - IRQ_USER_BEGIN] &= ~INTERRUPT_FIRED;
+    if (t->interrupts[irq_num] & INTERRUPT_FIRED) {
+        t->interrupts[irq_num] &= ~INTERRUPT_FIRED;
 
         return interface->arg1;
     }
@@ -65,14 +82,7 @@ int sys_interrupt_listen(struct syscall *interface)
     /* Block thread until an interrupt occured */
     thread_block(t, SCHED_EV_INTERRUPT, interface->arg1, NULL);
 
-    if (t->interrupts[interface->arg1 - IRQ_USER_BEGIN] & INTERRUPT_FIRED)
-    {
-        t->interrupts[interface->arg1 - IRQ_USER_BEGIN] &= ~INTERRUPT_FIRED;
-
-        return interface->arg1;
-    }
-
-    return -1;
+    return interface->arg1;
 }
 
 int sys_interrupt_unregister(struct syscall *interface)
@@ -90,6 +100,7 @@ int sys_interrupt_unregister(struct syscall *interface)
     interrupt_unregister(interrupt_num);
 
     t->interrupts[interrupt_num - IRQ_USER_BEGIN] = 0;
+    interrupts[interrupt_num - IRQ_USER_BEGIN].thread = NULL;
 
     return 0;
 }

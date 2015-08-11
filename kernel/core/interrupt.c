@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include <kernel/errno.h>
 #include <kernel/interrupt.h>
 #include <kernel/console.h>
 #include <kernel/panic.h>
@@ -12,7 +13,8 @@ void interrupt_initialize(void)
 {
     memset(interrupt_entries, 0, sizeof (interrupt_entries));
 
-    glue_call(interrupt, init);
+    if (glue_call(interrupt, init) < 0)
+        kernel_panic("Failed to initialize interruption");
 }
 
 void interrupt_dispatch(struct irq_regs *regs)
@@ -42,20 +44,20 @@ void interrupt_acnowledge(int irq)
 int interrupt_register(int irq, int type, void (*callback)(struct irq_regs *))
 {
     if (type == INTERRUPT_NONE)
-        return 0;
+        return -EINVAL;
 
     if (irq < 0 || irq > MAX_IRQ_NUMBER)
-        return 0;
+        return -EINVAL;
 
     if (interrupt_entries[irq].type != INTERRUPT_NONE)
-        return 0;
+        return -EEXIST;
 
     interrupt_entries[irq].type = type;
     interrupt_entries[irq].callback = callback;
 
     interrupt_unmask(irq);
 
-    return 1;
+    return 0;
 }
 
 void interrupt_unregister(int irq)

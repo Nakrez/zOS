@@ -1,4 +1,4 @@
-#include <kernel/panic.h>
+#include <kernel/console.h>
 
 #include <glue/syscall.h>
 
@@ -12,10 +12,15 @@ struct syscall_glue syscall_glue_dispatcher =
 
 int i386_pc_syscall_initialize(void)
 {
-    if (!interrupt_register(IRQ_SYSCALL, INTERRUPT_CALLBACK, syscall_handler))
-        kernel_panic("Unable to register syscall interrupt");
+    int err;
 
-    return 1;
+    err = interrupt_register(IRQ_SYSCALL, INTERRUPT_CALLBACK, syscall_handler);
+    if (err < 0) {
+        console_message(T_ERR, "Unable to register syscall interrupt");
+        return err;
+    }
+
+    return 0;
 }
 
 int i386_pc_syscall_convert(struct irq_regs *regs, struct syscall *call)

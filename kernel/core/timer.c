@@ -38,7 +38,8 @@ spinlock_t timer_lock;
 
 void timer_initialize(void)
 {
-    glue_call(timer, init);
+    if (glue_call(timer, init) < 0)
+        kernel_panic("Failed to initialize timers");
 
     for (int i = 0; i < TIMER_NUM; ++i)
         timers[i].free = 1;

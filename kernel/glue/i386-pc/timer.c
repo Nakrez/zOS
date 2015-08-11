@@ -1,6 +1,6 @@
 #include <kernel/timer.h>
 #include <kernel/interrupt.h>
-#include <kernel/panic.h>
+#include <kernel/console.h>
 
 #include <glue/timer.h>
 
@@ -14,10 +14,15 @@ struct timer_glue timer_glue_dispatcher =
 
 int i386_pc_timer_initialize(void)
 {
+    int err;
+
     pit_initialize();
 
-    if (!interrupt_register(PIC_IRQ_PIT, INTERRUPT_CALLBACK, timer_handler))
-        kernel_panic("Unable to register timer handler");
+    err = interrupt_register(PIC_IRQ_PIT, INTERRUPT_CALLBACK, timer_handler);
+    if (err < 0) {
+        console_message(T_ERR, "Unable to register timer handler");
+        return err;
+    }
 
-    return 1;
+    return 0;
 }

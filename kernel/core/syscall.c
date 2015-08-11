@@ -98,5 +98,6 @@ void syscall_initialize(void)
 {
     syscall_max = sizeof (syscalls) / sizeof (syscall_callback);
 
-    glue_call(syscall, init);
+    if (glue_call(syscall, init) < 0)
+        kernel_panic("Failed to initialize syscalls");
 }

@@ -24,11 +24,8 @@ int i386_interrupt_initialize(void)
     idt_initialize();
     pic_initialize();
 
-    if (!interrupt_register(IRQ_PAGE_FAULT, INTERRUPT_CALLBACK,
-                            page_fault_handler))
-        return 0;
-
-    return 1;
+    return interrupt_register(IRQ_PAGE_FAULT, INTERRUPT_CALLBACK,
+                              page_fault_handler);
 }
 
 int i386_interrupt_enable(void)
