@@ -39,96 +39,80 @@
 static struct device devices[VFS_MAX_DEVICE];
 static spinlock_t device_lock = SPINLOCK_INIT;
 
+/**
+ *  \brief  Find a free device id and verify that a device named \a name
+ *          does not exist
+ *
+ *  \param  name    The name of the device you want to create
+ *
+ *  \return  The device if everything went well, NULL otherwise
+ */
+static dev_t find_free_device(const char *name, struct device **dev)
+{
+    dev_t id = -1;
+
+    for (int i = 0; i < VFS_MAX_DEVICE; ++i) {
+        if (id == -1 && !devices[i].active)
+            id = i;
+
+        if (devices[i].active && !strcmp(devices[i].name, name))
+            return -EEXIST;
+    }
+
+    if (id == -1)
+        return -EBUSY;
+
+    *dev = &devices[id];
+
+    return id;
+}
+
 static dev_t device_create(pid_t pid, const char *name, vop_t ops,
                            struct file_operation *f_ops,
                            struct device **device)
 {
-    int found = 0;
+    dev_t dev_id;
+    struct device *new_dev;
 
     if (!(ops & VFS_OPS_OPEN) || !(ops & VFS_OPS_CLOSE))
         return -EINVAL;
 
-    *device = NULL;
-
     spinlock_lock(&device_lock);
 
-    for (int i = 0; i < VFS_MAX_DEVICE; ++i)
-    {
-        if (devices[i].active && strcmp(devices[i].name, name) == 0)
-            found = 1;
-        if (!(*device) && !devices[i].active)
-        {
-            if (!(devices[i].channel = vchannel_create()))
-            {
-                kfree(devices[i].name);
-                spinlock_unlock(&device_lock);
-
-                return -ENOMEM;
-            }
-
-            strncpy(devices[i].name, name, VFS_DEV_MAX_NAMEL);
-
-            devices[i].id = i;
-            devices[i].active = 1;
-            devices[i].pid = pid;
-            devices[i].ops = ops;
-            devices[i].f_ops = f_ops;
-
-            *device = &devices[i];
-        }
-    }
-
-    /* Device already exists */
-    if (found && *device)
-    {
-        (*device)->active = 0;
-        kfree((*device)->name);
-        vchannel_destroy((*device)->channel);
-        *device = NULL;
-
+    dev_id = find_free_device(name, &new_dev);
+    if (dev_id < 0) {
         spinlock_unlock(&device_lock);
-
-        return -EEXIST;
+        return dev_id;
     }
+
+    new_dev->active = 1;
+    strncpy(new_dev->name, name, VFS_DEV_MAX_NAMEL);
 
     spinlock_unlock(&device_lock);
 
-    if (!(*device))
+    new_dev->channel = vchannel_create();
+    if (!new_dev->channel) {
+        new_dev->active = 0;
         return -ENOMEM;
+    }
 
-    return (*device)->id;
+    new_dev->id = dev_id;
+    new_dev->pid = pid;
+    new_dev->ops = ops;
+    new_dev->f_ops = f_ops;
+
+    if (device)
+        *device = new_dev;
+
+    return dev_id;
 }
 
 dev_t vfs_device_create(const char *name, pid_t pid, int perm, int ops,
                         struct file_operation *f_ops)
 {
-    int res;
-    struct device *device = NULL;
-    char *node_path;
+    (void) perm;
 
-    res = device_create(pid, name, ops, f_ops, &device);
-
-    if (res < 0)
-        return res;
-
-    /*
-     * If mknod fails we don't really care because the device exists node the
-     * node in the FS, but it can be created later
-     */
-
-    /* 5 = strlen("/dev/") */
-    if (!(node_path = kmalloc(5 + strlen(name) + 1)))
-        return device->id;
-
-    strcpy(node_path, "/dev/");
-
-    strcat(node_path, name);
-
-    vfs_mknod(thread_current(), node_path, perm, device->id);
-
-    kfree(node_path);
-
-    return device->id;
+    return device_create(pid, name, ops, f_ops, NULL);
 }
 
 struct device *device_get(dev_t dev)
@@ -157,8 +141,7 @@ dev_t device_get_from_name(const char *name)
 
 int device_exists(const char *name)
 {
-    for (int i = 0; i < VFS_MAX_DEVICE; ++i)
-    {
+    for (int i = 0; i < VFS_MAX_DEVICE; ++i) {
         if (devices[i].active && !strcmp(devices[i].name, name))
             return 1;
     }
@@ -239,10 +222,9 @@ int device_open(dev_t dev, ino_t inode, pid_t pid, uid_t uid, gid_t gid,
 
     message->mid = (message->mid & ~0xFF) | VFS_OPEN;
 
-    if ((ret = vchannel_send_recv(device->channel, message, &response)) < 0)
-    {
+    ret = vchannel_send_recv(device->channel, message, &response);
+    if (ret < 0) {
         message_free(message);
-
         return ret;
     }
 
@@ -250,10 +232,8 @@ int device_open(dev_t dev, ino_t inode, pid_t pid, uid_t uid, gid_t gid,
 
     answer = MESSAGE_EXTRACT(struct resp_open, response);
 
-    if (answer->ret < 0)
-    {
+    if (answer->ret < 0) {
         message_free(response);
-
         return answer->ret;
     }
 
@@ -295,33 +275,28 @@ int device_read_write(struct process *process, dev_t dev, struct req_rdwr *req,
     request->data = (void *)as_map(pdevice->as, 0, 0, req->size,
                                    AS_MAP_USER | AS_MAP_WRITE);
 
-    if (!request->data)
-    {
+    if (!request->data) {
         message_free(message);
-
         return -ENOMEM;
     }
 
-    if (op == VFS_WRITE)
-    {
+    if (op == VFS_WRITE) {
         res = as_copy(process->as, pdevice->as, buf, request->data,
                       request->size);
-
         if (res < 0)
             goto end;
     }
 
     message->mid = (message->mid & ~0xFF) | op;
 
-    if ((res = vchannel_send_recv(device->channel, message, &response)) < 0)
+    res = vchannel_send_recv(device->channel, message, &response);
+    if (res < 0)
         goto end;
 
     answer = MESSAGE_EXTRACT(struct resp_rdwr, response);
 
-    if (answer->ret < 0)
-    {
+    if (answer->ret < 0) {
         res = answer->ret;
-
         goto end;
     }
 
@@ -329,10 +304,8 @@ int device_read_write(struct process *process, dev_t dev, struct req_rdwr *req,
         res = as_copy(pdevice->as, process->as, request->data, buf,
                       answer->size);
 
-    if (res == 0)
-    {
+    if (res == 0) {
         res = answer->size;
-
         req->off += answer->size;
     }
 
@@ -365,10 +338,9 @@ int device_close(dev_t dev, ino_t inode)
 
     message->mid = (message->mid & ~0xFF) | VFS_CLOSE;
 
-    if ((res = vchannel_send_recv(device->channel, message, &response)) < 0)
-    {
+    res = vchannel_send_recv(device->channel, message, &response);
+    if (res < 0) {
         message_free(message);
-
         return res;
     }
 
@@ -396,8 +368,6 @@ int device_destroy(pid_t pid, dev_t dev)
     spinlock_lock(&device_lock);
 
     devices[dev].active = 0;
-
-    kfree(devices[dev].name);
 
     spinlock_unlock(&device_lock);
 
