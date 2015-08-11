@@ -37,6 +37,7 @@
  * \brief   The maximum number of devices that can be registered in the system
  */
 # define VFS_MAX_DEVICE 255
+# define VFS_DEV_MAX_NAMEL 15
 
 /**
  * \brief   The internal representation of a virtual device
@@ -45,7 +46,7 @@ struct device {
     /**
      * \brief   The name of the device
      */
-    char *name;
+    char name[VFS_DEV_MAX_NAMEL];
 
     /**
      * \brief   Tells if this device is used and active

@@ -58,13 +58,6 @@ static dev_t device_create(pid_t pid, const char *name, vop_t ops,
             found = 1;
         if (!(*device) && !devices[i].active)
         {
-            if (!(devices[i].name = kmalloc(strlen(name) + 1)))
-            {
-                spinlock_unlock(&device_lock);
-
-                return -ENOMEM;
-            }
-
             if (!(devices[i].channel = vchannel_create()))
             {
                 kfree(devices[i].name);
@@ -73,7 +66,7 @@ static dev_t device_create(pid_t pid, const char *name, vop_t ops,
                 return -ENOMEM;
             }
 
-            strcpy(devices[i].name, name);
+            strncpy(devices[i].name, name, VFS_DEV_MAX_NAMEL);
 
             devices[i].id = i;
             devices[i].active = 1;
