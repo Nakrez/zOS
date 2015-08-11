@@ -26,7 +26,7 @@ void interrupt_thread(int argc, void *argv[])
     res = interrupt_register(KEYBOARD_INTERRUPT);
 
     /* Error while registering the interrupt */
-    if (res != 0)
+    if (res < 0)
     {
         uprint("Unable to reserve keyboard interrupt...");
         return;
