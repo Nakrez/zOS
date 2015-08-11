@@ -315,6 +315,11 @@ struct file {
     struct file_operation *f_ops;
 
     /**
+     *  \brief  Private field used by drivers
+     */
+    void *private;
+
+    /**
      *  \brief  The mount entry this file belongs to
      */
     struct mount_entry *mount;
