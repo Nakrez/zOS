@@ -86,4 +86,8 @@ int sys_vfs_getdirent(struct syscall *interface);
 int sys_vfs_device_exists(struct syscall *interface);
 int sys_vfs_open_device(struct syscall *interface);
 
+/* Fs - channel */
+int sys_fs_channel_create(struct syscall *interface);
+int sys_fs_channel_open(struct syscall *interface);
+
 #endif /* !SYSCALL_H */

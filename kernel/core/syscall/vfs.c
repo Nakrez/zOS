@@ -5,6 +5,7 @@
 
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/fiu.h>
+#include <kernel/fs/channel.h>
 
 #include <kernel/fs/vfs/mount.h>
 #include <kernel/fs/vfs/vops.h>
@@ -183,4 +184,50 @@ int sys_vfs_open_device(struct syscall *interface)
     int mode = interface->arg3;
 
     return vfs_open_device(thread_current(), device_name, flags, mode);
+}
+
+int sys_fs_channel_create(struct syscall *interface)
+{
+    int fd;
+    int err;
+    const char *name = (void *)interface->arg1;
+    struct file *file;
+    struct process *p = thread_current()->parent;
+
+    fd = process_new_fd(p);
+    if (fd < 0)
+        return fd;
+
+    file = &p->files[fd];
+
+    err = channel_create(name, file, NULL);
+    if (err < 0) {
+        process_free_fd(p, fd);
+        return err;
+    }
+
+    return fd;
+}
+
+int sys_fs_channel_open(struct syscall *interface)
+{
+    int fd;
+    int err;
+    const char *name = (void *)interface->arg1;
+    struct file *file;
+    struct process *p = thread_current()->parent;
+
+    fd = process_new_fd(p);
+    if (fd < 0)
+        return fd;
+
+    file = &p->files[fd];
+
+    err = channel_open(name, file, NULL);
+    if (err < 0) {
+        process_free_fd(p, fd);
+        return err;
+    }
+
+    return fd;
 }
