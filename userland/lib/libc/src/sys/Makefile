@@ -6,7 +6,8 @@ OBJ-y := usleep.o sleep.o exit.o fork.o waitpid.o getpid.o gettid.o \
 		device_create.o device_recv_request.o device_send_response.o \
 		open.o read.o write.o close.o lseek.o mmap.o munmap.o mount.o \
 		stat.o fstat.o execv.o ioctl.o mmap_physical.o dup.o \
-		dup2.o getdirent.o device_exists.o open_device.o
+		dup2.o getdirent.o device_exists.o open_device.o channel_create.o \
+		channel_open.o
 
 LIBSUBDIRS-y :=
 
