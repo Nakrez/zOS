@@ -33,6 +33,7 @@
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
+#include <kernel/fs/channel.h>
 
 #include <kernel/fs/vfs/vops.h>
 #include <kernel/fs/vfs/device.h>
@@ -40,6 +41,12 @@
 
 int vfs_initialize(void)
 {
+    int ret;
+
+    ret = channel_initialize();
+    if (ret < 0)
+        return ret;
+
     console_message(T_OK, "VFS initialized");
 
     return 0;
