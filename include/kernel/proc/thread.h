@@ -127,6 +127,11 @@ struct thread
      * \brief   List of blocked thread
      */
     struct klist block;
+
+    /**
+     *  \brief  List of thread that belongs to a wait_queue
+     */
+    struct klist wait;
 };
 
 /**
