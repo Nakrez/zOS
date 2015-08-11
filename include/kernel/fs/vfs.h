@@ -27,6 +27,8 @@
 #ifndef FS_VFS_H
 # define FS_VFS_H
 
+# include <kernel/types.h>
+
 /**
  * \brief   The maximum size of a filename
  */
