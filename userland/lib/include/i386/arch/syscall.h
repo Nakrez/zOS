@@ -36,6 +36,8 @@
 # define SYS_OPEN_DEVICE 33
 # define SYS_CHANNEL_CREATE 34
 # define SYS_CHANNEL_OPEN 35
+# define SYS_FS_REGISTER 36
+# define SYS_FS_UNREGISTER 37
 
 # define SYSCALL0(num, ret)                                 \
     __asm__ __volatile__("mov %1, %%eax\n"                  \

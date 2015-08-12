@@ -179,4 +179,7 @@ int open_device(const char *device_name, int flags, mode_t mode);
 int channel_create(const char *c_name);
 int channel_open(const char *c_name);
 
+int fs_register(const char *fs_name, int channel_fd, vop_t ops);
+int fs_unregister(const char *fs_name);
+
 #endif /* !ZOS_VFS_H */
