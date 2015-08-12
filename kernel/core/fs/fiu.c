@@ -269,3 +269,7 @@ struct file_operation fiu_f_ops = {
     .write = fiu_write,
     .close = fiu_close,
 };
+
+struct fs_super_operation fiu_fs_super_ops = {
+
+};
