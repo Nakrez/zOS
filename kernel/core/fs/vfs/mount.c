@@ -100,21 +100,8 @@ int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
             return ret;
     }
 
-    if (fs_ops->init)
-    {
-        if (!(mount_points[mount_nb].private = fs_ops->init()))
-        {
-            mount_points[mount_nb].used = 0;
-
-            return -ENOMEM;
-        }
-    }
-
     if (!(mount_points[mount_nb].path = kmalloc(strlen(mount_path) + 1)))
     {
-        if (fs_ops->cleanup)
-            fs_ops->cleanup(mount_points[mount_nb].private);
-
         mount_points[mount_nb].used = 0;
 
         return -ENOMEM;

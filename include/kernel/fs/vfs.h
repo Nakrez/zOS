@@ -333,7 +333,6 @@ struct file {
  *  \brief  File system operation.
  */
 struct fs_operation {
-    void *(*init)(void);
     int (*lookup)(struct mount_entry *, const char *, uid_t, gid_t,
                   struct resp_lookup *);
     int (*mkdir)(struct mount_entry *, const char *, ino_t, uid_t, gid_t,
@@ -343,7 +342,6 @@ struct fs_operation {
     int (*stat)(struct mount_entry *, uid_t, gid_t, ino_t, struct stat *);
     int (*mount)(struct mount_entry *, ino_t, int);
     int (*getdirent)(struct mount_entry *, ino_t, struct dirent *, int);
-    void (*cleanup)(void *);
 };
 
 /**
