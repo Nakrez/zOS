@@ -1,6 +1,8 @@
 #include <kernel/syscall.h>
 #include <kernel/errno.h>
 
+#include <kernel/mem/kmalloc.h>
+
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
@@ -230,4 +232,51 @@ int sys_fs_channel_open(struct syscall *interface)
     }
 
     return fd;
+}
+
+/* User interface is fs_register(name, channel_fd, ops) */
+int sys_fs_register(struct syscall *interface)
+{
+    const char *name = (void *)interface->arg1;
+    int channel_fd = interface->arg2;
+    vop_t ops = interface->arg3;
+    struct process *p = thread_current()->parent;
+    struct file *file;
+    struct fiu_fs_private *priv;
+
+    priv = kmalloc(sizeof (struct fiu_fs_private));
+    if (!priv)
+        return -ENOMEM;
+
+    if (!process_fd_exist(p, channel_fd)) {
+        kfree(priv);
+        return -EBADF;
+    }
+
+    spinlock_lock(&p->files_lock);
+
+    file = &p->files[channel_fd];
+
+    if (file->f_ops != &channel_master_f_ops) {
+        spinlock_unlock(&p->files_lock);
+        kfree(priv);
+        return -EBADF;
+    }
+
+    priv->master = file->private;
+    spinlock_unlock(&p->files_lock);
+
+    /* XXX: Check ops */
+    priv->ops = ops;
+
+    return fs_register(name, p->pid, &fiu_fs_super_ops, &fiu_fs_ops,
+                       &fiu_f_ops, priv);
+}
+
+int sys_fs_unregister(struct syscall *interface)
+{
+    const char *name = (void *) interface->arg1;
+    pid_t pid = thread_current()->parent->pid;
+
+    return fs_unregister(name, pid);
 }

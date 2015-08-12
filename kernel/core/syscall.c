@@ -73,6 +73,9 @@ static syscall_callback syscalls[] =
 
     sys_fs_channel_create,
     sys_fs_channel_open,
+
+    sys_fs_register,
+    sys_fs_unregister,
 };
 
 void syscall_handler(struct irq_regs *regs)

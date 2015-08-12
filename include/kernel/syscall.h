@@ -90,4 +90,8 @@ int sys_vfs_open_device(struct syscall *interface);
 int sys_fs_channel_create(struct syscall *interface);
 int sys_fs_channel_open(struct syscall *interface);
 
+/* Fs */
+int sys_fs_register(struct syscall *interface);
+int sys_fs_unregister(struct syscall *interface);
+
 #endif /* !SYSCALL_H */
