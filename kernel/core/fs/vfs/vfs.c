@@ -47,6 +47,10 @@ int vfs_initialize(void)
     if (ret < 0)
         return ret;
 
+    ret = fs_initialize();
+    if (ret < 0)
+        return ret;
+
     console_message(T_OK, "VFS initialized");
 
     return 0;

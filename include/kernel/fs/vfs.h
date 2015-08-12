@@ -27,12 +27,14 @@
 #ifndef FS_VFS_H
 # define FS_VFS_H
 
+# include <kernel/klist.h>
 # include <kernel/types.h>
 
 /**
  * \brief   The maximum size of a filename
  */
 # define VFS_MAX_FILENAME_SIZE 255
+# define VFS_FS_MAX_NAMEL 15
 
 /**
  * \def VFS_OPEN
@@ -356,6 +358,54 @@ struct file_operation {
 };
 
 /**
+ *  \brief  Operations to manipulate creation/deletion of file systems
+ */
+struct fs_super_operation {
+
+};
+
+/**
+ *  \brief  Represents a filesystem
+ */
+struct fs {
+    /**
+     *  \brief  Name of the filesystem
+     */
+    char name[VFS_FS_MAX_NAMEL];
+
+    /**
+     *  \brief  PID of the process that registered the file system
+     */
+    pid_t pid;
+
+    /**
+     *  \brief  Set of callbacks that will allow creation/deletion of a file
+     *          system instance
+     */
+    struct fs_super_operation *fs_super_ops;
+
+    /**
+     *  \brief  Set of callbacks that will allow file system manipulations
+     */
+    struct fs_operation *fs_ops;
+
+    /**
+     *  \brief  Set of callbacks that will allow file manipulations
+     */
+    struct file_operation *f_ops;
+
+    /**
+     *  \brief  Private data for the file system
+     */
+    void *private;
+
+    /**
+     *  \brief  List of registered file systems
+     */
+    struct klist list;
+};
+
+/**
  * \brief   Initialize kernel VFS mechanism
  *
  * Mount temporary filesystem to / and create /dev directory.
@@ -365,5 +415,42 @@ struct file_operation {
  * \return  -1: Failure
  */
 int vfs_initialize(void);
+
+/**
+ *  \brief  Initialize the file system mechanism
+ *
+ *  \return 0: Success
+ */
+int fs_initialize(void);
+
+/**
+ *  \brief  Register a new file system within the system
+ *
+ *  \param  name        The name of the file system
+ *  \param  pid         The pid of the process that owns the file system
+ *  \param  fs_sup_ops  Operations used to create/delete file system instances
+ *  \param  fs_ops      Operations used to manipulate the file system
+ *  \param  private     Private data
+ *
+ *  \return 0: Success
+ *  \return -ENOMEM: Not enough memory
+ *  \return -EEXIST: File system already exists with this name
+ */
+int fs_register(const char *name, pid_t pid,
+                struct fs_super_operation *fs_sup_ops,
+                struct fs_operation *fs_ops, struct file_operation *f_ops,
+                void *private);
+
+/**
+ *  \brief  Unregister a file system
+ *
+ *  \param  name    The name of the file system
+ *  \param  pid     The pid of the owner
+ *
+ *  \return 0: Success
+ *  \return -ENOTENT: No such file system
+ *  \return -EPERM: Operation not permitted
+ */
+int fs_unregister(const char *name, pid_t pid);
 
 #endif /* !FS_VFS_H */
