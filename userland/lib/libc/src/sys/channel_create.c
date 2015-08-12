@@ -6,7 +6,7 @@ int channel_create(const char *c_name)
 {
     int ret;
 
-    SYSCALL1(SYS_CHANNEL_OPEN, c_name, ret);
+    SYSCALL1(SYS_CHANNEL_CREATE, c_name, ret);
 
     return ret;
 }
