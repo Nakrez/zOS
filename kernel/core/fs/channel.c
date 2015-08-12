@@ -39,9 +39,6 @@
 static struct klist channels;
 static spinlock_t lock;
 
-extern struct file_operation channel_slave_f_ops;
-extern struct file_operation channel_master_f_ops;
-
 static inline void channel_lock(void)
 {
     spinlock_lock(&lock);

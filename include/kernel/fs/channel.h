@@ -38,6 +38,9 @@
 
 struct file;
 
+extern struct file_operation channel_slave_f_ops;
+extern struct file_operation channel_master_f_ops;
+
 /**
  *  \brief  Message exchanged through a channel
  */
