@@ -11,7 +11,10 @@ extern struct file_operation fiu_f_ops;
 
 struct channel;
 
-struct fiu_fs_private {
+/**
+ *  \brief  Private data used for FIU registered file systems
+ */
+struct fiu_fs {
     /**
      *  \brief  The channel used to communicate with fs controller
      */

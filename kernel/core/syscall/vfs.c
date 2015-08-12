@@ -242,9 +242,9 @@ int sys_fs_register(struct syscall *interface)
     vop_t ops = interface->arg3;
     struct process *p = thread_current()->parent;
     struct file *file;
-    struct fiu_fs_private *priv;
+    struct fiu_fs *priv;
 
-    priv = kmalloc(sizeof (struct fiu_fs_private));
+    priv = kmalloc(sizeof (struct fiu_fs));
     if (!priv)
         return -ENOMEM;
 
