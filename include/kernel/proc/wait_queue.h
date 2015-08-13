@@ -71,13 +71,9 @@ static inline void wait_queue_init(struct wait_queue *queue)
             struct cpu *cpu = cpu_get((thread)->cpu);               \
             thread->state = THREAD_STATE_BLOCKED;                   \
             klist_add_back(&(queue)->threads, &(thread)->wait);     \
+            spinlock_unlock(&(queue)->lock);                        \
             spinlock_lock(&cpu->scheduler.sched_lock);              \
-            if (thread->state == THREAD_STATE_BLOCKED) {            \
-                spinlock_unlock(&(queue)->lock);                    \
-                scheduler_remove_thread(thread, &cpu->scheduler);   \
-            } else {                                                \
-                spinlock_unlock(&cpu->scheduler.sched_lock);        \
-            }                                                       \
+            scheduler_remove_thread(thread, &cpu->scheduler);       \
         } else {                                                    \
             spinlock_unlock(&(queue)->lock);                        \
             break;                                                  \
