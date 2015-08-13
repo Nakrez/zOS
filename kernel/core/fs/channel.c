@@ -83,7 +83,7 @@ static struct channel *channel_from_name(const char *name)
     struct channel *channel;
 
     klist_for_each_elem(&channels, channel, list) {
-        if (!strcmp(channel->name, name)) {
+        if (!strncmp(channel->name, name, CHANNEL_NAME_MAXL)) {
             channel_unlock();
             found = 1;
             break;
@@ -330,7 +330,7 @@ int channel_create(const char *name, struct file *file,
     channel_lock();
 
     klist_for_each_elem(&channels, tmp, list) {
-        if (!strcmp(tmp->name, name)) {
+        if (!strncmp(tmp->name, name, CHANNEL_NAME_MAXL)) {
             channel_unlock();
             kfree(new_channel);
             return -EEXIST;
@@ -347,6 +347,7 @@ int channel_create(const char *name, struct file *file,
     wait_queue_init(&new_channel->wait);
     klist_head_init(&new_channel->slaves);
     klist_head_init(&new_channel->input);
+    spinlock_init(&new_channel->lock);
 
     file->private = new_channel;
     file->f_ops = &channel_master_f_ops;
@@ -373,7 +374,7 @@ int channel_open(const char *name, struct file *file,
 
     tmp = channel_from_name(name);
 
-    if (ret < 0) {
+    if (!tmp) {
         channel_unlock();
         kfree(new_slave);
         return ret;
@@ -389,6 +390,7 @@ int channel_open(const char *name, struct file *file,
     new_slave->proc = thread_current()->parent;
     wait_queue_init(&new_slave->wait);
     klist_head_init(&new_slave->input);
+    spinlock_init(&new_slave->lock);
 
     file->private = new_slave;
     file->f_ops = &channel_slave_f_ops;
