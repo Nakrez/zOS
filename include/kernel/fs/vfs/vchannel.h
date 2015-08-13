@@ -3,9 +3,9 @@
 
 # include <kernel/klist.h>
 
-# include <kernel/fs/vfs/message.h>
-
 # include <arch/spinlock.h>
+
+struct message;
 
 struct msg_list
 {

@@ -6,6 +6,7 @@
 
 # include <kernel/fs/vfs.h>
 # include <kernel/fs/vfs/vops.h>
+# include <kernel/fs/vfs/device.h>
 
 # define MESSAGE_EXTRACT(type, msg) ((type *)(msg + 1))
 

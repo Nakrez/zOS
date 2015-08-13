@@ -31,7 +31,6 @@
 # include <kernel/zos.h>
 
 # include <kernel/fs/vfs/vchannel.h>
-# include <kernel/fs/vfs/message.h>
 
 /**
  * \brief   The maximum number of devices that can be registered in the system

@@ -33,6 +33,7 @@
 
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/vfs/device.h>
+#include <kernel/fs/vfs/message.h>
 
 #include <arch/spinlock.h>
 

@@ -6,7 +6,8 @@
 #include <kernel/proc/thread.h>
 
 #include <kernel/fs/vfs.h>
-#include <kernel/fs/vfs/device.h>
+
+#include <kernel/fs/vfs/message.h>
 #include <kernel/fs/vfs/mount.h>
 
 static int fiu_lookup(struct mount_entry *root, const char *path, uid_t uid,

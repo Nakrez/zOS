@@ -9,6 +9,7 @@
 
 #include <kernel/scheduler/event.h>
 
+#include <kernel/fs/vfs/message.h>
 #include <kernel/fs/vfs/vchannel.h>
 
 static int cid = 0;

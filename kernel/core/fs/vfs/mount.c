@@ -12,6 +12,7 @@
 #include <kernel/fs/vfs/vops.h>
 #include <kernel/fs/vfs/device.h>
 #include <kernel/fs/vfs/mount.h>
+#include <kernel/fs/vfs/message.h>
 
 #include <arch/spinlock.h>
 
