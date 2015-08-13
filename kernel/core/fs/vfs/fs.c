@@ -45,7 +45,7 @@ int fs_initialize(void)
     return 0;
 }
 
-static struct fs *fs_from_name(const char *name)
+static struct fs *fs_from_name_nolock(const char *name)
 {
     struct fs *fs;
 
@@ -55,6 +55,19 @@ static struct fs *fs_from_name(const char *name)
     }
 
     return NULL;
+}
+
+struct fs *fs_from_name(const char *name)
+{
+    struct fs *fs;
+
+    spinlock_lock(&fs_lock);
+
+    fs = fs_from_name_nolock(name);
+
+    spinlock_unlock(&fs_lock);
+
+    return fs;
 }
 
 int fs_register(const char *name, pid_t pid,
@@ -77,7 +90,7 @@ int fs_register(const char *name, pid_t pid,
 
     spinlock_lock(&fs_lock);
 
-    if (fs_from_name(name)) {
+    if (fs_from_name_nolock(name)) {
         kfree(fs);
         spinlock_unlock(&fs_lock);
         return -EEXIST;
@@ -95,7 +108,7 @@ int fs_unregister(const char *name, pid_t pid)
 
     spinlock_lock(&fs_lock);
 
-    fs = fs_from_name(name);
+    fs = fs_from_name_nolock(name);
     if (!fs) {
         spinlock_unlock(&fs_lock);
         return -ENOENT;

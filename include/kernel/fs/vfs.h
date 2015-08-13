@@ -422,6 +422,15 @@ int vfs_initialize(void);
 int fs_initialize(void);
 
 /**
+ *  \brief  Get the file system from its name
+ *
+ *  \param  name    The name of the file system
+ *
+ *  \return The file system if found, NULL otherwise
+ */
+struct fs *fs_from_name(const char *name);
+
+/**
  *  \brief  Register a new file system within the system
  *
  *  \param  name        The name of the file system
