@@ -153,6 +153,15 @@ struct channel_slave {
 int channel_initialize(void);
 
 /**
+ *  \brief  Get a channel from its name
+ *
+ *  \param  name    The name of the channel
+ *
+ *  \return The channel if found, NULL otherwise
+ */
+struct channel *channel_from_name(const char *name);
+
+/**
  *  \brief  Create a new channel
  *
  *  \param  name    The name of the channel

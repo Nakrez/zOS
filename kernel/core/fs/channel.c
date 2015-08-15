@@ -77,21 +77,29 @@ static struct channel_slave *channel_get_slave(struct channel *channel,
     return slave;
 }
 
-static struct channel *channel_from_name(const char *name)
+static struct channel *channel_from_name_nolock(const char *name)
 {
-    int found = 0;
     struct channel *channel;
 
     klist_for_each_elem(&channels, channel, list) {
         if (!strncmp(channel->name, name, CHANNEL_NAME_MAXL)) {
             channel_unlock();
-            found = 1;
-            break;
+            return channel;
         }
     }
 
-    if (!found)
-        return NULL;
+    return NULL;
+}
+
+struct channel *channel_from_name(const char *name)
+{
+    struct channel *channel;
+
+    channel_lock();
+
+    channel = channel_from_name_nolock(name);
+
+    channel_unlock();
 
     return channel;
 }
@@ -407,7 +415,7 @@ int channel_open_from_name(const char *name, struct file *file,
 
     channel_lock();
 
-    tmp = channel_from_name(name);
+    tmp = channel_from_name_nolock(name);
 
     if (!tmp) {
         channel_unlock();
