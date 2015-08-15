@@ -32,6 +32,10 @@
 # define VFS_OPS_STAT (1 << 9)
 # define VFS_OPS_IOCTL (1 << 10)
 # define VFS_OPS_GETDIRENT (1 << 11)
+struct msg_header {
+    uint16_t op;
+    uint16_t slave_id;
+};
 
 /**
  *  \brief  See the structure that is in the kernel

@@ -14,6 +14,11 @@
 # define RES_ENTER_MOUNT 1
 # define RES_KO 2
 
+struct msg_header {
+    uint16_t op;
+    uint16_t slave_id;
+};
+
 struct message *message_alloc(size_t size);
 void message_free(struct message *msg);
 
