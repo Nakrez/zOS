@@ -34,11 +34,21 @@
 
 # include <arch/spinlock.h>
 
+/**
+ *  \brief  Maximum size for a device name in bytes
+ */
 # define CHANNEL_NAME_MAXL 20
 
 struct file;
 
+/**
+ *  \brief  File operation to manipulate a slave channel
+ */
 extern struct file_operation channel_slave_f_ops;
+
+/**
+ *  \brief  File operation to manipulate a master channel
+ */
 extern struct file_operation channel_master_f_ops;
 
 /**
@@ -66,6 +76,9 @@ struct channel_message {
     struct klist list;
 };
 
+/**
+ *  \brief  Represents a master channel
+ */
 struct channel {
     /**
      *  \brief  The name of the channel
@@ -109,6 +122,9 @@ struct channel {
 
 };
 
+/**
+ *  \brief  Represents a channel slave
+ */
 struct channel_slave {
     /**
      *  \brief  The id of the slave
@@ -175,6 +191,38 @@ struct channel *channel_from_name(const char *name);
 int channel_create(const char *name, struct file *file,
                    struct channel **channel);
 
+ /**
+ *  \brief  Read from a master channel
+ *
+ *  \param  channel The channel you want to read from
+ *  \param  buf     This buffer will be filled with the data read
+ *  \param  size    The size you want to read
+ *
+ *  \return The size read if everything went well
+ */
+int channel_master_read(struct channel *channel, void *buf, size_t size);
+
+/**
+ *  \brief  Write to a master channel
+ *
+ *  \param  channel The channel you want to write to
+ *  \param  buf     The data you want to write
+ *  \param  size    The size you want to write
+ *
+ *  \return The size written if everything went well
+ *  \return -ENOMEM: Not enough memory
+ */
+int channel_master_write(struct channel *channel, void *buf, size_t size);
+
+/**
+ *  \brief  Close a master channel
+ *
+ *  \param  channel The channel you want to close
+ *
+ *  \return 0: Everything went well
+ */
+int channel_master_close(struct channel *channel);
+
 /**
  *  \brief  Open an existing channel
  *
@@ -204,5 +252,37 @@ int channel_open(struct channel *channel, struct file *file,
  */
 int channel_open_from_name(const char *name, struct file *file,
                            struct channel_slave **slave);
+
+/**
+ *  \brief  Read from a slave channel
+ *
+ *  \param  slave   The slave channel you want to read from
+ *  \param  buf     This buffer will be filled with the data read
+ *  \param  size    The size you want to read
+ *
+ *  \return The size read if everything went well
+ */
+int channel_slave_read(struct channel_slave *slave, void *buf, size_t size);
+
+/**
+ *  \brief  Write to a slave channel
+ *
+ *  \param  slave   The slave channel you want to write to
+ *  \param  buf     The data you want to write
+ *  \param  size    The size you want to write
+ *
+ *  \return The size written if everything went well
+ *  \return -ENOMEM: Not enough memory
+ */
+int channel_slave_write(struct channel_slave *slave, void *buf, size_t size);
+
+/**
+ *  \brief  Close a slave channel
+ *
+ *  \param  slave   The slave you want to close
+ *
+ *  \return 0: Everything went well
+ */
+int channel_slave_close(struct channel_slave *slave);
 
 #endif /* !FS_CHANNEL_H */

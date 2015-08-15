@@ -37,23 +37,23 @@
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 static struct klist channels;
-static spinlock_t lock;
+static spinlock_t clock;
 
 static inline void channel_lock(void)
 {
-    spinlock_lock(&lock);
+    spinlock_lock(&clock);
 }
 
 static inline void channel_unlock(void)
 {
-    spinlock_unlock(&lock);
+    spinlock_unlock(&clock);
 }
 
 int channel_initialize(void)
 {
     klist_head_init(&channels);
 
-    spinlock_init(&lock);
+    spinlock_init(&clock);
 
     return 0;
 }
@@ -172,116 +172,81 @@ static int channel_write_message(struct wait_queue *queue, struct klist *input,
     return size;
 }
 
-static int channel_slave_read(struct file *file, struct process *p,
-                              struct req_rdwr *req, void *buf)
-{
-    (void) p;
-
-    struct channel_slave *slave;
-
-    if (file->f_ops != &channel_slave_f_ops)
-        return -EBADF;
-
-    slave = file->private;
-
-    return channel_read_message(&slave->wait, &slave->input, &slave->lock,
-                                req->size, buf);
-}
-
-static int channel_slave_write(struct file *file, struct process *p,
-                               struct req_rdwr *req, void *buf)
-{
-    (void) p;
-
-    struct channel *cparent;
-    struct channel_slave *slave;
-
-    if (file->f_ops != &channel_slave_f_ops)
-        return -EBADF;
-
-    slave = file->private;
-    cparent = slave->parent;
-
-    return channel_write_message(&cparent->wait, &cparent->input,
-                                 &cparent->lock, slave->id, req->size, buf);
-}
-
-static int channel_slave_close(struct file *file, ino_t inode)
-{
-    (void) inode;
-
-    struct channel_slave *slave;
-
-    if (file->f_ops != &channel_slave_f_ops)
-        return -EBADF;
-
-    slave = file->private;
-
-    channel_lock();
-
-    klist_del(&slave->list);
-
-    channel_unlock();
-
-    klist_for_each(&slave->input, data, list) {
-        struct channel_message *msg = klist_elem(data, struct channel_message,
-                                                 list);
-
-        klist_del(&msg->list);
-        kfree(msg);
-    }
-
-    kfree(slave);
-
-    return 0;
-}
-
-static int channel_master_read(struct file *file, struct process *p,
-                               struct req_rdwr *req, void *buf)
-{
-    (void) p;
-
-    struct channel *channel;
-
-    if (file->f_ops != &channel_master_f_ops)
-        return -EBADF;
-
-    channel = file->private;
-
-    return channel_read_message(&channel->wait, &channel->input,
-                                &channel->lock, req->size, buf);
-}
-
-static int channel_master_write(struct file *file, struct process *p,
+static int __channel_slave_read(struct file *file, struct process *p,
                                 struct req_rdwr *req, void *buf)
 {
     (void) p;
 
-    uint16_t slave_id;
-    struct channel *channel;
     struct channel_slave *slave;
+
+    if (file->f_ops != &channel_slave_f_ops)
+        return -EBADF;
+
+    slave = file->private;
+
+    return channel_slave_read(slave, buf, req->size);
+}
+
+static int __channel_slave_write(struct file *file, struct process *p,
+                                 struct req_rdwr *req, void *buf)
+{
+    (void) p;
+
+    struct channel_slave *slave;
+
+    if (file->f_ops != &channel_slave_f_ops)
+        return -EBADF;
+
+    slave = file->private;
+
+    return channel_slave_write(slave, buf, req->size);
+}
+
+static int __channel_slave_close(struct file *file, ino_t inode)
+{
+    (void) inode;
+
+    struct channel_slave *slave;
+
+    if (file->f_ops != &channel_slave_f_ops)
+        return -EBADF;
+
+    slave = file->private;
+
+    return channel_slave_close(slave);
+}
+
+static int __channel_master_read(struct file *file, struct process *p,
+                                 struct req_rdwr *req, void *buf)
+{
+    (void) p;
+
+    struct channel *channel;
 
     if (file->f_ops != &channel_master_f_ops)
         return -EBADF;
 
     channel = file->private;
 
-    /* The first uint16_t on a message is the slave channel targeted */
-    if (req->size < sizeof (uint16_t))
-        return -EINVAL;
-
-    slave_id = *(uint16_t *)buf;
-
-    slave = channel_get_slave(channel, slave_id);
-    if (!slave)
-        return -EINVAL;
-
-    return channel_write_message(&slave->wait, &slave->input, &slave->lock,
-                                 slave->id, req->size - sizeof (uint16_t),
-                                 (char *)buf + sizeof (uint16_t));
+    return channel_master_read(channel, buf, req->size);
 }
 
-static int channel_master_close(struct file *file, ino_t inode)
+static int __channel_master_write(struct file *file, struct process *p,
+                                  struct req_rdwr *req, void *buf)
+{
+    (void) p;
+
+    struct channel *channel;
+
+    if (file->f_ops != &channel_master_f_ops)
+        return -EBADF;
+
+    channel = file->private;
+
+    return channel_master_write(channel, buf, req->size);
+}
+
+static int __channel_master_close(struct file *file, ino_t inode)
 {
     (void) inode;
 
@@ -292,37 +257,19 @@ static int channel_master_close(struct file *file, ino_t inode)
 
     channel = file->private;
 
-    channel_lock();
-
-    klist_del(&channel->list);
-
-    channel_unlock();
-
-    /* XXX: We need to notify slaves if any */
-
-    klist_for_each(&channel->input, data, list) {
-        struct channel_message *msg = klist_elem(data, struct channel_message,
-                                                 list);
-
-        klist_del(&msg->list);
-        kfree(msg);
-    }
-
-    kfree(channel);
-
-    return 0;
+    return channel_master_close(channel);
 }
 
 struct file_operation channel_slave_f_ops = {
-    .read = channel_slave_read,
-    .write = channel_slave_write,
-    .close = channel_slave_close,
+    .read = __channel_slave_read,
+    .write = __channel_slave_write,
+    .close = __channel_slave_close,
 };
 
 struct file_operation channel_master_f_ops = {
-    .read = channel_master_read,
-    .write = channel_master_write,
-    .close = channel_master_close,
+    .read = __channel_master_read,
+    .write = __channel_master_write,
+    .close = __channel_master_close,
 };
 
 int channel_create(const char *name, struct file *file,
@@ -363,6 +310,52 @@ int channel_create(const char *name, struct file *file,
 
     if (channel)
         *channel = new_channel;
+
+    return 0;
+}
+
+int channel_master_read(struct channel *channel, void *buf, size_t size)
+{
+    return channel_read_message(&channel->wait, &channel->input,
+                                &channel->lock, size, buf);
+}
+
+int channel_master_write(struct channel *channel, void *buf, size_t size)
+{
+    struct channel_slave *slave;
+    struct msg_header *hdr = buf;
+
+    if (size < sizeof (struct msg_header))
+        return -EINVAL;
+
+    slave = channel_get_slave(channel, hdr->slave_id);
+    if (!slave)
+        return -EINVAL;
+
+    return channel_write_message(&slave->wait, &slave->input, &slave->lock,
+                                 slave->id, size - sizeof (struct msg_header),
+                                 hdr + 1);
+}
+
+int channel_master_close(struct channel *channel)
+{
+    channel_lock();
+
+    klist_del(&channel->list);
+
+    channel_unlock();
+
+    /* XXX: We need to notify slaves if any */
+
+    klist_for_each(&channel->input, data, list) {
+        struct channel_message *msg = klist_elem(data, struct channel_message,
+                                                 list);
+
+        klist_del(&msg->list);
+        kfree(msg);
+    }
+
+    kfree(channel);
 
     return 0;
 }
@@ -423,24 +416,44 @@ int channel_open_from_name(const char *name, struct file *file,
         return ret;
     }
 
-    klist_add(&tmp->slaves, &new_slave->list);
+    channel_unlock();
 
-    new_slave->id = tmp->slave_id++;
+    return channel_open(tmp, file, slave);
+}
+
+int channel_slave_read(struct channel_slave *slave, void *buf, size_t size)
+{
+    return channel_read_message(&slave->wait, &slave->input, &slave->lock,
+                                size, buf);
+}
+
+int channel_slave_write(struct channel_slave *slave, void *buf, size_t size)
+{
+    struct channel *cparent;
+
+    cparent = slave->parent;
+
+    return channel_write_message(&cparent->wait, &cparent->input,
+                                 &cparent->lock, slave->id, size, buf);
+}
+
+int channel_slave_close(struct channel_slave *slave)
+{
+    channel_lock();
+
+    klist_del(&slave->list);
 
     channel_unlock();
 
-    new_slave->parent = tmp;
-    new_slave->proc = thread_current()->parent;
-    wait_queue_init(&new_slave->wait);
-    klist_head_init(&new_slave->input);
-    spinlock_init(&new_slave->lock);
+    klist_for_each(&slave->input, data, list) {
+        struct channel_message *msg = klist_elem(data, struct channel_message,
+                                                 list);
 
-    file->private = new_slave;
-    file->f_ops = &channel_slave_f_ops;
-    file->mount = NULL;
+        klist_del(&msg->list);
+        kfree(msg);
+    }
 
-    if (slave)
-        *slave = new_slave;
+    kfree(slave);
 
     return 0;
 }
