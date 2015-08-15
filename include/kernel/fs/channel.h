@@ -169,15 +169,31 @@ int channel_create(const char *name, struct file *file,
 /**
  *  \brief  Open an existing channel
  *
- *  \param  name    The name of the channel to open
- *  \param  file    The file representing the channel's slave
+ *  \param  channel Channel to open
+ *  \param  file    The file representing the channel's slave, if file is not
+ *                  NULL, appropriate information will be filed
  *  \param  slave   The channel slave
  *
  *  \return 0: Everything went well
  *  \return -ENOENT: No such channel
  *  \return -ENOMEM: Not enough memory
  */
-int channel_open(const char *name, struct file *file,
+int channel_open(struct channel *channel, struct file *file,
                  struct channel_slave **slave);
+
+/**
+ *  \brief  Open an existing channel from its name
+ *
+ *  \param  name    The name of the channel to open
+ *  \param  file    The file representing the channel's slave, if file is not
+ *                  NULL, appropriate information will be filed
+ *  \param  slave   The channel slave
+ *
+ *  \return 0: Everything went well
+ *  \return -ENOENT: No such channel
+ *  \return -ENOMEM: Not enough memory
+ */
+int channel_open_from_name(const char *name, struct file *file,
+                           struct channel_slave **slave);
 
 #endif /* !FS_CHANNEL_H */

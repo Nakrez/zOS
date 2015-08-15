@@ -225,7 +225,7 @@ int sys_fs_channel_open(struct syscall *interface)
 
     file = &p->files[fd];
 
-    err = channel_open(name, file, NULL);
+    err = channel_open_from_name(name, file, NULL);
     if (err < 0) {
         process_free_fd(p, fd);
         return err;

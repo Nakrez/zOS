@@ -359,8 +359,43 @@ int channel_create(const char *name, struct file *file,
     return 0;
 }
 
-int channel_open(const char *name, struct file *file,
+int channel_open(struct channel *channel, struct file *file,
                  struct channel_slave **slave)
+{
+    struct channel_slave *new_slave;
+
+    new_slave = kmalloc(sizeof (struct channel_slave));
+    if (!new_slave)
+        return -ENOMEM;
+
+    channel_lock();
+
+    klist_add(&channel->slaves, &new_slave->list);
+
+    new_slave->id = channel->slave_id++;
+
+    channel_unlock();
+
+    new_slave->parent = channel;
+    new_slave->proc = thread_current()->parent;
+    wait_queue_init(&new_slave->wait);
+    klist_head_init(&new_slave->input);
+    spinlock_init(&new_slave->lock);
+
+    if (file) {
+        file->private = new_slave;
+        file->f_ops = &channel_slave_f_ops;
+        file->mount = NULL;
+    }
+
+    if (slave)
+        *slave = new_slave;
+
+    return 0;
+}
+
+int channel_open_from_name(const char *name, struct file *file,
+                           struct channel_slave **slave)
 {
     int ret = -ENOENT;
     struct channel *tmp;
