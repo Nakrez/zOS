@@ -22,10 +22,9 @@ int vfs_write(struct thread *t, int fd, const void *buf, size_t count)
     else
         p = t->parent;
 
-    if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
-        return -EINVAL;
-
-    file = &p->files[fd];
+    ret = process_file_from_fd(p, fd, &file);
+    if (ret < 0)
+        return ret;
 
     if (!file->f_ops->write)
         return -ENOSYS;

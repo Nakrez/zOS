@@ -15,6 +15,7 @@ int vfs_ioctl(struct thread *t, int fd, int req, int *argp)
     struct message *response;
     struct req_ioctl *request;
     struct resp_ioctl *answer;
+    struct file *file;
 
     /* Kernel request */
     if (!t)
@@ -22,8 +23,10 @@ int vfs_ioctl(struct thread *t, int fd, int req, int *argp)
     else
         p = t->parent;
 
-    if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
-        return -EBADF;
+
+    ret = process_file_from_fd(p, fd, &file);
+    if (ret < 0)
+        return ret;
 
     if (p->files[fd].inode->dev < 0)
         return -ENOTTY;

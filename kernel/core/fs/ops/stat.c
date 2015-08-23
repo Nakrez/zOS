@@ -46,28 +46,28 @@ int vfs_stat(struct thread *t, const char *path, struct stat *buf)
 
 int vfs_fstat(struct thread *t, int fd, struct stat *buf)
 {
+    int ret;
     struct process *p;
     uid_t uid;
     gid_t gid;
+    struct file *file;
 
     /* Kernel request */
-    if (!t)
-    {
+    if (!t) {
         p = process_get(0);
 
         uid = 0;
         gid = 0;
-    }
-    else
-    {
+    } else {
         p = t->parent;
 
         uid = t->uid;
         gid = t->gid;
     }
 
-    if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
-        return -EINVAL;
+    ret = process_file_from_fd(p, fd, &file);
+    if (ret < 0)
+        return ret;
 
     if (!p->files[fd].mount->fs_ops->stat)
         return -ENOSYS;

@@ -256,6 +256,23 @@ int process_fd_exist(struct process *process, int fd)
     return ret;
 }
 
+int process_file_from_fd(struct process *process, int fd, struct file **file)
+{
+    struct file *f;
+
+    if (fd < 0 || fd >= PROCESS_MAX_OPEN_FD)
+        return -EINVAL;
+
+    f = &process->files[fd];
+
+    if (!f->used)
+        return -EBADF;
+
+    *file = f;
+
+    return 0;
+}
+
 void process_free_fd(struct process *process, int fd)
 {
     if (fd < 0 || fd >= PROCESS_MAX_OPEN_FD)
