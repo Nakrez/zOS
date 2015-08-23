@@ -304,6 +304,7 @@ int channel_create(const char *name, struct file *file,
     klist_head_init(&new_channel->input);
     spinlock_init(&new_channel->lock);
 
+    file->inode = NULL;
     file->private = new_channel;
     file->f_ops = &channel_master_f_ops;
     file->mount = NULL;
