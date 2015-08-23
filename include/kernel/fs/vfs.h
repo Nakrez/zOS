@@ -295,6 +295,11 @@ struct inode {
      *  \brief  The last change time of the inode
      */
     time_t c_time;
+
+    /**
+     *  \brief  Use for reference counting
+     */
+    int ref;
 };
 
 struct file {
@@ -459,5 +464,32 @@ int fs_register(const char *name, pid_t pid,
  *  \return -EPERM: Operation not permitted
  */
 int fs_unregister(const char *name, pid_t pid);
+
+/**
+ *  \brief  Allocate a new inode
+ *
+ *  \param  mode    The mode of the inode (ie its permission)
+ *
+ *  \return The new inode if everything went well, NULL otherwise
+ */
+struct inode *inode_new(mode_t mode);
+
+/**
+ *  \brief  Add a reference on the inode
+ *
+ *  \param  inode   The inode you want to increment the reference
+ */
+static inline void inode_inc(struct inode *inode)
+{
+    ++inode->ref;
+}
+
+/**
+ *  \brief  Delete an existing inode. Inodes use a reference counting
+ *          mechanism, this will not always result in a deallocation
+ *
+ *  \param  inode   The inode you want to delete
+ */
+void inode_del(struct inode *inode);
 
 #endif /* !FS_VFS_H */
