@@ -207,7 +207,8 @@ int process_fork(struct process *process, struct irq_regs *regs)
     }
 
     /* Inherit file descriptor from parent */
-    memcpy(child->files, process->files, sizeof (process->files));
+    for (int i = 0; i < PROCESS_MAX_OPEN_FD; ++i)
+        process_dup_file(&child->files[i], &process->files[i]);
 
     /* Add the new process to the father's children list */
     klist_add(&process->children, &child->brothers);
@@ -269,6 +270,28 @@ int process_file_from_fd(struct process *process, int fd, struct file **file)
         return -EBADF;
 
     *file = f;
+
+    return 0;
+}
+
+int process_dup_file(struct file *f_new, struct file *f_old)
+{
+    f_new->used = f_old->used;
+
+    if (!f_new->used)
+        return 0;
+
+    f_new->inode = NULL;
+
+    if (f_old->inode) {
+        inode_inc(f_old->inode);
+        f_new->inode = f_old->inode;
+    }
+
+    f_new->offset = f_old->offset;
+    f_new->f_ops = f_old->f_ops;
+    f_new->private = f_old->private;
+    f_new->mount = f_old->mount;
 
     return 0;
 }

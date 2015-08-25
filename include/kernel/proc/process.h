@@ -232,6 +232,16 @@ int process_fd_exist(struct process *process, int fd);
 int process_file_from_fd(struct process *process, int fd, struct file **file);
 
 /**
+ *  \brief  Duplicate a file
+ *
+ *  \param  f_new   The new file created
+ *  \param  f_old   The old file that is duplicated
+ *
+ *  \return 0: Everything went well
+ */
+int process_dup_file(struct file *f_new, struct file *f_old);
+
+/**
  * \brief   Release a file descriptor
  *
  * \param   process The process owning the file descriptor
