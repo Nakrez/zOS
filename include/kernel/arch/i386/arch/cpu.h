@@ -82,4 +82,9 @@ static inline void cpu_irq_disable(void)
     __asm__ __volatile__ ("cli\n");
 }
 
+static inline void cpu_get_msr(uint32_t msr, uint32_t *eax, uint32_t *ebx)
+{
+    __asm__ __volatile__ ("rdmsr" : "=a"(*eax), "=d"(*ebx) : "c"(msr));
+}
+
 #endif /* !I386_CPU_H */
