@@ -8,11 +8,12 @@
 # define TTY_INPUT_BUFFER_SIZE 256
 
 struct tty {
-    int tty_ctrl_fd;
+    int tty_ctrl_fd_w;
+    int tty_ctrl_fd_r;
 
     struct {
         struct req_rdwr req;
-        int mid;
+        int slave_id;
     } req;
 
     struct {

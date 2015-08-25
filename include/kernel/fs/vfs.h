@@ -30,6 +30,8 @@
 # include <kernel/klist.h>
 # include <kernel/types.h>
 
+# include <arch/spinlock.h>
+
 /**
  * \brief   The maximum size of a filename
  */
@@ -72,6 +74,9 @@
  *
  * \def VFS_GETDIRENT
  * VFS getdirent message identifier
+ *
+ * \def VFS_FS_CREATE
+ * VFS fs create message identifier
  */
 # define VFS_OPEN 1
 # define VFS_READ 2
@@ -85,6 +90,7 @@
 # define VFS_STAT 10
 # define VFS_IOCTL 11
 # define VFS_GETDIRENT 12
+# define VFS_FS_CREATE 13
 
 /**
  * \def VFS_OPS_OPEN
@@ -122,6 +128,9 @@
  *
  * \def VFS_OPS_GETDIRENT
  * VFS getdirent capability
+ *
+ * \def VFS_OPS_FS_CREATE
+ * VFS fs create capability
  */
 # define VFS_OPS_OPEN (1 << 0)
 # define VFS_OPS_READ (1 << 1)
@@ -135,6 +144,7 @@
 # define VFS_OPS_STAT (1 << 9)
 # define VFS_OPS_IOCTL (1 << 10)
 # define VFS_OPS_GETDIRENT (1 << 11)
+# define VFS_OPS_FS_CREATE (1 << 12)
 
 /**
  * \def VFS_PERM_OTHER_R
@@ -244,6 +254,8 @@ struct req_rdwr;
 struct process;
 struct dirent;
 struct file_operation;
+struct fs_instance;
+struct req_ioctl;
 
 /**
  *  \brief  Attribute related to a file
@@ -295,6 +307,11 @@ struct inode {
      *  \brief  The last change time of the inode
      */
     time_t c_time;
+
+    /**
+     *  \brief  Use for reference counting
+     */
+    int ref;
 };
 
 struct file {
@@ -352,6 +369,8 @@ struct file_operation {
     int (*read)(struct file *, struct process *, struct req_rdwr *, void *buf);
     int (*write)(struct file *, struct process *, struct req_rdwr *,
                  void *buf);
+    int (*ioctl)(struct file *, struct req_ioctl *, int *);
+    int (*dup)(struct file *, struct file *);
     int (*close)(struct file *, ino_t);
 };
 
@@ -359,7 +378,8 @@ struct file_operation {
  *  \brief  Operations to manipulate creation/deletion of file systems
  */
 struct fs_super_operation {
-
+    int (*create)(struct fs_instance *fi, const char *device,
+                  const char *mount_pt);
 };
 
 /**
@@ -398,7 +418,37 @@ struct fs {
     void *private;
 
     /**
+     *  \brief  Lock to access this datas
+     */
+    spinlock_t lock;
+
+    /**
+     *  \brief  List of instances of the file system
+     */
+    struct klist instances;
+
+    /**
      *  \brief  List of registered file systems
+     */
+    struct klist list;
+};
+
+/**
+ *  \brief  Represents an actual mounted file system
+ */
+struct fs_instance {
+    /**
+     *  \brief  The file system type
+     */
+    struct fs *parent;
+
+    /**
+     *  \brief  Private data for the file system
+     */
+    void *private;
+
+    /**
+     *  \brief  List of instance of the same file system
      */
     struct klist list;
 };
@@ -459,5 +509,54 @@ int fs_register(const char *name, pid_t pid,
  *  \return -EPERM: Operation not permitted
  */
 int fs_unregister(const char *name, pid_t pid);
+
+/**
+ *  \brief  Create a new instance of a file system
+ *
+ *  \param  name        The name of the file system you want to instantiate
+ *  \param  device      The device the file system will read/write from/to
+ *  \param  mount_pt    The mount point
+ *  \param  fi          This pointer will be set if everything went well
+ *
+ *  \return 0: Success
+ *  \return -ENOENT: No such file system
+ *  \return -ENOMEM: Not enough memory
+ */
+int fs_new_instance(const char *name, const char *device, const char *mount_pt,
+                    struct fs_instance **fi);
+
+/**
+ *  \brief  Delete an instance of the file system
+ *
+ *  \param  instance    The instance you want to delete
+ */
+void fs_del_instance(struct fs_instance *instance);
+
+/**
+ *  \brief  Allocate a new inode
+ *
+ *  \param  mode    The mode of the inode (ie its permission)
+ *
+ *  \return The new inode if everything went well, NULL otherwise
+ */
+struct inode *inode_new(mode_t mode);
+
+/**
+ *  \brief  Add a reference on the inode
+ *
+ *  \param  inode   The inode you want to increment the reference
+ */
+static inline void inode_inc(struct inode *inode)
+{
+    ++inode->ref;
+}
+
+/**
+ *  \brief  Delete an existing inode. Inodes use a reference counting
+ *          mechanism, this will not always result in a deallocation
+ *
+ *  \param  inode   The inode you want to delete
+ */
+void inode_del(struct inode *inode);
 
 #endif /* !FS_VFS_H */

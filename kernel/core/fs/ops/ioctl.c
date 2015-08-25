@@ -6,15 +6,12 @@
 #include <kernel/fs/vfs/message.h>
 #include <kernel/fs/vfs/device.h>
 
-int vfs_ioctl(struct thread *t, int fd, int req, int *argp)
+int vfs_ioctl(struct thread *t, int fd, int request, int *argp)
 {
     int ret;
     struct process *p;
-    struct device *device;
-    struct message *message;
-    struct message *response;
-    struct req_ioctl *request;
-    struct resp_ioctl *answer;
+    struct req_ioctl req;
+    struct file *file;
 
     /* Kernel request */
     if (!t)
@@ -22,54 +19,22 @@ int vfs_ioctl(struct thread *t, int fd, int req, int *argp)
     else
         p = t->parent;
 
-    if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
-        return -EBADF;
+    ret = process_file_from_fd(p, fd, &file);
+    if (ret < 0)
+        return ret;
 
-    if (p->files[fd].inode->dev < 0)
-        return -ENOTTY;
-
-    if (!(device = device_get(p->files[fd].inode->dev)))
-        return -ENODEV;
-
-    if (!(device->ops & VFS_OPS_IOCTL))
+    if (!file->f_ops->ioctl)
         return -ENOSYS;
 
-    if (!(message = message_alloc(sizeof (struct req_ioctl))))
-        return -ENOMEM;
+    req.inode = 0;
+    if (file->inode)
+        req.inode = file->inode->inode;
 
-    request = MESSAGE_EXTRACT(struct req_ioctl, message);
-
-    request->inode = p->files[fd].inode->inode;
-    request->request = req;
-    request->with_argp = argp != NULL;
+    req.request = request;
+    req.with_argp = argp != NULL;
 
     if (argp)
-        request->argp = *argp;
+        req.argp = *argp;
 
-    message->mid = (message->mid & ~0xFF) | VFS_IOCTL;
-
-    if ((ret = vchannel_send_recv(device->channel, message, &response)) < 0)
-    {
-        message_free(message);
-
-        return ret;
-    }
-
-    message_free(message);
-
-    answer = MESSAGE_EXTRACT(struct resp_ioctl, response);
-
-    if (answer->ret < 0)
-    {
-        message_free(response);
-
-        return answer->ret;
-    }
-
-    if (argp && answer->modify_argp)
-        *argp = answer->argp;
-
-    message_free(response);
-
-    return 0;
+    return file->f_ops->ioctl(file, &req, argp);
 }

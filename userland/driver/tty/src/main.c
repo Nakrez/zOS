@@ -56,45 +56,39 @@ static int tty_flush_buffer(struct tty *tty, char *dest, size_t max_size)
     return size;
 }
 
-static int tty_read(struct driver *driver, int mid, struct req_rdwr *req,
+static int tty_read(struct driver *driver, struct req_rdwr *req,
                     size_t *size)
 {
+    int ret = 0;
     struct tty *tty = driver->private;
 
     spinlock_lock(&tty->input.lock);
 
-    if (tty->req.mid != 0) {
-        spinlock_unlock(&tty->input.lock);
-
+    if (tty->req.slave_id >= 0) {
         /* TODO: EIO */
-        return -1;
+        ret = -1;
     } else if (tty->input.nb_line > 0) {
         *size = tty_flush_buffer(tty, req->data, req->size);
     } else {
         memcpy(&tty->req.req, req, sizeof (struct req_rdwr));
 
-        tty->req.mid = mid;
+        tty->req.slave_id = req->hdr.slave_id;
 
-        spinlock_unlock(&tty->input.lock);
-
-        return DRV_NORESPONSE;
+        ret = DRV_NORESPONSE;
     }
 
     spinlock_unlock(&tty->input.lock);
 
-    return 0;
+    return ret;
 }
 
-static int tty_write(struct driver *driver, int mid, struct req_rdwr *req,
+static int tty_write(struct driver *driver, struct req_rdwr *req,
                      size_t *size)
 {
-    (void) mid;
-
     int ret;
     struct tty *tty = driver->private;
 
-    ret = write(tty->tty_ctrl_fd, req->data, req->size);
-
+    ret = write(tty->tty_ctrl_fd_w, req->data, req->size);
     if (ret < 0)
         return ret;
 
@@ -126,7 +120,7 @@ static void tty_input_thread(int argc, void *argv[])
             tty->input.max_size *= 2;
         }
 
-        ret = read(tty->tty_ctrl_fd, tty->input.buffer + tty->input.size,
+        ret = read(tty->tty_ctrl_fd_r, tty->input.buffer + tty->input.size,
                   tty->input.max_size - tty->input.size);
         if (ret < 0)
             continue;
@@ -140,17 +134,17 @@ static void tty_input_thread(int argc, void *argv[])
 
         spinlock_lock(&tty->input.lock);
 
-        if (tty->req.mid && tty->input.nb_line > 0) {
-            struct resp_rdwr response;
+        if (tty->req.slave_id >= 0 && tty->input.nb_line > 0) {
+            struct resp_rdwr resp;
 
-            response.ret = 0;
-            response.size = tty_flush_buffer(tty, tty->req.req.data,
-                                             tty->req.req.size);
+            resp.hdr.slave_id = tty->req.slave_id;
+            resp.ret = 0;
+            resp.size = tty_flush_buffer(tty, tty->req.req.data,
+                                         tty->req.req.size);
 
-            device_send_response(tty->driver.dev_id, tty->req.mid, &response,
-                                 sizeof (struct resp_rdwr));
+            write(tty->driver.channel_fd, &resp, sizeof (resp));
 
-            tty->req.mid = 0;
+            tty->req.slave_id = -1;
         }
 
         spinlock_unlock(&tty->input.lock);
@@ -161,6 +155,7 @@ int main(void)
 {
     int ret;
     struct tty tty;
+    int tty_ctrl_fd;
 
     uprint("tty: Initialization");
 
@@ -168,9 +163,16 @@ int main(void)
      * We have to wait for tty controller because it spawns slaves before
      * initializing tty device
      */
-    tty.tty_ctrl_fd = tty_wait_ctrl();
-    if (tty.tty_ctrl_fd < 0) {
+    tty_ctrl_fd = tty_wait_ctrl();
+    if (tty_ctrl_fd < 0) {
         uprint("tty: Fail to attach to tty controller");
+        return 1;
+    }
+
+    tty.tty_ctrl_fd_r = tty_ctrl_fd;
+    tty.tty_ctrl_fd_w = dup(tty_ctrl_fd);
+    if (tty.tty_ctrl_fd_w < 0) {
+        uprint("tty: Fail to duplicate tty_ctrl fd");
         return 1;
     }
 
@@ -184,7 +186,7 @@ int main(void)
     tty.input.max_size = TTY_INPUT_BUFFER_SIZE;
     tty.input.nb_line = 0;
 
-    tty.req.mid = 0;
+    tty.req.slave_id = -1;
 
     spinlock_init(&tty.input.lock);
 

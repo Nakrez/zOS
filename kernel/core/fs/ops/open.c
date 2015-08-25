@@ -16,7 +16,6 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
 {
     int ret;
     int fd;
-    int path_size = strlen(path);
     struct file *file;
     struct resp_lookup res;
     struct mount_entry *mount_pt;
@@ -44,28 +43,29 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
         return ret;
 
     /* FIXME: Allow file creation */
-    if (ret != path_size)
+    if ((size_t)ret != strlen(path))
         return -ENOENT;
 
-    inode = kmalloc(sizeof (struct inode));
+    inode = inode_new(mode);
     if (!inode)
         return -ENOMEM;
 
-    if ((fd = process_new_fd(process)) < 0)
+    fd = process_new_fd(process);
+    if (fd < 0) {
+        kfree(inode);
         return fd;
+    }
 
     file = &process->files[fd];
 
     file->inode = inode;
     file->offset = 0;
 
-    inode->mode = mode;
-
     if (res.inode.dev < 0) {
         file->mount = mount_pt;
-        file->f_ops = mount_pt->f_ops;
+        file->f_ops = mount_pt->fi->parent->f_ops;
 
-        inode->dev = mount_pt->dev;
+        inode->dev = 0;
 
         inode_open = res.inode.inode;
     } else {
@@ -97,6 +97,6 @@ int vfs_open(struct thread *t, const char *path, int flags, mode_t mode)
 
 error:
     process_free_fd(process, fd);
-    kfree(inode);
+    inode_del(inode);
     return ret;
 }

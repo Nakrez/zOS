@@ -12,29 +12,28 @@
 #include <kbd.h>
 #include <buffer.h>
 
-static int kbd_open(struct driver *driver, int mid, struct req_open *request,
-                     ino_t *inode)
+static int kbd_open(struct driver *driver, struct req_open *request,
+                    ino_t *inode)
 {
     (void) request;
-    (void) mid;
 
     struct kbd *kbd = driver->private;
 
     *inode = 0;
 
-    if (!kbd->opened)
-    {
-        kbd->opened = 1;
+    spinlock_init(&kbd->lock);
 
-        return 0;
-    }
+    if (kbd->opened)
+        /* XXX: EBUSY */
+        return -1;
 
-    /* TODO: EBUSY */
+    kbd->opened = 1;
+    kbd->slave = -1;
 
-    return -1;
+    return 0;
 }
 
-static int kbd_read(struct driver *driver, int mid, struct req_rdwr *msg,
+static int kbd_read(struct driver *driver, struct req_rdwr *msg,
                     size_t *size_read)
 {
     struct kbd *kbd = driver->private;
@@ -46,18 +45,15 @@ static int kbd_read(struct driver *driver, int mid, struct req_rdwr *msg,
 
     spinlock_lock(&kbd->lock);
 
-    if (kbd->mid != 0)
-    {
+    if (kbd->slave >= 0) {
         spinlock_unlock(&kbd->lock);
-
         /* TODO: EIO */
         return -1;
     }
 
-    if (buffer_empty())
-    {
+    if (buffer_empty()) {
         memcpy(&kbd->req, msg, sizeof (struct req_rdwr));
-        kbd->mid = mid;
+        kbd->slave = msg->hdr.slave_id;
 
         spinlock_unlock(&kbd->lock);
 
@@ -75,9 +71,8 @@ static int kbd_read(struct driver *driver, int mid, struct req_rdwr *msg,
     return 0;
 }
 
-static int kbd_close(struct driver *driver, int mid, struct req_close *msg)
+static int kbd_close(struct driver *driver, struct req_close *msg)
 {
-    (void) mid;
     (void) msg;
 
     struct kbd *kbd = driver->private;
@@ -99,7 +94,7 @@ int main(void)
     int arch_tid;
 
     kbd.opened = 0;
-    kbd.mid = 0;
+    kbd.slave = -1;
     spinlock_init(&kbd.lock);
 
     if (driver_create("kbd", 0444, &kbd_ops, &kbd.driver) < 0)

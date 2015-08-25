@@ -8,20 +8,28 @@
 
 int vfs_getdirent(struct thread *t, int fd, struct dirent *dirent, int index)
 {
+    int ret;
     struct process *p;
+    struct file *file;
 
     if (!t)
         p = process_get(0);
     else
         p = t->parent;
 
-    if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
-        return -EINVAL;
+    ret = process_file_from_fd(p, fd, &file);
+    if (ret < 0)
+        return ret;
 
-    if (!p->files[fd].mount->fs_ops->getdirent)
+    file = &p->files[fd];
+
+    if (!file->used)
+        return -EBADF;
+
+    if (!file->mount->fi->parent->fs_ops->getdirent)
         return -ENOSYS;
 
-    return p->files[fd].mount->fs_ops->getdirent(p->files[fd].mount,
-                                                 p->files[fd].inode->inode,
-                                                 dirent, index);
+    return file->mount->fi->parent->fs_ops->getdirent(file->mount,
+                                                      file->inode->inode,
+                                                      dirent, index);
 }

@@ -23,7 +23,7 @@ static int read_with_offset(struct driver *driver, struct req_rdwr *msg,
     struct ide_device *device = private_data->device;
 
     if (!ata_rdwr(device, ATA_OP_READ, *lba, buf, ATA_SECTOR_SIZE, 1))
-        return 0;
+        return -1;
 
     read_size = (ATA_SECTOR_SIZE - msg->off % ATA_SECTOR_SIZE);
 
@@ -33,7 +33,7 @@ static int read_with_offset(struct driver *driver, struct req_rdwr *msg,
     *read = msg->size;
 
     if (read_size >= msg->size)
-        return 0;
+        return -1;
 
     *read = read_size;
 
@@ -42,7 +42,7 @@ static int read_with_offset(struct driver *driver, struct req_rdwr *msg,
 
     ++(*lba);
 
-    return 1;
+    return 0;
 }
 
 static int read_blocks(struct driver *driver, struct req_rdwr *msg,
@@ -54,7 +54,7 @@ static int read_blocks(struct driver *driver, struct req_rdwr *msg,
 
     if (!ata_rdwr(device, ATA_OP_READ, *lba, msg->data, ATA_SECTOR_SIZE,
                   msg->size / ATA_SECTOR_SIZE))
-        return 0;
+        return -1;
 
     read_size = ALIGN_INF(msg->size, ATA_SECTOR_SIZE);
     *lba += read_size / ATA_SECTOR_SIZE;
@@ -63,7 +63,7 @@ static int read_blocks(struct driver *driver, struct req_rdwr *msg,
 
     *read += read_size;
 
-    return 1;
+    return 0;
 }
 
 static int read_end(struct driver *driver, struct req_rdwr *msg, uint64_t lba,
@@ -74,69 +74,61 @@ static int read_end(struct driver *driver, struct req_rdwr *msg, uint64_t lba,
     struct ide_device *device = private_data->device;
 
     if (!ata_rdwr(device, ATA_OP_READ, lba, buf, ATA_SECTOR_SIZE, 1))
-        return 0;
+        return -1;
 
     memcpy(msg->data, buf, msg->size);
     *read += msg->size;
 
-    return 1;
+    return 0;
 }
 
-static int ata_global_read(struct driver *driver, int mid,
-                           struct req_rdwr *msg, size_t *size_read)
+static int ata_global_read(struct driver *driver, struct req_rdwr *msg,
+                           size_t *size_read)
 {
-    (void) mid;
-
     size_t read_size = 0;
-    size_t ret;
+    int ret;
     struct ata_private *private_data = driver->private;
-    uint64_t lba;
+    uint64_t lba = 0;
 
-    if (private_data->partition < 0)
-        lba = 0;
-    else
+    if (private_data->partition >= 0)
         lba = private_data->device->partitions[private_data->partition].start;
 
     if (private_data->device->infos.configuration.is_atapi)
         return -1;
-    else
-    {
-        lba += msg->off / ATA_SECTOR_SIZE;
 
-        /*
-         * If the offset is inside a block,
-         * read it and fill the beginning of the buffer with it
-         */
-        if (msg->off % ATA_SECTOR_SIZE)
-        {
-            if (!(ret = read_with_offset(driver, msg, &lba, &read_size)))
-                goto error;
-        }
+    lba += msg->off / ATA_SECTOR_SIZE;
 
-        /* Read blocks directly in the buffer */
-        if (msg->size / ATA_SECTOR_SIZE > 0)
-        {
-            if (!(ret = read_blocks(driver, msg, &lba, &read_size)))
-                goto error;
-        }
-
-        /* Data left to read but < ATA_SECTOR_SIZE */
-        if (msg->size % ATA_SECTOR_SIZE)
-        {
-            if (!(ret = read_end(driver, msg, lba, &read_size)))
-                goto error;
-        }
-
-        *size_read = read_size;
+    /*
+     * If the offset is inside a block,
+     * read it and fill the beginning of the buffer with it
+     */
+    if (msg->off % ATA_SECTOR_SIZE) {
+        ret = read_with_offset(driver, msg, &lba, &read_size);
+        if (ret < 0)
+            goto error;
     }
+
+    /* Read blocks directly in the buffer */
+    if (msg->size / ATA_SECTOR_SIZE > 0) {
+        ret = read_blocks(driver, msg, &lba, &read_size);
+        if (ret < 0)
+            goto error;
+    }
+
+    /* Data left to read but < ATA_SECTOR_SIZE */
+    if (msg->size % ATA_SECTOR_SIZE) {
+        ret = read_end(driver, msg, lba, &read_size);
+        if (ret < 0)
+            goto error;
+    }
+
+    *size_read = read_size;
 
     return 0;
 
 error:
-    if (read_size)
-    {
+    if (read_size) {
         *size_read = read_size;
-
         return 0;
     }
 

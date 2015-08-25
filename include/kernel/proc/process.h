@@ -218,6 +218,30 @@ int process_new_fd(struct process *process);
 int process_fd_exist(struct process *process, int fd);
 
 /**
+ *  \brief  Get a file from its file descriptor
+ *
+ *  \param  process The process you want to get the fd from
+ *  \param  fd      The file descriptor
+ *  \param  file    If non NULL and the function successes this will be filled
+ *                  with a pointer to the file
+ *
+ *  \return 0: Everything went well
+ *  \return -EINVAL: Out of range of file descriptors
+ *  \return -EBADF: File descriptor not in use
+ */
+int process_file_from_fd(struct process *process, int fd, struct file **file);
+
+/**
+ *  \brief  Duplicate a file
+ *
+ *  \param  f_new   The new file created
+ *  \param  f_old   The old file that is duplicated
+ *
+ *  \return 0: Everything went well
+ */
+int process_dup_file(struct file *f_new, struct file *f_old);
+
+/**
  * \brief   Release a file descriptor
  *
  * \param   process The process owning the file descriptor

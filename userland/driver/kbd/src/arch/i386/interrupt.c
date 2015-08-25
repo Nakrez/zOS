@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -18,31 +19,25 @@ void interrupt_thread(int argc, void *argv[])
 {
     (void)argc;
 
-    int res;
+    int ret;
     uint8_t key;
     struct input_event event;
     struct kbd *kbd = argv[0];
 
-    res = interrupt_register(KEYBOARD_INTERRUPT);
-
-    /* Error while registering the interrupt */
-    if (res < 0)
-    {
+    ret = interrupt_register(KEYBOARD_INTERRUPT);
+    if (ret < 0) {
         uprint("Unable to reserve keyboard interrupt...");
         return;
     }
 
     uprint("Keyboard driver is now ready to receive interrupts");
 
-    while (1)
-    {
-        res = interrupt_listen(KEYBOARD_INTERRUPT);
-
-        if (res != KEYBOARD_INTERRUPT)
+    for (;;) {
+        ret = interrupt_listen(KEYBOARD_INTERRUPT);
+        if (ret != KEYBOARD_INTERRUPT)
             continue;
 
-        do
-        {
+        do {
             key = inb(KEYBOARD_CMD);
         } while (!(key & 0x01));
 
@@ -57,21 +52,21 @@ void interrupt_thread(int argc, void *argv[])
 
         buffer_push(&event);
 
-        if (kbd->mid)
-        {
-            struct resp_rdwr response;
+        if (kbd->slave >= 0) {
+            struct resp_rdwr resp;
 
-            response.ret = 0;
-            response.size = sizeof (struct input_event);
+            resp.ret = 0;
+            resp.size = sizeof (struct input_event);
+
+            resp.hdr.slave_id = kbd->slave;
 
             buffer_pop(&event);
 
             memcpy(kbd->req.data, &event, sizeof (struct input_event));
 
-            device_send_response(kbd->driver.dev_id, kbd->mid, &response,
-                                 sizeof (struct resp_rdwr));
+            write(kbd->driver.channel_fd, &resp, sizeof (resp));
 
-            kbd->mid = 0;
+            kbd->slave = -1;
         }
 
         spinlock_unlock(&kbd->lock);

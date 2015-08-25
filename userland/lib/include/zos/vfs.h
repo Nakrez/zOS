@@ -19,6 +19,7 @@
 # define VFS_STAT 10
 # define VFS_IOCTL 11
 # define VFS_GETDIRENT 12
+# define VFS_FS_CREATE 13
 
 # define VFS_OPS_OPEN (1 << 0)
 # define VFS_OPS_READ (1 << 1)
@@ -32,6 +33,12 @@
 # define VFS_OPS_STAT (1 << 9)
 # define VFS_OPS_IOCTL (1 << 10)
 # define VFS_OPS_GETDIRENT (1 << 11)
+# define VFS_OPS_FS_CREATE (1 << 12)
+
+struct msg_header {
+    uint16_t op;
+    uint16_t slave_id;
+};
 
 /**
  *  \brief  See the structure that is in the kernel
@@ -53,6 +60,8 @@ struct inode {
 
 /* Lookup request */
 struct req_lookup {
+    struct msg_header hdr;
+
     char *path;
     uint16_t path_size;
     uid_t uid;
@@ -65,13 +74,31 @@ struct req_lookup {
 
 /* Lookup response */
 struct resp_lookup {
+    struct msg_header hdr;
+
     int ret;
     int processed;
     struct inode inode;
 };
 
+struct req_fs_create {
+    struct msg_header hdr;
+
+    char device[15];
+};
+
+struct resp_fs_create {
+    struct msg_header hdr;
+
+    int ret;
+
+    char device[15];
+};
+
 /* Stat request */
 struct req_stat {
+    struct msg_header hdr;
+
     ino_t inode;
     uid_t uid;
     gid_t gid;
@@ -79,6 +106,8 @@ struct req_stat {
 
 /* Stat response */
 struct resp_stat {
+    struct msg_header hdr;
+
     int ret;
 
     struct stat stat;
@@ -86,6 +115,8 @@ struct resp_stat {
 
 /* Open request */
 struct req_open {
+    struct msg_header hdr;
+
     ino_t inode;
     uid_t uid;
     gid_t gid;
@@ -96,12 +127,16 @@ struct req_open {
 
 /* Open response */
 struct resp_open {
+    struct msg_header hdr;
+
     int ret;
     ino_t inode;
 };
 
 /* Read/Write request */
 struct req_rdwr {
+    struct msg_header hdr;
+
     ino_t inode;
 
     size_t size;
@@ -113,6 +148,8 @@ struct req_rdwr {
 
 /* Read/Write response */
 struct resp_rdwr {
+    struct msg_header hdr;
+
     int ret;
 
     size_t size;
@@ -120,16 +157,22 @@ struct resp_rdwr {
 
 /* Close request */
 struct req_close {
+    struct msg_header hdr;
+
     ino_t inode;
 };
 
 /* Close response */
 struct resp_close {
+    struct msg_header hdr;
+
     int ret;
 };
 
 /* Ioctl request */
 struct req_ioctl {
+    struct msg_header hdr;
+
     ino_t inode;
 
     int request;
@@ -141,6 +184,8 @@ struct req_ioctl {
 
 /* Ioctl response */
 struct resp_ioctl {
+    struct msg_header hdr;
+
     int ret;
 
     int modify_argp;
@@ -150,6 +195,8 @@ struct resp_ioctl {
 
 /* Dirent request */
 struct req_getdirent {
+    struct msg_header hdr;
+
     ino_t inode;
 
     int index;
@@ -157,6 +204,8 @@ struct req_getdirent {
 
 /* Dirent response */
 struct resp_getdirent {
+    struct msg_header hdr;
+
     int ret;
 
     struct dirent dirent;
@@ -164,6 +213,8 @@ struct resp_getdirent {
 
 /* Mount request */
 struct req_mount {
+    struct msg_header hdr;
+
     ino_t inode;
 
     int mount_nb;
@@ -171,6 +222,8 @@ struct req_mount {
 
 /* Mount response */
 struct resp_mount {
+    struct msg_header hdr;
+
     int ret;
 };
 

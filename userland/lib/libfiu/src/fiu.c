@@ -1,232 +1,286 @@
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include <zos/device.h>
 #include <zos/print.h>
+#include <zos/vfs.h>
 
 #include <sys/mount.h>
 
 #include <fiu/fiu.h>
 
-static int fiu_capabilities(struct fiu_internal *fiu)
+#define BUF_SIZE 256
+
+static int fiu_capabilities(struct fiu_fs *fs)
 {
-    fiu->capabilities = 0;
-
-    /* Lookup is a mandatory operation */
-    if (fiu->ops->lookup)
-        fiu->capabilities |= VFS_OPS_LOOKUP;
-    else
+    /* Lookup/Create/Open/Close are mandatory operations */
+    if (!fs->ops->lookup || !fs->super_ops->create || !fs->ops->open ||
+        !fs->ops->close)
         return -1;
 
-    if (fiu->ops->stat)
-        fiu->capabilities |= VFS_OPS_STAT;
+    fs->cap = VFS_OPS_LOOKUP | VFS_OPS_FS_CREATE | VFS_OPS_OPEN |
+              VFS_OPS_CLOSE;
 
-    if (fiu->ops->mount)
-        fiu->capabilities |= VFS_OPS_MOUNT;
+    if (fs->ops->stat)
+        fs->cap |= VFS_OPS_STAT;
 
-    if (fiu->ops->open)
-        fiu->capabilities |= VFS_OPS_OPEN;
-    else
-        return -1;
+    if (fs->ops->mount)
+        fs->cap |= VFS_OPS_MOUNT;
 
-    if (fiu->ops->read)
-        fiu->capabilities |= VFS_OPS_READ;
+    if (fs->ops->read)
+        fs->cap |= VFS_OPS_READ;
 
-    if (fiu->ops->getdirent)
-        fiu->capabilities |= VFS_OPS_GETDIRENT;
-
-    if (fiu->ops->close)
-        fiu->capabilities |= VFS_OPS_CLOSE;
-    else
-        return -1;
+    if (fs->ops->getdirent)
+        fs->cap |= VFS_OPS_GETDIRENT;
 
     return 0;
 }
 
-int fiu_create(const char *name, int perm, struct fiu_ops *ops,
-               struct fiu_internal *fiu)
+void fiu_help(const char *bin_name, FILE *output)
 {
-    fiu->ops = ops;
-    fiu->dev_id = -1;
-    fiu->running = 0;
-
-    if (fiu_capabilities(fiu) < 0)
-        return -1;
-
-    fiu->dev_id = device_create(name, perm, fiu->capabilities);
-
-    if (fiu->dev_id < 0)
-        return fiu->dev_id;
-
-    return 0;
+    fprintf(output, "%s [OPTS]", bin_name);
+    fprintf(output, "The supported options are :\n");
+    fprintf(output, "  -h / --help   : Print this help\n");
+    fprintf(output, "  -d / --daemon : Daemonize the master file system\n");
 }
 
-static void fiu_dispatch(struct fiu_internal *fiu, int mid, char *buf)
+static void fiu_dispatch(struct fiu_instance *fi, void *buf)
 {
-    uint8_t op = mid & 0xFF;
+    struct msg_header *hdr = buf;
 
-    switch (op)
-    {
+    switch (hdr->op) {
         case VFS_LOOKUP:
             {
                 struct resp_lookup resp;
 
-                resp.ret = fiu->ops->lookup(fiu, (void *)buf, &resp);
+                resp.ret = fi->parent->ops->lookup(fi, (void *)buf, &resp);
 
-                device_send_response(fiu->dev_id, mid, &resp,
-                                     sizeof (struct resp_lookup));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(fi->channel_fd, &resp, sizeof (resp));
             }
             break;
         case VFS_STAT:
             {
                 struct resp_stat resp;
 
-                resp.ret = fiu->ops->stat(fiu, (void *)buf, &resp.stat);
+                resp.ret = fi->parent->ops->stat(fi, (void *)buf, &resp.stat);
 
-                device_send_response(fiu->dev_id, mid, &resp,
-                                     sizeof (struct resp_stat));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(fi->channel_fd, &resp, sizeof (resp));
             }
             break;
         case VFS_MOUNT:
             {
                 struct resp_mount resp;
 
-                resp.ret = fiu->ops->mount(fiu, (void *)buf);
+                resp.ret = fi->parent->ops->mount(fi, (void *)buf);
 
-                device_send_response(fiu->dev_id, mid, &resp,
-                                     sizeof (struct resp_mount));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(fi->channel_fd, &resp, sizeof (resp));
             }
             break;
         case VFS_OPEN:
             {
                 struct resp_open resp;
 
-                resp.ret = fiu->ops->open(fiu, (void *)buf, &resp);
+                resp.ret = fi->parent->ops->open(fi, (void *)buf, &resp);
 
-                device_send_response(fiu->dev_id, mid, &resp,
-                                     sizeof (struct resp_open));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(fi->channel_fd, &resp, sizeof (resp));
             }
             break;
         case VFS_READ:
             {
                 struct resp_rdwr resp;
 
-                resp.ret = fiu->ops->read(fiu, (void *)buf, &resp.size);
+                resp.ret = fi->parent->ops->read(fi, (void *)buf, &resp.size);
 
-                device_send_response(fiu->dev_id, mid, &resp,
-                                     sizeof (struct resp_rdwr));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(fi->channel_fd, &resp, sizeof (resp));
             }
             break;
         case VFS_GETDIRENT:
             {
                 struct resp_getdirent resp;
 
-                resp.ret = fiu->ops->getdirent(fiu, (void *)buf, &resp.dirent);
+                resp.ret = fi->parent->ops->getdirent(fi, (void *)buf,
+                                                      &resp.dirent);
 
-                device_send_response(fiu->dev_id, mid, &resp,
-                                     sizeof (struct resp_getdirent));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(fi->channel_fd, &resp, sizeof (resp));
             }
             break;
         case VFS_CLOSE:
             {
                 struct resp_close resp;
 
-                resp.ret = fiu->ops->close(fiu, (void *)buf);
+                resp.ret = fi->parent->ops->close(fi, (void *)buf);
 
-                device_send_response(fiu->dev_id, mid, &resp,
-                                     sizeof (struct resp_close));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(fi->channel_fd, &resp, sizeof (resp));
             }
             break;
         default:
-            uprint("fiu_dispatch(): Unsupported operation");
+            {
+                char tmp[100];
+
+                sprintf(tmp, "fiu_dispatch(): Unsupported operation (%i, %i)",
+                        hdr->op, hdr->slave_id);
+
+                uprint(tmp);
+            }
             break;
     }
 }
 
-static int fiu_loop(struct fiu_internal *fiu)
+static int fiu_slave_loop(struct fiu_instance *fi)
 {
-    int res = 0;
-    char *buf = malloc(255);
+    int ret;
+    char *buf;
 
+    buf = malloc(BUF_SIZE);
     if (!buf)
-        return 1;
+        return -1;
 
-    fiu->running = 1;
-
-    while (fiu->running > 0)
-    {
-        res = device_recv_request(fiu->dev_id, buf, 255);
-
-        if (res < 0)
-        {
-            uprint("Unexpected error in fiu_loop()");
-
-            fiu->running = 0;
-
+    for (;;) {
+        ret = read(fi->channel_fd, buf, BUF_SIZE);
+        if (ret < 0) {
+            uprint("FIU: Slave loop: Read error");
             continue;
         }
 
-        fiu_dispatch(fiu, res, buf);
+        fiu_dispatch(fi, buf);
     }
 
-    free(buf);
-
-    return res;
+    exit(4);
 }
 
-void fiu_help(const char *bin_name, FILE *output)
+int fiu_slave_main(struct fiu_instance *fi, const char *device,
+                   uint16_t slave_id)
 {
-    fprintf(output, "%s [OPTS] [BLOCK_DEVICE] MOUNT_DIRECTORY", bin_name);
+    int ret;
+    struct resp_fs_create resp;
+
+    fi->device_fd = open_device(device, 0, 0);
+    if (fi->device_fd < 0)
+        return fi->device_fd;
+
+    ret = fork();
+    if (ret < 0)
+        return ret;
+
+    if (ret > 0)
+        return 0;
+
+    fi->channel_fd = channel_create("ext2-1");
+
+    strcpy(resp.device, "ext2-1");
+    resp.hdr.slave_id = slave_id;
+    resp.ret = 0;
+
+    if (fi->channel_fd < 0)
+        resp.ret = fi->channel_fd;
+
+    ret = write(fi->parent->channel_fd, &resp, sizeof (struct resp_fs_create));
+    if (ret < 0 || fi->channel_fd < 0)
+        exit(1);
+
+    ret = fi->parent->ops->init(fi);
+    if (ret < 0) {
+        uprint("TEST");
+        exit(1);
+    }
+
+    uprint("Fiu: Slave loop");
+
+    return fiu_slave_loop(fi);
 }
 
-int fiu_main(int argc, char **argv, struct fiu_ops *ops)
+static int fiu_master_loop(struct fiu_fs *fs)
+{
+    int ret;
+    char *buf;
+
+    buf = malloc(BUF_SIZE);
+    if (!buf)
+        return -1;
+
+    for (;;) {
+        struct msg_header *hdr;
+
+        ret = read(fs->channel_fd, buf, BUF_SIZE);
+        if (ret < 0) {
+            uprint("FIU: Master loop: Read error");
+            continue;
+        }
+
+        hdr = (struct msg_header *)buf;
+        if (hdr->op != VFS_FS_CREATE) {
+            uprint("Only accepting VFS_FS_CREATE ops");
+            continue;
+        }
+
+        fs->super_ops->create(fs, (void *)buf);
+
+        uprint("FIU: Master loop: File system instance created");
+    }
+}
+
+int fiu_master_main(struct fiu_fs *fs, int argc, char *argv[])
 {
     int ret;
     struct fiu_opts opts;
-    struct fiu_internal fiu;
+
+    memset(&opts, 0, sizeof (opts));
 
     ret = fiu_parse_opts(argc, argv, &opts);
-
-    if (ret < 0)
-    {
+    if (ret < 0) {
         fiu_help(argv[0], stderr);
-
         return ret;
     }
-    else if (opts.help)
-    {
-        fiu_help(argv[0], stdout);
 
+    if (opts.help) {
+        fiu_help(argv[0], stdout);
         return 0;
     }
 
-    if (opts.daemon)
-    {
+    if (opts.daemon) {
         pid_t pid;
 
-        if ((pid = fork()) < 0)
+        pid = fork();
+        if (pid < 0) {
+            uprint("fiu_master_main: Fail to fork()");
             return pid;
+        }
 
         if (pid)
             return 0;
     }
 
-    if (ops->fill_private)
-    {
-        fiu.private = ops->fill_private(&fiu, &opts);
-
-        if (!fiu.private)
-            return 1;
-    }
-
-    if ((ret = fiu_create(fiu.device_name, opts.mode, ops, &fiu)) < 0)
-        return -ret;
-
-    ret = mount(fiu.dev_id, opts.dir);
-
+    ret = fiu_capabilities(fs);
     if (ret < 0)
         return ret;
 
-    return fiu_loop(&fiu);
+    ret = channel_create(fs->name);
+    if (ret < 0) {
+        uprint("FIU: Fail to create channel");
+        return ret;
+    }
+
+    ret = fs_register(fs->name, fs->channel_fd, fs->cap);
+    if (ret < 0) {
+        uprint("FIU: Fail to register fs");
+        return ret;
+    }
+
+    return fiu_master_loop(fs);
 }

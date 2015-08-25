@@ -19,20 +19,19 @@ int vfs_close(struct thread *t, int fd)
     else
         p = thread_current()->parent;
 
-    if (fd < 0 || fd > PROCESS_MAX_OPEN_FD || !p->files[fd].used)
-        return -EINVAL;
+    ret = process_file_from_fd(p, fd, &file);
+    if (ret < 0)
+        return ret;
 
-    file = &p->files[fd];
-
-    if (!file->f_ops->close) {
-        process_free_fd(p, fd);
-        return 0;
-    }
+    if (!file->f_ops->close)
+        goto end;
 
     ret = file->f_ops->close(file, file->inode->inode);
     if (ret < 0)
         return ret;
 
+end:
+    inode_del(file->inode);
     process_free_fd(p, fd);
 
     return 0;
