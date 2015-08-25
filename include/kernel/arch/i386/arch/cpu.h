@@ -87,4 +87,9 @@ static inline void cpu_get_msr(uint32_t msr, uint32_t *eax, uint32_t *ebx)
     __asm__ __volatile__ ("rdmsr" : "=a"(*eax), "=d"(*ebx) : "c"(msr));
 }
 
+static inline void cpu_set_msr(uint32_t msr, uint32_t eax, uint32_t ebx)
+{
+    __asm__ __volatile__ ("wrmsr" : : "a"(eax), "d"(ebx), "c"(msr));
+}
+
 #endif /* !I386_CPU_H */
