@@ -65,6 +65,17 @@ extern struct segment_glue segment_glue_dispatcher;
 
 void segment_initialize(struct boot_info *boot);
 
+/**
+ *  \brief  Add a segment to the list of segment
+ *
+ *  \param  base        The base address
+ *  \param  page_size   The number of page
+ *
+ *  \return 0: Everything went well
+ *  \return -ENOMEM: Not enough memory
+ */
+int segment_add(uintptr_t base, uint32_t page_size);
+
 /*
  * Allocate page_size pages of physical memory
  *

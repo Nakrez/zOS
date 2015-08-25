@@ -26,6 +26,7 @@
 #include <kernel/zos.h>
 #include <kernel/panic.h>
 #include <kernel/console.h>
+#include <kernel/errno.h>
 
 #include <kernel/mem/segment.h>
 #include <kernel/mem/kmalloc.h>
@@ -39,7 +40,7 @@ static struct klist segment_head;
 
 void segment_initialize(struct boot_info *boot)
 {
-    struct segment *segment = NULL;
+    int ret;
 
     glue_call(segment, init);
 
@@ -48,17 +49,11 @@ void segment_initialize(struct boot_info *boot)
     if (boot->segs_count == 0)
         kernel_panic("No memory map was provided by the bootloader");
 
-    for (size_t i = 0; i < boot->segs_count; ++i)
-    {
-        segment = kmalloc(sizeof (struct segment));
-
-        segment->base = boot->segs[i].seg_start;
-        segment->page_size = boot->segs[i].seg_size / PAGE_SIZE;
-
-        segment->ref_count = 0;
-        segment->flags = SEGMENT_FLAGS_NONE;
-
-        klist_add(&segment_head, &segment->list);
+    for (size_t i = 0; i < boot->segs_count; ++i) {
+        ret = segment_add(boot->segs[i].seg_start,
+                          boot->segs[i].seg_size / PAGE_SIZE);
+        if (ret < 0)
+            kernel_panic("Fail to add a segment");
     }
 
     spinlock_init(&segment_lock);
@@ -69,6 +64,29 @@ void segment_initialize(struct boot_info *boot)
     segment_reserve(0xE0000, 800);
 
     segment_dump();
+}
+
+int segment_add(uintptr_t base, uint32_t page_size)
+{
+    struct segment *seg;
+
+    seg = kmalloc(sizeof (struct segment));
+    if (!seg)
+        return -ENOMEM;
+
+    seg->base = base;
+    seg->page_size = page_size;
+
+    seg->ref_count = 0;
+    seg->flags = SEGMENT_FLAGS_NONE;
+
+    spinlock_lock(&segment_lock);
+
+    klist_add(&segment_head, &seg->list);
+
+    spinlock_unlock(&segment_lock);
+
+    return 0;
 }
 
 static void segment_split(struct segment *seg, paddr_t addr,
