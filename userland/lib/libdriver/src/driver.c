@@ -1,16 +1,17 @@
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <zos/device.h>
 #include <zos/print.h>
 
 #include <driver/driver.h>
 
-static int driver_base_open(struct driver *driver, int mid,
-                            struct req_open *request, ino_t *inode)
+static int driver_base_open(struct driver *driver, struct req_open *request,
+                            ino_t *inode)
 {
     (void) driver;
-    (void) mid;
     (void) request;
 
     *inode = 0;
@@ -18,11 +19,9 @@ static int driver_base_open(struct driver *driver, int mid,
     return 0;
 }
 
-static int driver_base_close(struct driver *driver, int mid,
-                             struct req_close *request)
+static int driver_base_close(struct driver *driver, struct req_close *request)
 {
     (void) driver;
-    (void) mid;
     (void) request;
 
     return 0;
@@ -32,6 +31,7 @@ int driver_create(const char *dev_name, int perm, struct driver_ops *dev_ops,
                   struct driver *result)
 {
     int dev_id;
+    int channel_fd;
 
     result->ops = VFS_OPS_OPEN | VFS_OPS_CLOSE;
 
@@ -46,18 +46,23 @@ int driver_create(const char *dev_name, int perm, struct driver_ops *dev_ops,
     if (dev_ops->ioctl != NULL)
         result->ops |= VFS_OPS_IOCTL;
 
-    if (!(result->dev_name = malloc(strlen(dev_name) + 1)))
+    result->dev_name = malloc(strlen(dev_name) + 1);
+    if (!result->dev_name)
+        /* XXX: ENOMEM */
         return -1;
 
-    dev_id = device_create(dev_name, perm, result->ops);
+    channel_fd = channel_create(dev_name);
+    if (channel_fd < 0)
+        return channel_fd;
 
-    if (dev_id < 0)
-    {
+    dev_id = device_create(channel_fd, dev_name, perm, result->ops);
+    if (dev_id < 0) {
+        close(channel_fd);
         free(result->dev_name);
-
         return dev_id;
     }
 
+    result->channel_fd = channel_fd;
     result->dev_name = strcpy(result->dev_name, dev_name);
     result->dev_id = dev_id;
     result->running = 1;
@@ -66,91 +71,95 @@ int driver_create(const char *dev_name, int perm, struct driver_ops *dev_ops,
     return 0;
 }
 
-static void dispatch(struct driver *driver, int mid, char *buf)
+static void dispatch(struct driver *driver, char *buf)
 {
-    uint8_t op = mid & 0xFF;
+    struct msg_header *hdr = (void *) buf;
 
-    switch (op)
+    switch (hdr->op)
     {
         case VFS_OPEN:
             {
-                struct resp_open response;
+                struct resp_open resp;
 
-                response.ret = driver->dev_ops->open(driver, mid, (void *)buf,
-                                                     &response.inode);
-
-                if (response.ret == DRV_NORESPONSE)
+                resp.ret = driver->dev_ops->open(driver, (void *)buf,
+                                                 &resp.inode);
+                if (resp.ret == DRV_NORESPONSE)
                     break;
 
-                device_send_response(driver->dev_id, mid, &response,
-                                     sizeof (struct resp_open));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(driver->channel_fd, &resp, sizeof (resp));
             }
             break;
         case VFS_READ:
             {
-                struct resp_rdwr response;
+                struct resp_rdwr resp;
 
-                response.ret = driver->dev_ops->read(driver, mid, (void *)buf,
-                                                     &response.size);
-
-                if (response.ret == DRV_NORESPONSE)
+                resp.ret = driver->dev_ops->read(driver, (void *)buf,
+                                                 &resp.size);
+                if (resp.ret == DRV_NORESPONSE)
                     break;
 
-                device_send_response(driver->dev_id, mid, &response,
-                                     sizeof (struct resp_rdwr));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(driver->channel_fd, &resp, sizeof (resp));
             }
             break;
         case VFS_WRITE:
             {
-                struct resp_rdwr response;
+                struct resp_rdwr resp;
 
-                response.ret = driver->dev_ops->write(driver, mid, (void *)buf,
-                                                      &response.size);
-
-                if (response.ret == DRV_NORESPONSE)
+                resp.ret = driver->dev_ops->write(driver, (void *)buf,
+                                                  &resp.size);
+                if (resp.ret == DRV_NORESPONSE)
                     break;
 
-                device_send_response(driver->dev_id, mid, &response,
-                                     sizeof (struct resp_rdwr));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(driver->channel_fd, &resp, sizeof (resp));
             }
             break;
         case VFS_CLOSE:
             {
-                struct resp_close response;
+                struct resp_close resp;
 
-                response.ret = driver->dev_ops->close(driver, mid,
-                                                      (void *)buf);
-
-                if (response.ret == DRV_NORESPONSE)
+                resp.ret = driver->dev_ops->close(driver, (void *)buf);
+                if (resp.ret == DRV_NORESPONSE)
                     break;
 
-                device_send_response(driver->dev_id, mid, &response,
-                                     sizeof (struct resp_close));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(driver->channel_fd, &resp, sizeof (resp));
             }
             break;
         case VFS_IOCTL:
             {
-                struct resp_ioctl response;
+                struct resp_ioctl resp;
 
-                response.ret = driver->dev_ops->ioctl(driver, mid, (void *)buf,
-                                                      &response);
-
-                if (response.ret == DRV_NORESPONSE)
+                resp.ret = driver->dev_ops->ioctl(driver, (void *)buf, &resp);
+                if (resp.ret == DRV_NORESPONSE)
                     break;
 
-                device_send_response(driver->dev_id, mid, &response,
-                                     sizeof (struct resp_ioctl));
+                resp.hdr.slave_id = hdr->slave_id;
+
+                write(driver->channel_fd, &resp, sizeof (resp));
             }
             break;
         default:
-            uprint("Not supported");
+            {
+                char tmp[100];
+
+                sprintf(tmp, "Not supported (%i, %i)", hdr->op, hdr->slave_id);
+
+                uprint(tmp);
+            }
             break;
     }
 }
 
 int driver_loop(struct driver *driver)
 {
-    int res;
+    int ret;
     char *buf = malloc(255);
 
     if (!buf)
@@ -158,18 +167,14 @@ int driver_loop(struct driver *driver)
 
     while (driver->running)
     {
-        res = device_recv_request(driver->dev_id, buf, 255);
-
-        if (res < 0)
-        {
+        ret = read(driver->channel_fd, buf, 255);
+        if (ret < 0) {
             uprint("Unexpected error in driver_loop()");
-
             driver->running = 0;
-
             continue;
         }
 
-        dispatch(driver, res, buf);
+        dispatch(driver, buf);
     }
 
     free(buf);

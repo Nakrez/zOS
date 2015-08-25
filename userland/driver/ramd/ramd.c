@@ -70,11 +70,10 @@ static int extract_number(const char *number)
     return res;
 }
 
-static int ram_open(struct driver *driver, int mid, struct req_open *request,
+static int ram_open(struct driver *driver, struct req_open *request,
                     ino_t *inode)
 {
     (void) request;
-    (void) mid;
     (void) driver;
 
     *inode = 0;
@@ -82,11 +81,9 @@ static int ram_open(struct driver *driver, int mid, struct req_open *request,
     return 0;
 }
 
-static int ram_read(struct driver *driver, int mid, struct req_rdwr *msg,
+static int ram_read(struct driver *driver, struct req_rdwr *msg,
                     size_t *size_read)
 {
-    (void) mid;
-
     struct ramd_private *ram = driver->private;
     size_t to_read = MIN(msg->size, ram->size - msg->off);
 
@@ -105,11 +102,9 @@ static int ram_read(struct driver *driver, int mid, struct req_rdwr *msg,
     return 0;
 }
 
-static int ram_write(struct driver *driver, int mid, struct req_rdwr *msg,
+static int ram_write(struct driver *driver, struct req_rdwr *msg,
                      size_t *size_write)
 {
-    (void) mid;
-
     struct ramd_private *ram = driver->private;
     size_t to_write = MIN(msg->size, ram->size - msg->off);
 
@@ -128,10 +123,9 @@ static int ram_write(struct driver *driver, int mid, struct req_rdwr *msg,
     return 0;
 }
 
-static int ram_close(struct driver *driver, int mid, struct req_close *msg)
+static int ram_close(struct driver *driver, struct req_close *msg)
 {
     (void) driver;
-    (void) mid;
     (void) msg;
 
     return 0;

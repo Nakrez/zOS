@@ -18,10 +18,10 @@
 
 # define MAX_MOUNTED_PATH 5
 
-static struct mount_entry mount_points[MAX_MOUNTED_PATH];
+static struct mount_entry mounts[MAX_MOUNTED_PATH];
 static spinlock_t mount_lock = SPINLOCK_INIT;
 
-static int vfs_check_mount_pts(dev_t dev, const char *mount_path)
+static int vfs_check_mounts(const char *mount_path)
 {
     int mount_nb = -1;
 
@@ -29,14 +29,13 @@ static int vfs_check_mount_pts(dev_t dev, const char *mount_path)
 
     for (int i = 0; i < MAX_MOUNTED_PATH; ++i)
     {
-        if (!mount_points[i].used) {
+        if (!mounts[i].used) {
             if (mount_nb == -1)
                 mount_nb = i;
             continue;
         }
 
-        if (dev == mount_points[i].dev ||
-            !strcmp(mount_points[i].path, mount_path)) {
+        if (!strcmp(mounts[i].path, mount_path)) {
             spinlock_unlock(&mount_lock);
             return -EBUSY;
         }
@@ -47,14 +46,14 @@ static int vfs_check_mount_pts(dev_t dev, const char *mount_path)
         return -ENOMEM;
     }
 
-    mount_points[mount_nb].used = 1;
+    mounts[mount_nb].used = 1;
 
     spinlock_unlock(&mount_lock);
 
     return mount_nb;
 }
 
-static int do_mount(struct thread *t, const char *mount_path, int mount_pt_nb)
+static int do_mount(struct thread *t, const char *mount_path, int mount_nb)
 {
     int ret;
     int path_size;
@@ -68,66 +67,78 @@ static int do_mount(struct thread *t, const char *mount_path, int mount_pt_nb)
     if (ret < 0)
         return ret;
 
-    if (!mount_pt->fs_ops->mount)
+    if (!mount_pt->fi->parent->fs_ops->mount)
         return -ENOSYS;
 
     if (ret != path_size)
         return -ENOENT;
 
-    return mount_pt->fs_ops->mount(mount_pt, res.inode.inode, mount_pt_nb);
+    return mount_pt->fi->parent->fs_ops->mount(mount_pt, res.inode.inode,
+                                               mount_nb);
 }
 
-int vfs_mount(struct thread *t, dev_t dev, const char *mount_path)
+int vfs_mount(struct thread *t, const char *fs_name, const char *device,
+              const char *mount_pt)
 {
     int ret;
     int mount_nb;
-    struct fs_operation *fs_ops;
-    struct file_operation *f_ops;
+    dev_t dev_id;
+    struct fs *fs;
+    struct fs_instance *fi;
 
-    if (!device_get(dev)) {
-        return -EBADF;
-    } else {
-        fs_ops = &fiu_fs_ops;
-        f_ops = &fiu_f_ops;
-    }
+    fs = fs_from_name(fs_name);
+    if (!fs)
+        return -EINVAL;
 
-    if ((mount_nb = vfs_check_mount_pts(dev, mount_path)) < 0)
+    dev_id = device_get_from_name(device);
+    if (dev_id < 0)
+        return dev_id;
+
+    mount_nb = vfs_check_mounts(mount_pt);
+    if (mount_nb < 0)
         return mount_nb;
 
-    /* We don't mount root */
-    if (mount_nb != 0) {
-        ret = do_mount(t, mount_path, mount_nb);
-        if (ret < 0)
-            return ret;
+    ret = fs_new_instance(fs_name, device, mount_pt, &fi);
+    if (ret < 0) {
+        mounts[mount_nb].used = 0;
+        return ret;
     }
 
-    if (!(mount_points[mount_nb].path = kmalloc(strlen(mount_path) + 1)))
-    {
-        mount_points[mount_nb].used = 0;
+    /* Do mount is used to tell a file system that another one is getting
+     * mounted. If we mount root there is no point in calling this function
+     */
+    if (mount_nb != 0) {
+        ret = do_mount(t, mount_pt, mount_nb);
+        if (ret < 0) {
+            mounts[mount_nb].used = 0;
+            return ret;
+        }
+    }
 
+    mounts[mount_nb].path = kmalloc(strlen(mount_pt) + 1);
+    if (!mounts[mount_nb].path) {
+        mounts[mount_nb].used = 0;
         return -ENOMEM;
     }
 
-    strcpy(mount_points[mount_nb].path, mount_path);
+    strcpy(mounts[mount_nb].path, mount_pt);
 
-    mount_points[mount_nb].fs_ops = fs_ops;
-    mount_points[mount_nb].f_ops = f_ops;
-    mount_points[mount_nb].dev = dev;
+    mounts[mount_nb].fi = fi;
 
     return 0;
 }
 
 struct mount_entry *vfs_root_get(void)
 {
-    return &mount_points[0];
+    return &mounts[0];
 }
 
 struct mount_entry *vfs_mount_pt_get(const char *path)
 {
     for (int i = 0; i < MAX_MOUNTED_PATH; ++i)
     {
-        if (mount_points[i].used && !strcmp(path, mount_points[i].path))
-            return &mount_points[i];
+        if (mounts[i].used && !strcmp(path, mounts[i].path))
+            return &mounts[i];
     }
 
     return NULL;

@@ -23,13 +23,10 @@ int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
     gid_t gid;
 
     /* Kernel request */
-    if (!t)
-    {
+    if (!t) {
         uid = 0;
         gid = 0;
-    }
-    else
-    {
+    } else {
         uid = t->uid;
         gid = t->gid;
     }
@@ -39,50 +36,40 @@ int vfs_lookup(struct thread *t, const char *path, struct resp_lookup *res,
 
     strcpy(copied_path, path);
 
-    while (1)
-    {
-        if (!root || !root->used)
-        {
+    for (;;) {
+        if (!root || !root->used) {
             kfree(copied_path);
-
             return -ENOENT;
         }
 
-        if (!root->fs_ops->lookup)
-        {
+        if (!root->fi->parent->fs_ops->lookup) {
             kfree(copied_path);
-
             return -ENOSYS;
         }
 
-        ret = root->fs_ops->lookup(root, path + processed, uid, gid, res);
+        ret = root->fi->parent->fs_ops->lookup(root, path + processed, uid,
+                                               gid, res);
 
-        if (ret < 0)
-        {
+        if (ret < 0) {
             kfree(copied_path);
-
             return ret;
         }
 
         processed += res->processed;
 
-        if (!processed || processed > path_len)
-        {
+        if (!processed || processed > path_len) {
             kfree(copied_path);
-
             return -EBADE;
         }
 
         if (res->ret == RES_OK || res->ret == RES_KO)
             break;
-        else
-        {
-            char old = copied_path[res->processed];
 
-            copied_path[res->processed] = 0;
-            root = vfs_mount_pt_get(copied_path);
-            copied_path[res->processed] = old;
-        }
+        char old = copied_path[res->processed];
+
+        copied_path[res->processed] = 0;
+        root = vfs_mount_pt_get(copied_path);
+        copied_path[res->processed] = old;
     }
 
     *mount_pt = root;

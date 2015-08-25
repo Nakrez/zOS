@@ -14,7 +14,6 @@
 int vfs_stat(struct thread *t, const char *path, struct stat *buf)
 {
     int ret;
-    int path_size = strlen(path);
     struct mount_entry *mount_pt;
     struct resp_lookup lookup;
     uid_t uid;
@@ -32,16 +31,18 @@ int vfs_stat(struct thread *t, const char *path, struct stat *buf)
         gid = t->gid;
     }
 
-    if ((ret = vfs_lookup(t, path, &lookup, &mount_pt)) < 0)
+    ret = vfs_lookup(t, path, &lookup, &mount_pt);
+    if (ret < 0)
         return ret;
 
-    if (path_size != lookup.processed)
+    if (strlen(path) != (size_t)lookup.processed)
         return -ENOENT;
 
-    if (!mount_pt->fs_ops->stat)
+    if (!mount_pt->fi->parent->fs_ops->stat)
         return -ENOSYS;
 
-    return mount_pt->fs_ops->stat(mount_pt, uid, gid, lookup.inode.inode, buf);
+    return mount_pt->fi->parent->fs_ops->stat(mount_pt, uid, gid,
+                                              lookup.inode.inode, buf);
 }
 
 int vfs_fstat(struct thread *t, int fd, struct stat *buf)
@@ -69,9 +70,9 @@ int vfs_fstat(struct thread *t, int fd, struct stat *buf)
     if (ret < 0)
         return ret;
 
-    if (!p->files[fd].mount->fs_ops->stat)
+    if (!file->mount->fi->parent->fs_ops->stat)
         return -ENOSYS;
 
-    return p->files[fd].mount->fs_ops->stat(p->files[fd].mount, uid, gid,
-                                            p->files[fd].inode->inode, buf);
+    return file->mount->fi->parent->fs_ops->stat(file->mount, uid, gid,
+                                                 file->inode->inode, buf);
 }

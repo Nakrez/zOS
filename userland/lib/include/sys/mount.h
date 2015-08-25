@@ -3,6 +3,6 @@
 
 # include <sys/types.h>
 
-int mount(dev_t dev, const char *target);
+int mount(const char *fs_name, const char *device, const char *mount_pt);
 
 #endif /* !I386_SYS_MOUNT_H */

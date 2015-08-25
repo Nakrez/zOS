@@ -77,9 +77,7 @@ struct ext2_dirent {
 struct ext2_cinode;
 
 struct ext2fs {
-    int fd;
-
-    struct fiu_internal *fiu;
+    struct fiu_instance *fi;
 
     size_t block_size;
 
@@ -90,14 +88,57 @@ struct ext2fs {
     struct ext2_group_descriptor *grp_table;
 };
 
-int ext2fs_initialize(struct ext2fs *ext2, const char *disk);
+/**
+ *  \brief  Create a new ext2 file system instance
+ *
+ *  \param  fs  The file system structure
+ *  \param  req The request
+ *
+ *  \return 0: Everything went well
+ */
+int ext2fs_create(struct fiu_fs *fs, struct req_fs_create *req);
 
-int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
-                  struct resp_lookup *response);
+/**
+ *  \brief  Initialize a new instance
+ *
+ *  \param  fi  The file system instance
+ *
+ *  \return 0: Everything went well
+ */
+int ext2fs_initialize(struct fiu_instance *fi);
 
-int ext2fs_stat(struct fiu_internal *fiu, struct req_stat *req,
-                struct stat *response);
+/**
+ *  \brief  Perform a lookup
+ *
+ *  \param  fi      The file system instance
+ *  \param  req     The request
+ *  \param  resp    The response
+ *
+ *  \return 0: Everything went well
+ */
+int ext2fs_lookup(struct fiu_instance *fi, struct req_lookup *req,
+                  struct resp_lookup *resp);
 
-int ext2fs_mount(struct fiu_internal *fiu, struct req_mount *req);
+/**
+ *  \brief  Perform a stat()
+ *
+ *  \param  fi      The file system instance
+ *  \param  req     The request
+ *  \param  resp    The response
+ *
+ *  \return 0: Everything went well
+ */
+int ext2fs_stat(struct fiu_instance *fi, struct req_stat *req,
+                struct stat *resp);
+
+/**
+ *  \brief  Perform a mount
+ *
+ *  \param  fi  The file system instance
+ *  \param  req The request
+ *
+ *  \return 0: Everything went well
+ */
+int ext2fs_mount(struct fiu_instance *fi, struct req_mount *req);
 
 #endif /* !EXT2_FS_H */

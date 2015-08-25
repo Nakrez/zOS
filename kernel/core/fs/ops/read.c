@@ -13,7 +13,7 @@ int vfs_read(struct thread *t, int fd, void *buf, size_t count)
 {
     int ret;
     struct process *p;
-    struct req_rdwr request;
+    struct req_rdwr req;
     struct file *file;
 
     /* Kernel request */
@@ -29,19 +29,18 @@ int vfs_read(struct thread *t, int fd, void *buf, size_t count)
     if (!file->f_ops->read)
         return -ENOSYS;
 
+    req.inode = 0;
     if (file->inode)
-        request.inode = file->inode->inode;
-    else
-        request.inode = 0;
+        req.inode = file->inode->inode;
 
-    request.size = count;
-    request.off = file->offset;
+    req.size = count;
+    req.off = file->offset;
 
-    ret = file->f_ops->read(file, p, &request, buf);
+    ret = file->f_ops->read(file, p, &req, buf);
     if (ret < 0)
         return ret;
 
-    file->offset = request.off;
+    file->offset = req.off;
 
     return ret;
 }

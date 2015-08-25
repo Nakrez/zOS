@@ -19,37 +19,30 @@ static struct process *get_parent(struct thread *t)
 
 int vfs_dup(struct thread *t, int oldfd)
 {
-    struct process *p = get_parent(t);
-    struct inode *new_inode;
+    int ret;
     int newfd;
+    struct process *p = get_parent(t);
 
     if (!process_fd_exist(p, oldfd))
         return -EBADF;
 
-    new_inode = kmalloc(sizeof (struct inode));
-    if (!new_inode)
-        return -ENOMEM;
-
-    if ((newfd = process_new_fd(p)) < 0) {
-        kfree(new_inode);
+    newfd = process_new_fd(p);
+    if (newfd < 0)
         return newfd;
+
+    ret = process_dup_file(&p->files[newfd], &p->files[oldfd]);
+    if (ret < 0) {
+        process_free_fd(p, newfd);
+        return ret;
     }
-
-    /* XXX: Make inode shared */
-    memcpy(new_inode, p->files[oldfd].inode, sizeof (struct inode));
-
-    p->files[newfd].inode = new_inode;
-    p->files[newfd].offset = p->files[oldfd].offset;
-    p->files[newfd].mount = p->files[oldfd].mount;
-    p->files[newfd].f_ops = p->files[oldfd].f_ops;
 
     return newfd;
 }
 
 int vfs_dup2(struct thread *t, int oldfd, int newfd)
 {
+    int ret;
     struct process *p = get_parent(t);
-    struct inode *new_inode;
 
     if (!process_fd_exist(p, oldfd))
         return -EBADF;
@@ -57,14 +50,8 @@ int vfs_dup2(struct thread *t, int oldfd, int newfd)
     if (newfd < 0 || newfd >= PROCESS_MAX_OPEN_FD)
         return -EBADF;
 
-    new_inode = kmalloc(sizeof (struct inode));
-    if (!new_inode)
-        return -ENOMEM;
-
-    if (p->files[newfd].used)
-    {
-        int ret = vfs_close(t, newfd);
-
+    if (p->files[newfd].used) {
+        ret = vfs_close(t, newfd);
         if (ret < 0)
             return ret;
     }
@@ -75,10 +62,11 @@ int vfs_dup2(struct thread *t, int oldfd, int newfd)
 
     spinlock_unlock(&p->files_lock);
 
-    p->files[newfd].inode = p->files[oldfd].inode;
-    p->files[newfd].offset = p->files[oldfd].offset;
-    p->files[newfd].mount = p->files[oldfd].mount;
-    p->files[newfd].f_ops = p->files[oldfd].f_ops;
+    ret = process_dup_file(&p->files[newfd], &p->files[oldfd]);
+    if (ret < 0) {
+        process_free_fd(p, newfd);
+        return ret;
+    }
 
     return newfd;
 }

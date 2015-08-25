@@ -36,7 +36,7 @@ int fiu_parse_opts(int argc, char **argv, struct fiu_opts *opts)
     {
         int opt_index = 0;
 
-        c = getopt_long(argc, argv, "h", fiu_options, &opt_index);
+        c = getopt_long(argc, argv, "hd", fiu_options, &opt_index);
 
         if (c == -1)
             break;
@@ -52,18 +52,6 @@ int fiu_parse_opts(int argc, char **argv, struct fiu_opts *opts)
             default:
                 return -1;
         }
-    }
-
-    if (argc - optind == 2)
-    {
-        opts->device = argv[optind++];
-        opts->dir = argv[optind];
-    }
-    else
-    {
-        fprintf(stderr, "Missing params\n");
-
-        return -1;
     }
 
     return 0;

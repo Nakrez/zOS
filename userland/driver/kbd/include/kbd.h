@@ -8,7 +8,7 @@
 struct kbd {
     int opened;
 
-    int mid;
+    int slave;
 
     struct req_rdwr req;
 

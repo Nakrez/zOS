@@ -1,29 +1,33 @@
 #include <unistd.h>
 
+#include <fiu/fiu.h>
+
 #include "fs.h"
 #include "block.h"
 
-int ext2_block_fetch(struct fiu_internal *fiu, void *buffer, uint32_t block)
+int ext2_block_fetch(struct fiu_instance *fi, void *buffer, uint32_t block)
 {
-    int res;
-    struct ext2fs *ext2 = fiu->private;
+    int ret;
+    struct ext2fs *ext2 = fi->private;
     off_t block_off = block * (off_t)ext2->block_size;
 
-    if ((res = lseek(ext2->fd, block_off, SEEK_SET)) < 0)
-        return res;
+    ret = lseek(fi->device_fd, block_off, SEEK_SET);
+    if (ret < 0)
+        return ret;
 
-    if ((res = read(ext2->fd, buffer, ext2->block_size)) < 0)
-        return res;
+    ret = read(fi->device_fd, buffer, ext2->block_size);
+    if (ret < 0)
+        return ret;
 
-    if ((size_t)res != ext2->block_size)
+    if ((size_t)ret != ext2->block_size)
         return -1;
 
     return 0;
 }
 
-int ext2_block_flush(struct fiu_internal *fiu, void *buffer, uint32_t block)
+int ext2_block_flush(struct fiu_instance *fi, void *buffer, uint32_t block)
 {
-    (void) fiu;
+    (void) fi;
     (void) buffer;
     (void) block;
 

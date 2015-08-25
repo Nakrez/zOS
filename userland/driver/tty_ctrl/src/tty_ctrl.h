@@ -21,7 +21,7 @@
 struct tty_slave {
     pid_t pid;
 
-    int mid_req;
+    int slave_id;
 
     struct req_rdwr req;
 };

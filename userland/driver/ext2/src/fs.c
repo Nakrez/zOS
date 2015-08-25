@@ -9,9 +9,6 @@
 #include "inode_cache.h"
 #include "block.h"
 
-# define EXT2FS_OPEN_TIMEOUT 10000
-# define EXT2FS_OPEN_RETRY 50
-
 static int ext2fs_load_group_table(struct ext2fs *ext2)
 {
     int ret;
@@ -19,6 +16,7 @@ static int ext2fs_load_group_table(struct ext2fs *ext2)
     size_t inode_nb;
     size_t gt_size;
     size_t offset;
+    struct fiu_instance *fi = ext2->fi;
 
     group_nb = (ext2->sb.total_blocks / ext2->sb.block_per_group) +
                ((ext2->sb.total_blocks % ext2->sb.block_per_group) ? 1 : 0);
@@ -31,79 +29,95 @@ static int ext2fs_load_group_table(struct ext2fs *ext2)
     ext2->grp_table = malloc(sizeof (struct ext2_group_descriptor) * gt_size);
 
     if (!ext2->grp_table)
-        return 0;
+        /* ENOMEM */
+        return -1;
 
     offset = ext2->block_size == 1024 ? 2048 : ext2->block_size;
 
-    if (lseek(ext2->fd, offset, SEEK_SET) < 0)
-        return 0;
-
-    ret = read(ext2->fd, ext2->grp_table,
-               sizeof (struct ext2_group_descriptor) * gt_size);
-
+    ret = lseek(fi->device_fd, offset, SEEK_SET);
     if (ret < 0)
-        return 0;
+        return ret;
 
-    return (size_t)ret == sizeof (struct ext2_group_descriptor) * gt_size;
+    ret = read(fi->device_fd, ext2->grp_table,
+               sizeof (struct ext2_group_descriptor) * gt_size);
+    if (ret < 0)
+        return ret;
+
+    if ((size_t)ret != sizeof (struct ext2_group_descriptor) * gt_size)
+        return -1;
+
+    return 0;
 }
 
-int ext2fs_initialize(struct ext2fs *ext2, const char *device)
+int ext2fs_create(struct fiu_fs *fs, struct req_fs_create *req)
+{
+    (void) fs;
+    (void) req;
+    int ret;
+    struct ext2fs *ext2;
+    struct fiu_instance fi;
+
+    ext2 = malloc(sizeof (struct ext2fs));
+    if (!ext2)
+        /* XXX: ENOMEM */
+        return -1;
+
+    fi.parent = fs;
+    fi.private = ext2;
+
+    ext2->fi = &fi;
+
+    ret = fiu_slave_main(&fi, req->device, req->hdr.slave_id);
+    if (ret < 0) {
+        free(ext2);
+        return ret;
+    }
+
+    return fi.channel_fd;
+}
+
+int ext2fs_initialize(struct fiu_instance *fi)
 {
     int ret;
     int read_size = 0;
-    int timeout = 0;
-
-    /* Wait for the disk driver to be alive */
-    while (timeout < EXT2FS_OPEN_TIMEOUT)
-    {
-        ext2->fd = open_device(device, 0, 0);
-
-        if (ext2->fd >= 0)
-            break;
-
-        timeout += EXT2FS_OPEN_RETRY;
-        usleep(EXT2FS_OPEN_RETRY);
-    }
-
-    if (ext2->fd < 0)
-        return 0;
+    struct ext2fs *ext2 = fi->private;
 
     /* Superblock is always 1024 bytes after the beginning */
-    if (lseek(ext2->fd, 1024, SEEK_CUR) < 0)
-        return 0;
+    ret = lseek(fi->device_fd, 1024, SEEK_CUR);
+    if (ret < 0)
+        return ret;
 
     while (read_size != sizeof (struct ext2_superblock))
     {
-        ret = read(ext2->fd, ((char *)&ext2->sb) + read_size,
+        ret = read(fi->device_fd, ((char *)&ext2->sb) + read_size,
                    sizeof (struct ext2_superblock) - read_size);
-
         if (ret < 0)
-            break;
+            return ret;
 
         read_size += ret;
     }
 
-    if (ret < 0)
-        return 0;
-
     if (ext2->sb.magic != EXT2_SB_MAGIC)
-        return 0;
+        return -1;
 
     ext2->block_size = 1024 << ext2->sb.block_size;
 
-    if (!ext2fs_load_group_table(ext2))
-        return 0;
+    ret = ext2fs_load_group_table(ext2);
+    if (ret < 0)
+        return ret;
 
-    if (!ext2_icache_initialize(ext2))
-        return 0;
+    ret = ext2_icache_initialize(ext2);
+    if (ret < 0)
+        return ret;
 
-    return (fiu_cache_initialize(ext2->fiu, 64, ext2->block_size,
-                                 ext2_block_fetch, ext2_block_flush) == 0);
+    return fiu_cache_initialize(ext2->fi, 64, ext2->block_size,
+                                ext2_block_fetch, ext2_block_flush);
 }
 
 uint32_t inode_find_in_dir(struct ext2fs *ext2, struct ext2_inode *inode,
                            const char *name)
 {
+    int ret;
     uint32_t offset = 0;
     uint32_t offset_block = 0;
     uint32_t block_num = 0;
@@ -112,11 +126,13 @@ uint32_t inode_find_in_dir(struct ext2fs *ext2, struct ext2_inode *inode,
     struct ext2_dirent *dirent;
     char *dirent_name;
 
-    if (!inode_block_data(ext2, inode, 0, &block_num))
-        return 0;
+    ret = inode_block_data(ext2, inode, 0, &block_num);
+    if (ret < 0)
+        return ret;
 
-    if (!(block = fiu_cache_request(ext2->fiu, block_num)))
-        return 0;
+    block = fiu_cache_request(ext2->fi, block_num);
+    if (!block)
+        return -1;
 
     dirent = block;
 
@@ -124,49 +140,46 @@ uint32_t inode_find_in_dir(struct ext2fs *ext2, struct ext2_inode *inode,
     {
         dirent_name = (char *)dirent + sizeof (struct ext2_dirent);
 
-        if (dirent->size + offset_block > ext2->block_size)
-        {
+        if (dirent->size + offset_block > ext2->block_size) {
             uprint("Dirent overlap between 2 blocks");
-
-            return 0;
+            return -1;
         }
 
         if (!strncmp(dirent_name, name, dirent->name_size_low) &&
-            strlen(name) == dirent->name_size_low)
-        {
+            strlen(name) == dirent->name_size_low) {
             res = dirent->inode;
-
             break;
         }
 
         offset_block += dirent->size;
         offset += dirent->size;
 
-        if (offset_block >= ext2->block_size)
-        {
+        if (offset_block >= ext2->block_size) {
             offset_block = offset % ext2->block_size;
 
-            fiu_cache_release(ext2->fiu, block_num);
+            fiu_cache_release(ext2->fi, block_num);
 
-            if (!inode_block_data(ext2, inode, offset, &block_num))
-                return 0;
+            ret = inode_block_data(ext2, inode, offset, &block_num);
+            if (ret < 0)
+                return -1;
 
-            if (!(block = fiu_cache_request(ext2->fiu, block_num)))
+            block = fiu_cache_request(ext2->fi, block_num);
+            if (!block)
                 return 0;
         }
 
         dirent = (void *)((char *)block + offset_block);
     }
 
-    fiu_cache_release(ext2->fiu, block_num);
+    fiu_cache_release(ext2->fi, block_num);
 
     return res;
 }
 
-int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
-                  struct resp_lookup *response)
+int ext2fs_lookup(struct fiu_instance *fi, struct req_lookup *req,
+                  struct resp_lookup *resp)
 {
-    struct ext2fs *ext2 = fiu->private;
+    struct ext2fs *ext2 = fi->private;
     struct ext2_inode *inode = ext2_icache_request(ext2, 2);
     uint32_t inode_nb = 2;
     uint32_t tmp;
@@ -174,58 +187,53 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
     char *part;
     char *path_left;
 
-    response->ret = -1;
-    response->processed = 0;
+    resp->ret = -1;
+    resp->processed = 0;
 
-    memset(&response->inode, 0, sizeof (struct inode));
+    memset(&resp->inode, 0, sizeof (struct inode));
 
-    response->inode.dev = -1;
+    resp->inode.dev = -1;
 
     if (!inode)
         return LOOKUP_RES_KO;
 
-    if (!(path_complete = malloc(strlen(req->path) + 1)))
+    path_complete = malloc(strlen(req->path) + 1);
+    if (!path_complete)
         return LOOKUP_RES_KO;
 
     strcpy(path_complete, req->path);
 
-    while (*req->path == '/')
-    {
+    while (*req->path == '/') {
         ++req->path;
-        ++response->processed;
+        ++resp->processed;
     }
 
     part = strtok_r(req->path, "/", &path_left);
 
-    while (1)
-    {
-        if ((inode->type_perm & EXT2_TYPE_DIRECTORY) != EXT2_TYPE_DIRECTORY)
-        {
+    for (;;) {
+        if ((inode->type_perm & EXT2_TYPE_DIRECTORY) != EXT2_TYPE_DIRECTORY) {
             ext2_icache_release(ext2, inode_nb);
-
             break;
         }
 
-        if ((inode->type_perm & EXT2_TYPE_MOUNT_PT) == EXT2_TYPE_MOUNT_PT)
-        {
-            response->ret = LOOKUP_RES_ENTER_MOUNT;
-            response->inode.dev = inode->lower_size;
+        if ((inode->type_perm & EXT2_TYPE_MOUNT_PT) == EXT2_TYPE_MOUNT_PT) {
+            resp->ret = LOOKUP_RES_ENTER_MOUNT;
+            resp->inode.dev = inode->lower_size;
             ext2_icache_release(ext2, inode_nb);
 
             /*
              * If we enter a mount point we did not processed the / which is
              * the root inside the mount point
              */
-            if (path_complete[response->processed - 1] == '/')
-                --response->processed;
+            if (path_complete[resp->processed - 1] == '/')
+                --resp->processed;
 
             break;
         }
 
-        if (!(tmp = inode_find_in_dir(ext2, inode, part)))
-        {
+        tmp = inode_find_in_dir(ext2, inode, part);
+        if (!tmp) {
             ext2_icache_release(ext2, inode_nb);
-
             break;
         }
 
@@ -233,25 +241,26 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
 
         inode_nb = tmp;
 
-        if (!(inode = ext2_icache_request(ext2, inode_nb)))
+        inode = ext2_icache_request(ext2, inode_nb);
+        if (!inode)
             break;
 
-        response->processed += path_left - part;
+        resp->processed += path_left - part;
 
-        if (!(part = strtok_r(NULL, "/", &path_left)))
-        {
+        part = strtok_r(NULL, "/", &path_left);
+        if (!part) {
             /* Special case: we asked directly for a mount point */
-            if ((inode->type_perm & EXT2_TYPE_MOUNT_PT) == EXT2_TYPE_MOUNT_PT)
-            {
-                response->ret = LOOKUP_RES_ENTER_MOUNT;
-                response->inode.dev = inode->lower_size;
+            if ((inode->type_perm & EXT2_TYPE_MOUNT_PT) ==
+                 EXT2_TYPE_MOUNT_PT) {
+                resp->ret = LOOKUP_RES_ENTER_MOUNT;
+                resp->inode.dev = inode->lower_size;
 
                 /*
                  * If we enter a mount point we did not processed the / which
                  * is the root inside the mount point
                  */
-                if (path_complete[response->processed - 1] == '/')
-                    --response->processed;
+                if (path_complete[resp->processed - 1] == '/')
+                    --resp->processed;
             }
 
             ext2_icache_release(ext2, inode_nb);
@@ -260,59 +269,56 @@ int ext2fs_lookup(struct fiu_internal *fiu, struct req_lookup *req,
         }
     }
 
-    response->inode.inode = inode_nb;
+    resp->inode.inode = inode_nb;
 
     free(path_complete);
 
-    if (response->ret == -1)
-    {
-        if (response->processed == req->path_size)
+    if (resp->ret == -1) {
+        if (resp->processed == req->path_size)
             return LOOKUP_RES_OK;
-        else
-            return LOOKUP_RES_KO;
+
+        return LOOKUP_RES_KO;
     }
 
-    return response->ret;
+    return resp->ret;
 }
 
-int ext2fs_stat(struct fiu_internal *fiu, struct req_stat *req,
-                struct stat *response)
+int ext2fs_stat(struct fiu_instance *fi, struct req_stat *req,
+                struct stat *resp)
 {
-    struct ext2fs *ext2 = fiu->private;
+    struct ext2fs *ext2 = fi->private;
     struct ext2_inode *inode;
 
     if (!(inode = ext2_icache_request(ext2, req->inode)))
         return -1;
 
-    response->st_dev = fiu->dev_id;
-    response->st_ino = req->inode;
-    response->st_mode = inode->type_perm;
-    response->st_nlink = inode->hardlinks_count;
-    response->st_uid = inode->uid;
-    response->st_gid = inode->gid;
-    response->st_rdev = 0;
-    response->st_size = inode->lower_size;
+    resp->st_dev = 0;
+    resp->st_ino = req->inode;
+    resp->st_mode = inode->type_perm;
+    resp->st_nlink = inode->hardlinks_count;
+    resp->st_uid = inode->uid;
+    resp->st_gid = inode->gid;
+    resp->st_rdev = 0;
+    resp->st_size = inode->lower_size;
 
-    if (ext2->sb.minor > 0 || ext2->sb.major > 0)
-    {
-        if (!(inode->type_perm & EXT2_TYPE_DIRECTORY))
-            response->st_size |= ((uint64_t)inode->directory_acl) << 32;
-    }
+    if ((ext2->sb.minor > 0 || ext2->sb.major > 0) &&
+        !(inode->type_perm & EXT2_TYPE_DIRECTORY))
+            resp->st_size |= ((uint64_t)inode->directory_acl) << 32;
 
-    response->st_blksize = ext2->block_size;
-    response->st_blocks = inode->disk_sector_size;
-    response->st_atime = inode->last_access;
-    response->st_mtime = inode->last_modification;
-    response->st_ctime = inode->last_access;
+    resp->st_blksize = ext2->block_size;
+    resp->st_blocks = inode->disk_sector_size;
+    resp->st_atime = inode->last_access;
+    resp->st_mtime = inode->last_modification;
+    resp->st_ctime = inode->last_access;
 
     ext2_icache_release(ext2, req->inode);
 
     return 0;
 }
 
-int ext2fs_mount(struct fiu_internal *fiu, struct req_mount *req)
+int ext2fs_mount(struct fiu_instance *fi, struct req_mount *req)
 {
-    struct ext2fs *ext2 = fiu->private;
+    struct ext2fs *ext2 = fi->private;
     struct ext2_inode *inode;
 
     /* FIXME: ENOENT */

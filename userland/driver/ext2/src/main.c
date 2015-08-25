@@ -8,53 +8,8 @@
 #include "fs.h"
 #include "file.h"
 
-static char *create_device_name(char *device)
-{
-    char *end_pos = strrchr(device, '/');
-    char *device_name;
-    char *final;
-
-    if (!end_pos || !*(end_pos + 1))
-        device_name = device;
-    else
-        device_name = end_pos + 1;
-
-    /* 5 = "ext2-" */
-    if (!(final = malloc(5 + strlen(device_name) + 1)))
-        return NULL;
-
-    sprintf(final, "ext2-%s", device_name);
-
-    return final;
-}
-
-void *ext2_fill_private(struct fiu_internal *fiu, struct fiu_opts *opts)
-{
-    struct ext2fs *ext2;
-
-    if (!opts->device)
-        return NULL;
-
-    if (!(ext2 = malloc(sizeof (struct ext2fs))))
-        return NULL;
-
-    ext2->fiu = fiu;
-
-    if (!ext2fs_initialize(ext2, opts->device))
-    {
-        free(ext2);
-
-        return NULL;
-    }
-
-    if (!(fiu->device_name = create_device_name(opts->device)))
-        return NULL;
-
-    return ext2;
-}
-
 static struct fiu_ops ext2_ops = {
-    .fill_private = ext2_fill_private,
+    .init = ext2fs_initialize,
     .lookup = ext2fs_lookup,
     .stat = ext2fs_stat,
     .mount = ext2fs_mount,
@@ -64,7 +19,17 @@ static struct fiu_ops ext2_ops = {
     .close = ext2fs_close,
 };
 
+struct fiu_fs_super_ops ext2_super_ops = {
+    .create = ext2fs_create,
+};
+
+struct fiu_fs ext2_fs = {
+    .name = "ext2",
+    .super_ops = &ext2_super_ops,
+    .ops = &ext2_ops,
+};
+
 int main(int argc, char *argv[])
 {
-    return fiu_main(argc, argv, &ext2_ops);
+    return fiu_master_main(&ext2_fs, argc, argv);
 }

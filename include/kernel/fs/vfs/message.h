@@ -36,8 +36,22 @@ struct message {
     size_t max_size;
 };
 
+struct req_fs_create {
+    struct msg_header hdr;
+
+    char device[VFS_DEV_MAX_NAMEL];
+};
+
+struct resp_fs_create {
+    int ret;
+
+    char device[VFS_DEV_MAX_NAMEL];
+};
+
 /* Lookup request */
 struct req_lookup {
+    struct msg_header hdr;
+
     char *path;
     uint16_t path_size;
     uid_t uid;
@@ -53,6 +67,8 @@ struct resp_lookup {
 
 /* Stat request */
 struct req_stat {
+    struct msg_header hdr;
+
     ino_t inode;
     uid_t uid;
     gid_t gid;
@@ -60,6 +76,7 @@ struct req_stat {
 
 /* Stat response */
 struct resp_stat {
+
     int ret;
 
     struct stat stat;
@@ -67,6 +84,8 @@ struct resp_stat {
 
 /* Open request */
 struct req_open {
+    struct msg_header hdr;
+
     ino_t inode;
     uid_t uid;
     gid_t gid;
@@ -83,6 +102,8 @@ struct resp_open {
 
 /* Read/Write request */
 struct req_rdwr {
+    struct msg_header hdr;
+
     ino_t inode;
 
     size_t size;
@@ -101,6 +122,8 @@ struct resp_rdwr {
 
 /* Close request */
 struct req_close {
+    struct msg_header hdr;
+
     ino_t inode;
 };
 
@@ -111,6 +134,8 @@ struct resp_close {
 
 /* Ioctl request */
 struct req_ioctl {
+    struct msg_header hdr;
+
     ino_t inode;
 
     int request;
@@ -131,6 +156,8 @@ struct resp_ioctl {
 
 /* Dirent request */
 struct req_getdirent {
+    struct msg_header hdr;
+
     ino_t inode;
 
     int index;
@@ -145,6 +172,8 @@ struct resp_getdirent {
 
 /* Mount request */
 struct req_mount {
+    struct msg_header hdr;
+
     ino_t inode;
 
     int mount_nb;

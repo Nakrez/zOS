@@ -4,10 +4,9 @@
 
 #include "driver.h"
 
-static int video_open(struct driver *driver, int mid, struct req_open *req,
+static int video_open(struct driver *driver, struct req_open *req,
                       ino_t *inode)
 {
-    (void)mid;
     (void)req;
 
     struct video *video = driver->private;
@@ -20,19 +19,16 @@ static int video_open(struct driver *driver, int mid, struct req_open *req,
     return 0;
 }
 
-static int video_write(struct driver *driver, int mid, struct req_rdwr *req,
+static int video_write(struct driver *driver, struct req_rdwr *req,
                        size_t *size)
 {
-    (void)mid;
-
     struct video *video = driver->private;
 
     return video->write(video, req, size);
 }
 
-static int video_close(struct driver *driver, int mid, struct req_close *req)
+static int video_close(struct driver *driver, struct req_close *req)
 {
-    (void)mid;
     (void)req;
 
     struct video *video = driver->private;
@@ -42,11 +38,9 @@ static int video_close(struct driver *driver, int mid, struct req_close *req)
     return 0;
 }
 
-static int video_ioctl(struct driver *driver, int mid, struct req_ioctl *req,
+static int video_ioctl(struct driver *driver, struct req_ioctl *req,
                        struct resp_ioctl *response)
 {
-    (void)mid;
-
     struct video *video = driver->private;
 
     response->modify_argp = 0;

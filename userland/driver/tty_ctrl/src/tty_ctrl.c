@@ -17,7 +17,8 @@ struct tty_ctrl *tty_ctrl_create(void)
 {
     struct tty_ctrl *ctrl;
 
-    if (!(ctrl = malloc(sizeof (struct tty_ctrl))))
+    ctrl = malloc(sizeof (struct tty_ctrl));
+    if (!ctrl)
         return NULL;
 
     ctrl->video_fd = -1;
@@ -36,13 +37,11 @@ static int open_io_driver(const char *driver, int flags)
     int timeout = 0;
     int fd;
 
-    while (timeout < DRIVER_WAIT_TIME)
-    {
-        if ((fd = open_device(driver, flags, 0)) < 0)
-        {
+    while (timeout < DRIVER_WAIT_TIME) {
+        fd = open_device(driver, flags, 0);
+        if (fd < 0) {
             usleep(DRIVER_RETRY_TIME);
             timeout += DRIVER_RETRY_TIME;
-
             continue;
         }
 
@@ -54,25 +53,30 @@ static int open_io_driver(const char *driver, int flags)
 
 static int init_video(struct tty_ctrl *ctrl)
 {
+    int ret;
     int req;
 
     req = TTY_XRES;
 
-    if (ioctl(ctrl->video_fd, VIDEO_XRES_SET, &req) < 0)
-        return -1;
+    ret = ioctl(ctrl->video_fd, VIDEO_XRES_SET, &req);
+    if (ret < 0)
+        return ret;
 
     req = TTY_YRES;
 
-    if (ioctl(ctrl->video_fd, VIDEO_YRES_SET, &req) < 0)
-        return -1;
+    ret = ioctl(ctrl->video_fd, VIDEO_YRES_SET, &req);
+    if (ret < 0)
+        return ret;
 
     req = 8;
 
-    if (ioctl(ctrl->video_fd, VIDEO_BPP_SET, &req) < 0)
-        return -1;
+    ret = ioctl(ctrl->video_fd, VIDEO_BPP_SET, &req);
+    if (ret < 0)
+        return ret;
 
-    if (ioctl(ctrl->video_fd, VIDEO_ENABLE, 0) < 0)
-        return -1;
+    ret = ioctl(ctrl->video_fd, VIDEO_ENABLE, 0);
+    if (ret < 0)
+        return ret;
 
     return 0;
 }
@@ -83,18 +87,18 @@ static int init_slaves(struct tty_ctrl *ctrl, int slaves)
 
     ctrl->nb_slave = 0;
 
-    if (!(ctrl->slaves = malloc(slaves * sizeof (struct tty_slave))))
+    ctrl->slaves = malloc(slaves * sizeof (struct tty_slave));
+    if (!ctrl->slaves)
+        /* XXX: ENOMEM */
         return -1;
 
-    for (int i = 0; i < slaves; ++i)
-    {
+    for (int i = 0; i < slaves; ++i) {
         pid = fork();
 
         if (pid < 0)
             continue;
 
-        if (!pid)
-        {
+        if (!pid) {
             char *argv[] = { "/bin/tty", NULL };
 
             execv("/bin/tty", argv);
@@ -103,12 +107,10 @@ static int init_slaves(struct tty_ctrl *ctrl, int slaves)
 
             exit(1);
         }
-        else
-        {
-            ctrl->slaves[ctrl->nb_slave].mid_req = 0;
-            ctrl->slaves[ctrl->nb_slave].pid = pid;
-            ++ctrl->nb_slave;
-        }
+
+        ctrl->slaves[ctrl->nb_slave].slave_id = -1;
+        ctrl->slaves[ctrl->nb_slave].pid = pid;
+        ++ctrl->nb_slave;
     }
 
     if (ctrl->nb_slave == 0)
@@ -139,10 +141,8 @@ static void tty_ctrl_input_push(struct tty_ctrl *ctrl, char c)
     spinlock_lock(&ctrl->input.lock);
 
     /* TODO: Remove oldest char and replace it by the new one */
-    if (ctrl->input.size == TTY_INPUT_BUFFER_SIZE)
-    {
+    if (ctrl->input.size == TTY_INPUT_BUFFER_SIZE) {
         spinlock_unlock(&ctrl->input.lock);
-
         return;
     }
 
@@ -166,17 +166,14 @@ static void tty_ctrl_input_thread(int argc, void *argv[])
     struct input_event event;
     struct tty_ctrl *ctrl = argv[0];
 
-    while (1)
-    {
+    for (;;) {
         ret = read(ctrl->kbd_fd, &event, sizeof (struct input_event));
-
         if (ret < 0)
             continue;
 
         if (event.value == EV_KEY_PRESSED)
         {
-            switch (event.code)
-            {
+            switch (event.code) {
                 case KEY_LEFTSHIFT:
                 case KEY_RIGHTSHIFT:
                     ctrl->input.shift = 1;
@@ -193,11 +190,8 @@ static void tty_ctrl_input_thread(int argc, void *argv[])
                         tty_ctrl_input_push(ctrl, keymap[event.code][0]);
                     break;
             }
-        }
-        else if (event.value == EV_KEY_RELEASED)
-        {
-            switch (event.code)
-            {
+        } else if (event.value == EV_KEY_RELEASED) {
+            switch (event.code) {
                 case KEY_LEFTSHIFT:
                 case KEY_RIGHTSHIFT:
                     ctrl->input.shift = 0;
@@ -210,27 +204,24 @@ static void tty_ctrl_input_thread(int argc, void *argv[])
 
         spinlock_lock(&ctrl->input.lock);
 
-        if (ctrl->slaves[ctrl->nb_slave].mid_req != 0)
-        {
-            struct resp_rdwr response;
+        if (ctrl->slaves[ctrl->nb_slave].slave_id >= 0) {
+            struct resp_rdwr resp;
             struct req_rdwr *req = &ctrl->slaves[ctrl->nb_slave].req;
 
-            response.size = 0;
-            response.ret = 0;
+            resp.size = 0;
+            resp.ret = 0;
 
-            while (req->size && ctrl->input.size > 0)
-            {
+            while (req->size && ctrl->input.size > 0) {
                 *((char *)(req->data++)) = tty_ctrl_input_pop(ctrl);
-
                 --req->size;
-                ++response.size;
+                ++resp.size;
             }
 
-            device_send_response(ctrl->driver.dev_id,
-                                 ctrl->slaves[ctrl->nb_slave].mid_req,
-                                 &response, sizeof (struct resp_rdwr));
+            resp.hdr.slave_id = ctrl->slaves[ctrl->nb_slave].slave_id;
 
-            ctrl->slaves[ctrl->nb_slave].mid_req = 0;
+            write(ctrl->driver.channel_fd, &resp, sizeof (resp));
+
+            ctrl->slaves[ctrl->nb_slave].slave_id = -1;
         }
 
         spinlock_unlock(&ctrl->input.lock);
@@ -249,7 +240,6 @@ static int init_input_thread(struct tty_ctrl *ctrl)
     spinlock_init(&ctrl->input.lock);
 
     tid = thread_create(tty_ctrl_input_thread, 1, ctrl);
-
     if (tid < 0)
         return -1;
 
@@ -258,20 +248,27 @@ static int init_input_thread(struct tty_ctrl *ctrl)
 
 int tty_ctrl_initialize(struct tty_ctrl *ctrl)
 {
-    if ((ctrl->kbd_fd = open_io_driver("kbd", O_RDONLY)) < 0)
-        return -1;
+    int ret;
 
-    if ((ctrl->video_fd = open_io_driver("video", O_WRONLY)) < 0)
-        return -1;
+    ctrl->kbd_fd = open_io_driver("kbd", O_RDONLY);
+    if (ctrl->kbd_fd < 0)
+        return ctrl->video_fd;
 
-    if (init_slaves(ctrl, 1) < 0)
-        return -1;
+    ctrl->video_fd = open_io_driver("video", O_WRONLY);
+    if (ctrl->video_fd < 0)
+        return ctrl->video_fd;
 
-    if (init_video(ctrl) < 0)
-        return -1;
+    ret = init_slaves(ctrl, 1);
+    if (ret < 0)
+        return ret;
 
-    if (init_input_thread(ctrl) < 0)
-        return -1;
+    ret = init_video(ctrl);
+    if (ret < 0)
+        return ret;
+
+    ret = init_input_thread(ctrl);
+    if (ret < 0)
+        return ret;
 
     return 0;
 }

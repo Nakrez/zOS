@@ -77,6 +77,10 @@ int fs_register(const char *name, pid_t pid,
 {
     struct fs *fs;
 
+    /* We need a way to instantiate a fs */
+    if (!fs_sup_ops->create)
+        return -EINVAL;
+
     fs = kmalloc(sizeof (struct fs));
     if (!fs)
         return -ENOMEM;
@@ -87,6 +91,8 @@ int fs_register(const char *name, pid_t pid,
     fs->fs_ops = fs_ops;
     fs->f_ops = f_ops;
     fs->private = private;
+    klist_head_init(&fs->instances);
+    spinlock_init(&fs->lock);
 
     spinlock_lock(&fs_lock);
 
@@ -126,4 +132,49 @@ int fs_unregister(const char *name, pid_t pid)
     kfree(fs);
 
     return 0;
+}
+
+int fs_new_instance(const char *name, const char *device, const char *mount_pt,
+                    struct fs_instance **fi)
+{
+    int ret;
+    struct fs *fs;
+    struct fs_instance *instance;
+
+    fs = fs_from_name(name);
+    if (!fs)
+        return -ENOENT;
+
+    instance = kmalloc(sizeof (struct fs_instance));
+    if (!instance)
+        return -ENOMEM;
+
+    instance->parent = fs;
+    instance->private = NULL;
+
+    ret = instance->parent->fs_super_ops->create(instance, device, mount_pt);
+    if (ret < 0) {
+        kfree(instance);
+        return ret;
+    }
+
+    spinlock_lock(&fs->lock);
+    klist_add(&fs->instances, &instance->list);
+    spinlock_unlock(&fs->lock);
+
+    if (fi)
+        *fi = instance;
+
+    return 0;
+}
+
+void fs_del_instance(struct fs_instance *instance)
+{
+    spinlock_lock(&instance->parent->lock);
+
+    klist_del(&instance->list);
+
+    spinlock_unlock(&instance->parent->lock);
+
+    kfree(instance);
 }

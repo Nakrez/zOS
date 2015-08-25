@@ -8,6 +8,8 @@
 struct driver {
     char *dev_name;
 
+    int channel_fd;
+
     dev_t dev_id;
 
     int running;
@@ -21,12 +23,11 @@ struct driver {
 };
 
 struct driver_ops {
-    int (*open)(struct driver *, int, struct req_open *, ino_t *);
-    int (*read)(struct driver *, int, struct req_rdwr *, size_t *);
-    int (*write)(struct driver *, int, struct req_rdwr *, size_t *);
-    int (*close)(struct driver *, int, struct req_close *);
-    int (*ioctl)(struct driver *, int, struct req_ioctl *,
-                 struct resp_ioctl *);
+    int (*open)(struct driver *, struct req_open *, ino_t *);
+    int (*read)(struct driver *, struct req_rdwr *, size_t *);
+    int (*write)(struct driver *, struct req_rdwr *, size_t *);
+    int (*close)(struct driver *, struct req_close *);
+    int (*ioctl)(struct driver *, struct req_ioctl *, struct resp_ioctl *);
 };
 
 int driver_create(const char *dev_name, int perm, struct driver_ops *dev_ops,

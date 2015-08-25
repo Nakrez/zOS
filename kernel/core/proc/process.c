@@ -276,6 +276,8 @@ int process_file_from_fd(struct process *process, int fd, struct file **file)
 
 int process_dup_file(struct file *f_new, struct file *f_old)
 {
+    int ret;
+
     f_new->used = f_old->used;
 
     if (!f_new->used)
@@ -292,6 +294,14 @@ int process_dup_file(struct file *f_new, struct file *f_old)
     f_new->f_ops = f_old->f_ops;
     f_new->private = f_old->private;
     f_new->mount = f_old->mount;
+
+    if (f_new->f_ops->dup) {
+        ret = f_new->f_ops->dup(f_new, f_old);
+        if (ret < 0) {
+            inode_del(f_new->inode);
+            return ret;
+        }
+    }
 
     return 0;
 }

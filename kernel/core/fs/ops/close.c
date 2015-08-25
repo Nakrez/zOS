@@ -23,15 +23,15 @@ int vfs_close(struct thread *t, int fd)
     if (ret < 0)
         return ret;
 
-    if (!file->f_ops->close) {
-        process_free_fd(p, fd);
-        return 0;
-    }
+    if (!file->f_ops->close)
+        goto end;
 
     ret = file->f_ops->close(file, file->inode->inode);
     if (ret < 0)
         return ret;
 
+end:
+    inode_del(file->inode);
     process_free_fd(p, fd);
 
     return 0;

@@ -39,11 +39,14 @@ int vfs_open_device(struct thread *t, const char *device_name, int flags,
 
     dev_id = device_get_from_name(device_name);
     if (dev_id < 0)
-        return -ENODEV;;
+        return dev_id;
 
     device = device_get(dev_id);
     if (!device)
         return -ENODEV;
+
+    if (!device->f_ops->open)
+        return -ENOSYS;
 
     fd = process_new_fd(process);
     if (fd < 0)
@@ -51,7 +54,7 @@ int vfs_open_device(struct thread *t, const char *device_name, int flags,
 
     file = &process->files[fd];
 
-    file->inode = kmalloc(sizeof (struct inode));
+    file->inode = inode_new(mode);
     if (!file->inode) {
         process_free_fd(process, fd);
         return -ENOMEM;
@@ -60,26 +63,16 @@ int vfs_open_device(struct thread *t, const char *device_name, int flags,
     file->offset = 0;
     file->mount = NULL;
     file->inode->dev = dev_id;
-
     file->f_ops = device->f_ops;
-    if (!file->f_ops->open) {
-        kfree(file->inode);
-        process_free_fd(process, fd);
-        return -ENOSYS;
-    }
 
     ret = file->f_ops->open(file, -1, process->pid, uid, gid, flags, mode);
     if (ret < 0) {
-        kfree(file->inode);
+        inode_del(file->inode);
         process_free_fd(process, fd);
         return ret;
     }
 
-    memset(file->inode, 0, sizeof (struct inode));
-
-    file->inode->dev = dev_id;
     file->inode->inode = ret;
-    file->inode->mode = mode;
 
     return fd;
 }

@@ -16,43 +16,54 @@
 int sys_vfs_device_create(struct syscall *interface)
 {
     /* FIXME: Check name */
-    char *name = (void *)interface->arg1;
+    int ret;
+    int channel_fd = interface->arg1;
+    char *name = (void *)interface->arg2;
     pid_t pid = thread_current()->parent->pid;
-    int perm = interface->arg2;
-    int ops = interface->arg3;
+    int perm = interface->arg3;
+    int ops = interface->arg4;
+    struct process *p = thread_current()->parent;
+    struct fiu_device_private *priv;
+    struct file *file;
 
     /* If thread is not root don't event think about creating the device */
     if (thread_current()->uid != 0)
         return -EPERM;
 
-    return vfs_device_create(name, pid, perm, ops, &fiu_f_ops);
-}
+    priv = kmalloc(sizeof (struct fiu_device_private));
+    if (!priv)
+        return -ENOMEM;
 
-int sys_vfs_device_recv_request(struct syscall *interface)
-{
-    /* FIXME: Check buf */
-    dev_t dev = interface->arg1;
-    char *buf = (void *)interface->arg2;
-    size_t size = interface->arg3;
+    if (!process_fd_exist(p, channel_fd)) {
+        kfree(priv);
+        return -EBADF;
+    }
 
-    if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf, size))
-        return -EFAULT;
+    spinlock_lock(&p->files_lock);
 
-    return device_recv_request(dev, buf, size);
-}
+    file = &p->files[channel_fd];
 
-int sys_vfs_device_send_response(struct syscall *interface)
-{
-    /* FIXME: Check buf */
-    dev_t dev = interface->arg1;
-    uint32_t req_id = interface->arg2;
-    char *buf = (void *)interface->arg3;
-    size_t size = interface->arg4;
+    if (file->f_ops != &channel_master_f_ops) {
+        spinlock_unlock(&p->files_lock);
+        kfree(priv);
+        return -EBADF;
+    }
 
-    if (!as_is_mapped(thread_current()->parent->as, (vaddr_t) buf, size))
-        return -EFAULT;
+    priv->master = file->private;
+    spinlock_unlock(&p->files_lock);
 
-    return device_send_response(dev, req_id, buf, size);
+    if (priv->master->proc != thread_current()->parent) {
+        kfree(priv);
+        return -EBADF;
+    }
+
+    ret = vfs_device_create(name, pid, perm, ops, &fiu_f_ops, priv);
+    if (ret < 0) {
+        kfree(priv);
+        return ret;
+    }
+
+    return ret;
 }
 
 int sys_vfs_open(struct syscall *interface)
@@ -109,10 +120,11 @@ int sys_vfs_lseek(struct syscall *interface)
 
 int sys_vfs_mount(struct syscall *interface)
 {
-    dev_t dev = interface->arg1;
-    const char *path = (char *)interface->arg2;
+    const char *fs_name = (void *)interface->arg1;
+    const char *device = (void *)interface->arg2;
+    const char *mount_pt = (char *)interface->arg2;
 
-    return vfs_mount(thread_current(), dev, path);
+    return vfs_mount(thread_current(), fs_name, device, mount_pt);
 }
 
 int sys_vfs_stat(struct syscall *interface)

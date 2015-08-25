@@ -11,16 +11,19 @@ int ext2_icache_initialize(struct ext2fs *ext2)
                                EXT2_INODE_CACHE_SIZE);
 
     if (!ext2->inode_cache)
-        return 0;
+        /* XXX: ENOMEM */
+        return -1;
 
-    for (int i = 0; i < EXT2_INODE_CACHE_SIZE; ++i)
-    {
+    for (int i = 0; i < EXT2_INODE_CACHE_SIZE; ++i) {
         ext2->inode_cache[i].inode = EXT2_BAD_INODE;
         ext2->inode_cache[i].ref_count = 0;
     }
 
     /* Cache root inode */
-    return ext2_icache_request(ext2, 2) != NULL;
+    if (ext2_icache_request(ext2, 2) == NULL)
+        return -1;
+
+    return 0;
 }
 
 struct ext2_inode *ext2_icache_request(struct ext2fs *ext2, ino_t inode)
@@ -29,13 +32,11 @@ struct ext2_inode *ext2_icache_request(struct ext2fs *ext2, ino_t inode)
     uint64_t group;
     uint64_t index;
     int ret;
+    struct fiu_instance *fi = ext2->fi;
 
-    for (i = 0; i < EXT2_INODE_CACHE_SIZE; ++i)
-    {
-        if (ext2->inode_cache[i].inode == inode)
-        {
+    for (i = 0; i < EXT2_INODE_CACHE_SIZE; ++i) {
+        if (ext2->inode_cache[i].inode == inode) {
             ++ext2->inode_cache[i].ref_count;
-
             return &(ext2->inode_cache[i].cinode);
         }
     }
@@ -45,18 +46,15 @@ struct ext2_inode *ext2_icache_request(struct ext2fs *ext2, ino_t inode)
      * and we fetch it
      */
 
-    for (i = 0; i < EXT2_INODE_CACHE_SIZE; ++i)
-    {
+    for (i = 0; i < EXT2_INODE_CACHE_SIZE; ++i) {
         if (ext2->inode_cache[i].inode == EXT2_BAD_INODE ||
             ext2->inode_cache[i].ref_count == 0)
             break;
     }
 
     /* No place to hold it */
-    if (i == EXT2_INODE_CACHE_SIZE)
-    {
+    if (i == EXT2_INODE_CACHE_SIZE) {
         uprint("EXT2: Cache is full! FIXME!");
-
         return NULL;
     }
 
@@ -66,12 +64,12 @@ struct ext2_inode *ext2_icache_request(struct ext2fs *ext2, ino_t inode)
     off_t lseek_off = (off_t)ext2->grp_table[group].inode_table *
                       ext2->block_size + index * ext2->sb.sizeof_inode;
 
-    if (lseek(ext2->fd, lseek_off, SEEK_SET) < 0)
+    ret = lseek(fi->device_fd, lseek_off, SEEK_SET);
+    if (ret < 0)
         return NULL;
 
-    ret = read(ext2->fd, &ext2->inode_cache[i].cinode,
+    ret = read(fi->device_fd, &ext2->inode_cache[i].cinode,
                sizeof (struct ext2_inode));
-
     if (ret < 0)
         return NULL;
 
@@ -83,13 +81,10 @@ struct ext2_inode *ext2_icache_request(struct ext2fs *ext2, ino_t inode)
 
 void ext2_icache_release(struct ext2fs *ext2, ino_t inode)
 {
-    for (int i = 0; i < EXT2_INODE_CACHE_SIZE; ++i)
-    {
-        if (ext2->inode_cache[i].inode == inode)
-        {
+    for (int i = 0; i < EXT2_INODE_CACHE_SIZE; ++i) {
+        if (ext2->inode_cache[i].inode == inode) {
             --ext2->inode_cache[i].ref_count;
-
-            break;
+            return;
         }
     }
 }
