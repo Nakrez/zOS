@@ -126,6 +126,17 @@ struct mp_table {
     uint8_t features[5];
 } __attribute__ ((packed));
 
-void mp_parse_tables(void);
+/**
+ *  \brief  A pointer to the MP tables
+ */
+extern struct mp_table *mp_table;
+
+/**
+ *  \brief  Parse the MP tables
+ *
+ *  \return A non null integer if they exist and were parsed successfully, 0
+ *          otherwise
+ */
+int mp_parse_tables(void);
 
 #endif /* !I386_MP_H */

@@ -6,6 +6,8 @@
 
 #include <arch/mp.h>
 
+struct mp_table *mp_table = NULL;
+
 static void *mp_find_magic(void *start, size_t len)
 {
     for (size_t i = 0; i < len / 16; start += 16)
@@ -17,13 +19,13 @@ static void *mp_find_magic(void *start, size_t len)
     return NULL;
 }
 
-static void mp_parse_config(struct mp_table *table)
+static int mp_parse_config(struct mp_table *table)
 {
     struct mp_config *config = (void *)(table->conf_table_ptr + 0xC0000000);
     uint8_t *type;
 
     if (strncmp(config->signature, "PCMP", 4))
-        return;
+        return 0;
 
     if (config->oem_table_ptr)
         console_message(T_ERR, "MP: OEM Table not supported");
@@ -54,35 +56,42 @@ static void mp_parse_config(struct mp_table *table)
                 break;
             default:
                 console_message(T_ERR, "MP: Unknown entry %u", *type);
-                return;
+                return 0;
         }
     }
 
-    return;
+    return 1;
 }
 
-void mp_parse_tables(void)
+int mp_parse_tables(void)
 {
+    int ret;
     struct mp_table *table;
 
-    if ((table = mp_find_magic((void *)EBDA_ADDR, 1024)))
+    table = mp_find_magic((void *)EBDA_ADDR, 1024);
+    if (table)
         goto mp_found;
 
-    if ((table = mp_find_magic((void *)BASE_MEM_ADDR, 1024)))
+    table = mp_find_magic((void *)BASE_MEM_ADDR, 1024);
+    if (table)
         goto mp_found;
 
-    if ((table = mp_find_magic((void *)BIOS_ROM_START, BIOS_ROM_LEN)))
+    table = mp_find_magic((void *)BIOS_ROM_START, BIOS_ROM_LEN);
+    if (table)
         goto mp_found;
 
-    return;
+    return 0;
 
 mp_found:
     console_message(T_INF, "MP tables found at 0x%x", table);
 
     if (table->length != 1 || !table->conf_table_ptr)
-        return;
+        return 0;
 
     /* TODO: Checksum */
+    ret = mp_parse_config(table);
+    if (ret)
+        mp_table = table;
 
-    mp_parse_config(table);
+    return ret;
 }
