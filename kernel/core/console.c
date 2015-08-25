@@ -59,7 +59,7 @@ static void console_vprintf(const char *s, va_list args)
                 console_puts(va_arg(args, char *));
             else if (*s == 'u')
                 console_unsigned(va_arg(args, uint32_t), 10);
-            else if (*s == 'i')
+            else if (*s == 'i' || *s == 'd')
                 console_signed(va_arg(args, int32_t), 10);
             else if (*s == 'x')
                 console_unsigned(va_arg(args, uint32_t), 16);
