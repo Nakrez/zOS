@@ -415,12 +415,17 @@ static int fiu_create(struct fs_instance *fi, const char *device,
     (void) mount_pt;
 
     int ret;
+    dev_t dev_id;
     struct fiu_fs *fs = fi->parent->private;
     struct fiu_fs_instance *priv;
     struct channel_slave *slave;
     struct resp_fs_create resp;
     struct req_fs_create req;
     struct channel *channel;
+
+    dev_id = device_get_from_name(device);
+    if (dev_id < 0)
+        return dev_id;
 
     priv = kmalloc(sizeof (struct fiu_fs_instance));
     if (!priv)

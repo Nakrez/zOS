@@ -82,17 +82,12 @@ int vfs_mount(struct thread *t, const char *fs_name, const char *device,
 {
     int ret;
     int mount_nb;
-    dev_t dev_id;
     struct fs *fs;
     struct fs_instance *fi;
 
     fs = fs_from_name(fs_name);
     if (!fs)
         return -EINVAL;
-
-    dev_id = device_get_from_name(device);
-    if (dev_id < 0)
-        return dev_id;
 
     mount_nb = vfs_check_mounts(mount_pt);
     if (mount_nb < 0)
