@@ -41,6 +41,11 @@ config VFS
     depends on MEMORY
     depends on PROCESS
 
+config DEVFS
+    bool "Add devfs support"
+    default y
+    depends on VFS
+
 config SYSCALL
     bool "Syscall module"
     default y

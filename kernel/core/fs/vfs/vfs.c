@@ -25,6 +25,7 @@
 
 #include <string.h>
 
+#include <kernel/config.h>
 #include <kernel/errno.h>
 #include <kernel/console.h>
 
@@ -38,6 +39,10 @@
 #include <kernel/fs/vfs/vops.h>
 #include <kernel/fs/vfs/mount.h>
 
+#ifdef CONFIG_DEVFS
+# include <kernel/fs/devfs.h>
+#endif /* !CONFIG_DEVFS */
+
 int vfs_initialize(void)
 {
     int ret;
@@ -49,6 +54,12 @@ int vfs_initialize(void)
     ret = fs_initialize();
     if (ret < 0)
         return ret;
+
+#ifdef CONFIG_DEVFS
+    ret = devfs_initialize();
+    if (ret < 0)
+        return ret;
+#endif /* !CONFIG_DEVFS */
 
     return 0;
 }
