@@ -24,4 +24,9 @@ config BUILD_LS
     default y
     depends on BUILD_SHELL
 
+config BUILD_MOUNT
+    bool "Mount"
+    default y
+    depends on BUILD_SHELL
+
 endmenu
