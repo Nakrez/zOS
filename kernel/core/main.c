@@ -49,7 +49,8 @@ void kernel_main(struct boot_info *boot)
 #  endif /* CONFIG_TIMER */
 
 #  ifdef CONFIG_VFS
-    vfs_initialize();
+    if (vfs_initialize() < 0)
+        kernel_panic("Fail to initialize the VFS");
 
     console_message(T_OK, "VFS initialized");
 #  endif /* CONFIG_VFS */
