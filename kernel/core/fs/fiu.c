@@ -144,7 +144,7 @@ static int fiu_mount(struct mount_entry *root, ino_t inode, int mount_nb)
     struct fiu_fs *fs = root->fi->parent->private;
     struct fiu_fs_instance *fi = root->fi->private;
 
-    if (!(fs->ops & VFS_OPS_GETDIRENT))
+    if (!(fs->ops & VFS_OPS_MOUNT))
         return -ENOSYS;
 
     ret = channel_open(fi->channel, NULL, &slave);
