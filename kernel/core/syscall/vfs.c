@@ -122,7 +122,7 @@ int sys_vfs_mount(struct syscall *interface)
 {
     const char *fs_name = (void *)interface->arg1;
     const char *device = (void *)interface->arg2;
-    const char *mount_pt = (char *)interface->arg2;
+    const char *mount_pt = (char *)interface->arg3;
 
     return vfs_mount(thread_current(), fs_name, device, mount_pt);
 }
