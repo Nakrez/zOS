@@ -26,4 +26,6 @@ typedef __builtin_va_list va_list;
         ret;                                                    \
     })
 
+# define __unused __attribute__((unused))
+
 #endif /* !ZOS_H */
