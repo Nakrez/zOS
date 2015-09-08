@@ -14,6 +14,21 @@
 
 # define INIT_CONF_PATH "/etc/init_conf"
 
+int mount_devfs(void)
+{
+    int ret;
+    struct stat s;
+
+    ret = stat("/dev", &s);
+    if (ret < 0)
+        return -1;
+
+    if (!S_ISDIR(s.st_mode))
+        return -1;
+
+    return mount("devfs", "", "/dev");
+}
+
 int main(void)
 {
     int conf_fd;
@@ -30,6 +45,14 @@ int main(void)
         if (ret < 0)
             usleep(500);
     } while (ret < 0);
+
+    ret = mount_devfs();
+    if (ret < 0) {
+        uprint("Init: Failed to mount devfs");
+        return 1;
+    }
+
+    uprint("Init: devfs mounted with success on /dev");
 
     config = init_conf_create();
     if (!config) {
