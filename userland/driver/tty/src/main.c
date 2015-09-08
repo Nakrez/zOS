@@ -18,7 +18,7 @@ static int tty_wait_ctrl(void)
     int fd;
 
     while (timeout < TTY_WAIT_CTRL) {
-        fd = open_device("tty", O_RDWR, 0);
+        fd = open("/dev/tty", O_RDWR, 0);
         if (fd >= 0)
             return fd;
 

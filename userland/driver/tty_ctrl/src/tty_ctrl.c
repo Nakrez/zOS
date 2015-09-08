@@ -38,7 +38,7 @@ static int open_io_driver(const char *driver, int flags)
     int fd;
 
     while (timeout < DRIVER_WAIT_TIME) {
-        fd = open_device(driver, flags, 0);
+        fd = open(driver, flags, 0);
         if (fd < 0) {
             usleep(DRIVER_RETRY_TIME);
             timeout += DRIVER_RETRY_TIME;
@@ -250,11 +250,11 @@ int tty_ctrl_initialize(struct tty_ctrl *ctrl)
 {
     int ret;
 
-    ctrl->kbd_fd = open_io_driver("kbd", O_RDONLY);
+    ctrl->kbd_fd = open_io_driver("/dev/kbd", O_RDONLY);
     if (ctrl->kbd_fd < 0)
         return ctrl->video_fd;
 
-    ctrl->video_fd = open_io_driver("video", O_WRONLY);
+    ctrl->video_fd = open_io_driver("/dev/video", O_WRONLY);
     if (ctrl->video_fd < 0)
         return ctrl->video_fd;
 
