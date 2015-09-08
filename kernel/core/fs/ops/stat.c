@@ -70,6 +70,9 @@ int vfs_fstat(struct thread *t, int fd, struct stat *buf)
     if (ret < 0)
         return ret;
 
+    if (!file->mount)
+        return -EBADF;
+
     if (!file->mount->fi->parent->fs_ops->stat)
         return -ENOSYS;
 
