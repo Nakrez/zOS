@@ -114,6 +114,16 @@ struct device *device_get(dev_t dev);
 dev_t device_get_from_name(const char *name);
 
 /**
+ *  \brief  Get device structure from an index (getdirent index)
+ *
+ *  \param  index   The index of the device
+ *
+ *  \return  The device corresponding to \a index, if it exists
+ *  \return  NULL: device does not exist or \a index is invalid
+ */
+struct device *device_get_from_index(int index);
+
+/**
  * \brief   Check if a device exists
  *
  * \param   name    The name of the device

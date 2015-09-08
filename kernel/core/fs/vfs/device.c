@@ -135,6 +135,29 @@ dev_t device_get_from_name(const char *name)
     return -ENODEV;
 }
 
+struct device *device_get_from_index(int index)
+{
+    if (index < 0 || index > VFS_MAX_DEVICE)
+        return NULL;
+
+    spinlock_lock(&device_lock);
+
+    for (int i = 0; i < VFS_MAX_DEVICE; ++i) {
+        if (devices[i].active) {
+            if (!index) {
+                spinlock_unlock(&device_lock);
+                return &devices[i];
+            }
+
+            --index;
+        }
+    }
+
+    spinlock_unlock(&device_lock);
+
+    return NULL;
+}
+
 int device_exists(const char *name)
 {
     for (int i = 0; i < VFS_MAX_DEVICE; ++i) {
